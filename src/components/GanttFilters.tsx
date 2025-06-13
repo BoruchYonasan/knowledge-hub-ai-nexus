@@ -40,7 +40,7 @@ const GanttFilters: React.FC<GanttFiltersProps> = ({
 
   const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
     if (key === 'sortBy' || key === 'sortOrder') return false;
-    return value !== '' && value !== null;
+    return value !== '' && value !== null && value !== 'all';
   }).length;
 
   return (
@@ -75,12 +75,12 @@ const GanttFilters: React.FC<GanttFiltersProps> = ({
         {/* Type Filter */}
         <div>
           <label className="text-xs font-medium text-gray-700 mb-1 block">Type</label>
-          <Select value={filters.type} onValueChange={(value) => updateFilter('type', value)}>
+          <Select value={filters.type || 'all'} onValueChange={(value) => updateFilter('type', value === 'all' ? '' : value)}>
             <SelectTrigger>
               <SelectValue placeholder="All types" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All types</SelectItem>
+              <SelectItem value="all">All types</SelectItem>
               <SelectItem value="milestone">Milestone</SelectItem>
               <SelectItem value="task">Task</SelectItem>
               <SelectItem value="subtask">Subtask</SelectItem>
@@ -91,12 +91,12 @@ const GanttFilters: React.FC<GanttFiltersProps> = ({
         {/* Status Filter */}
         <div>
           <label className="text-xs font-medium text-gray-700 mb-1 block">Status</label>
-          <Select value={filters.status} onValueChange={(value) => updateFilter('status', value)}>
+          <Select value={filters.status || 'all'} onValueChange={(value) => updateFilter('status', value === 'all' ? '' : value)}>
             <SelectTrigger>
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All statuses</SelectItem>
+              <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="Not Started">Not Started</SelectItem>
               <SelectItem value="In Progress">In Progress</SelectItem>
               <SelectItem value="Completed">Completed</SelectItem>
@@ -108,12 +108,12 @@ const GanttFilters: React.FC<GanttFiltersProps> = ({
         {/* Priority Filter */}
         <div>
           <label className="text-xs font-medium text-gray-700 mb-1 block">Priority</label>
-          <Select value={filters.priority} onValueChange={(value) => updateFilter('priority', value)}>
+          <Select value={filters.priority || 'all'} onValueChange={(value) => updateFilter('priority', value === 'all' ? '' : value)}>
             <SelectTrigger>
               <SelectValue placeholder="All priorities" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All priorities</SelectItem>
+              <SelectItem value="all">All priorities</SelectItem>
               <SelectItem value="High">High</SelectItem>
               <SelectItem value="Medium">Medium</SelectItem>
               <SelectItem value="Low">Low</SelectItem>
@@ -124,12 +124,12 @@ const GanttFilters: React.FC<GanttFiltersProps> = ({
         {/* Assignee Filter */}
         <div>
           <label className="text-xs font-medium text-gray-700 mb-1 block">Assignee</label>
-          <Select value={filters.assignee} onValueChange={(value) => updateFilter('assignee', value)}>
+          <Select value={filters.assignee || 'all'} onValueChange={(value) => updateFilter('assignee', value === 'all' ? '' : value)}>
             <SelectTrigger>
               <SelectValue placeholder="All assignees" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All assignees</SelectItem>
+              <SelectItem value="all">All assignees</SelectItem>
               {assignees.map(assignee => (
                 <SelectItem key={assignee} value={assignee}>{assignee}</SelectItem>
               ))}
@@ -182,11 +182,12 @@ const GanttFilters: React.FC<GanttFiltersProps> = ({
         {/* Sort By */}
         <div>
           <label className="text-xs font-medium text-gray-700 mb-1 block">Sort By</label>
-          <Select value={filters.sortBy} onValueChange={(value) => updateFilter('sortBy', value)}>
+          <Select value={filters.sortBy || 'none'} onValueChange={(value) => updateFilter('sortBy', value === 'none' ? '' : value)}>
             <SelectTrigger>
               <SelectValue placeholder="Sort by..." />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="none">No sorting</SelectItem>
               <SelectItem value="title">Title</SelectItem>
               <SelectItem value="startDate">Start Date</SelectItem>
               <SelectItem value="endDate">End Date</SelectItem>
