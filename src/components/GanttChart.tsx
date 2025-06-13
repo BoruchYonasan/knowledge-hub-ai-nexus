@@ -1,34 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Edit, Trash2, Plus, Calendar, Users, Target } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useGanttItems } from '@/hooks/useGanttItems';
 import GanttFilters from './GanttFilters';
 import GanttBulkActions from './GanttBulkActions';
 import GanttTableRow from './GanttTableRow';
 import GanttChartView from './GanttChartView';
 import GanttItemDialog from './GanttItemDialog';
-
-interface GanttItem {
-  id: number;
-  title: string;
-  type: 'milestone' | 'task' | 'subtask';
-  parentId?: number;
-  startDate: string;
-  endDate: string;
-  progress: number;
-  assignee: string;
-  priority: 'High' | 'Medium' | 'Low';
-  status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
-  resources: string[];
-  dependencies: number[];
-  description: string;
-}
 
 interface FilterState {
   search: string;
@@ -47,57 +31,21 @@ interface GanttChartProps {
 }
 
 const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
-  const [items, setItems] = useState<GanttItem[]>([
-    {
-      id: 1,
-      title: 'Product Launch Q1',
-      type: 'milestone',
-      startDate: '2024-01-01',
-      endDate: '2024-03-31',
-      progress: 65,
-      assignee: 'Sarah Johnson',
-      priority: 'High',
-      status: 'In Progress',
-      resources: ['Development Team', 'Marketing Team'],
-      dependencies: [],
-      description: 'Major product launch for Q1 2024'
-    },
-    {
-      id: 2,
-      title: 'Development Phase',
-      type: 'task',
-      parentId: 1,
-      startDate: '2024-01-15',
-      endDate: '2024-02-28',
-      progress: 80,
-      assignee: 'Mike Chen',
-      priority: 'High',
-      status: 'In Progress',
-      resources: ['Frontend Team', 'Backend Team'],
-      dependencies: [],
-      description: 'Complete development of core features'
-    },
-    {
-      id: 3,
-      title: 'Frontend Implementation',
-      type: 'subtask',
-      parentId: 2,
-      startDate: '2024-01-15',
-      endDate: '2024-02-15',
-      progress: 90,
-      assignee: 'Alex Rivera',
-      priority: 'High',
-      status: 'In Progress',
-      resources: ['Frontend Team'],
-      dependencies: [],
-      description: 'Implement user interface components'
-    }
-  ]);
-
+  const { 
+    items, 
+    loading, 
+    updateItem, 
+    deleteItem,
+    bulkUpdateStatus,
+    bulkUpdateAssignee,
+    bulkDelete,
+    createItem
+  } = useGanttItems();
+  
   const [isManaging, setIsManaging] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'chart'>('table');
-  const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [expandedItems, setExpandedItems] = useState<number[]>([1, 2]);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     type: '',
@@ -112,38 +60,9 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
 
   const { toast } = useToast();
 
-  useEffect(() => {
+  React.useEffect(() => {
     onManagingChange?.(isManaging);
   }, [isManaging, onManagingChange]);
-
-  useEffect(() => {
-    const handleAICreatedGanttItem = (event: CustomEvent) => {
-      const newItem = event.detail;
-      setItems(prev => [...prev, newItem]);
-    };
-
-    const handleAIEditedGanttItem = (event: CustomEvent) => {
-      const updatedItem = event.detail;
-      setItems(prev => prev.map(item => 
-        item.id === updatedItem.id ? { ...item, ...updatedItem } : item
-      ));
-    };
-
-    const handleAIDeletedGanttItem = (event: CustomEvent) => {
-      const { id } = event.detail;
-      setItems(prev => prev.filter(item => item.id !== id));
-    };
-
-    window.addEventListener('ai-created-gantt-item', handleAICreatedGanttItem as EventListener);
-    window.addEventListener('ai-edited-gantt-item', handleAIEditedGanttItem as EventListener);
-    window.addEventListener('ai-deleted-gantt-item', handleAIDeletedGanttItem as EventListener);
-
-    return () => {
-      window.removeEventListener('ai-created-gantt-item', handleAICreatedGanttItem as EventListener);
-      window.removeEventListener('ai-edited-gantt-item', handleAIEditedGanttItem as EventListener);
-      window.removeEventListener('ai-deleted-gantt-item', handleAIDeletedGanttItem as EventListener);
-    };
-  }, []);
 
   const assignees = useMemo(() => {
     return Array.from(new Set(items.map(item => item.assignee)));
@@ -158,17 +77,17 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
       if (filters.status && item.status !== filters.status) return false;
       if (filters.priority && item.priority !== filters.priority) return false;
       if (filters.assignee && item.assignee !== filters.assignee) return false;
-      if (filters.startDate && new Date(item.startDate) < filters.startDate) return false;
-      if (filters.endDate && new Date(item.endDate) > filters.endDate) return false;
+      if (filters.startDate && new Date(item.start_date) < filters.startDate) return false;
+      if (filters.endDate && new Date(item.end_date) > filters.endDate) return false;
       return true;
     });
 
     if (filters.sortBy) {
       filtered.sort((a, b) => {
-        let aValue = a[filters.sortBy as keyof GanttItem];
-        let bValue = b[filters.sortBy as keyof GanttItem];
+        let aValue = a[filters.sortBy as keyof typeof a];
+        let bValue = b[filters.sortBy as keyof typeof b];
         
-        if (filters.sortBy === 'startDate' || filters.sortBy === 'endDate') {
+        if (filters.sortBy === 'start_date' || filters.sortBy === 'end_date') {
           aValue = new Date(aValue as string).getTime();
           bValue = new Date(bValue as string).getTime();
         }
@@ -183,7 +102,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     return filtered;
   }, [items, filters]);
 
-  const handleSelectItem = (id: number, selected: boolean) => {
+  const handleSelectItem = (id: string, selected: boolean) => {
     if (selected) {
       setSelectedItems(prev => [...prev, id]);
     } else {
@@ -191,55 +110,28 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     }
   };
 
-  const handleBulkStatusUpdate = (status: string) => {
-    setItems(prev => prev.map(item => 
-      selectedItems.includes(item.id) ? { ...item, status: status as any } : item
-    ));
+  const handleBulkStatusUpdate = async (status: string) => {
+    await bulkUpdateStatus(selectedItems, status);
     setSelectedItems([]);
-    toast({
-      title: "Status Updated",
-      description: `Updated status for ${selectedItems.length} items.`
-    });
   };
 
-  const handleBulkAssigneeUpdate = (assignee: string) => {
-    setItems(prev => prev.map(item => 
-      selectedItems.includes(item.id) ? { ...item, assignee } : item
-    ));
+  const handleBulkAssigneeUpdate = async (assignee: string) => {
+    await bulkUpdateAssignee(selectedItems, assignee);
     setSelectedItems([]);
-    toast({
-      title: "Assignee Updated",
-      description: `Reassigned ${selectedItems.length} items.`
-    });
   };
 
-  const handleBulkDelete = () => {
-    setItems(prev => prev.filter(item => !selectedItems.includes(item.id)));
+  const handleBulkDelete = async () => {
+    await bulkDelete(selectedItems);
     setSelectedItems([]);
-    toast({
-      title: "Items Deleted",
-      description: `Deleted ${selectedItems.length} items.`
-    });
   };
 
-  const handleEditItem = (updatedItem: GanttItem) => {
-    setItems(prev => prev.map(item => 
-      item.id === updatedItem.id ? updatedItem : item
-    ));
-    toast({
-      title: "Item Updated",
-      description: `"${updatedItem.title}" has been updated.`
-    });
+  const handleEditItem = async (updatedItem: any) => {
+    await updateItem(updatedItem.id, updatedItem);
   };
 
-  const handleDeleteItem = (id: number) => {
-    const item = items.find(item => item.id === id);
-    setItems(prev => prev.filter(item => item.id !== id));
+  const handleDeleteItem = async (id: string) => {
+    await deleteItem(id);
     setSelectedItems(prev => prev.filter(itemId => itemId !== id));
-    toast({
-      title: "Item Deleted",
-      description: `"${item?.title}" has been deleted.`
-    });
   };
 
   const clearFilters = () => {
@@ -256,7 +148,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     });
   };
 
-  const toggleExpanded = (id: number) => {
+  const toggleExpanded = (id: string) => {
     setExpandedItems(prev => 
       prev.includes(id) ? prev.filter(itemId => itemId !== id) : [...prev, id]
     );
@@ -266,13 +158,13 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     return filteredAndSortedItems.filter(item => item.type === type);
   };
 
-  const getSubItems = (parentId: number) => {
-    return items.filter(item => item.parentId === parentId);
+  const getSubItems = (parentId: string) => {
+    return items.filter(item => item.parent_id === parentId);
   };
 
   const renderHierarchicalTable = () => {
-    const renderItems = (parentId?: number, level = 0): JSX.Element[] => {
-      const itemsAtLevel = filteredAndSortedItems.filter(item => item.parentId === parentId);
+    const renderItems = (parentId?: string, level = 0): JSX.Element[] => {
+      const itemsAtLevel = filteredAndSortedItems.filter(item => item.parent_id === parentId);
       const elements: JSX.Element[] = [];
 
       itemsAtLevel.forEach(item => {
@@ -308,82 +200,10 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     return renderItems();
   };
 
-  const calculateDuration = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
-  const renderGanttChart = () => {
-    const allDates = items.flatMap(item => [new Date(item.startDate), new Date(item.endDate)]);
-    const minDate = new Date(Math.min(...allDates.map(d => d.getTime())));
-    const maxDate = new Date(Math.max(...allDates.map(d => d.getTime())));
-    const totalDays = Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24));
-
-    return (
-      <div className="space-y-4">
-        <div className="bg-gray-50 p-4 rounded-lg overflow-x-auto">
-          <div className="min-w-[800px]">
-            {/* Timeline Header */}
-            <div className="flex mb-4">
-              <div className="w-64 text-sm font-medium text-gray-900">Task</div>
-              <div className="flex-1 grid grid-cols-12 gap-1 text-xs text-gray-600">
-                {Array.from({ length: 12 }, (_, i) => (
-                  <div key={i} className="text-center">
-                    {new Date(minDate.getTime() + (i * totalDays / 12 * 24 * 60 * 60 * 1000)).toLocaleDateString('en-US', { month: 'short' })}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Gantt Bars */}
-            {items.map(item => {
-              const itemStart = new Date(item.startDate);
-              const itemEnd = new Date(item.endDate);
-              const startOffset = ((itemStart.getTime() - minDate.getTime()) / (maxDate.getTime() - minDate.getTime())) * 100;
-              const width = ((itemEnd.getTime() - itemStart.getTime()) / (maxDate.getTime() - minDate.getTime())) * 100;
-
-              return (
-                <div key={item.id} className="flex items-center mb-2">
-                  <div className="w-64 text-sm truncate">
-                    <span className={`inline-block w-2 h-2 rounded-full mr-2 ${
-                      item.type === 'milestone' ? 'bg-purple-500' :
-                      item.type === 'task' ? 'bg-blue-500' : 'bg-green-500'
-                    }`}></span>
-                    {item.title}
-                  </div>
-                  <div className="flex-1 relative h-8 bg-gray-200 rounded">
-                    <div
-                      className={`absolute h-6 top-1 rounded ${
-                        item.type === 'milestone' ? 'bg-purple-400' :
-                        item.type === 'task' ? 'bg-blue-400' : 'bg-green-400'
-                      }`}
-                      style={{
-                        left: `${startOffset}%`,
-                        width: `${width}%`,
-                      }}
-                    >
-                      <div
-                        className="h-full bg-black bg-opacity-20 rounded"
-                        style={{ width: `${item.progress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const [selectedItem, setSelectedItem] = useState<GanttItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleItemClick = (item: GanttItem) => {
+  const handleItemClick = (item: any) => {
     setSelectedItem(item);
     setIsDialogOpen(true);
   };
@@ -393,23 +213,25 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     setIsDialogOpen(true);
   };
 
-  const handleSaveItem = (item: GanttItem) => {
+  const handleSaveItem = async (item: any) => {
     if (selectedItem) {
-      // Update existing item
-      setItems(prev => prev.map(i => i.id === item.id ? item : i));
-      toast({
-        title: "Item Updated",
-        description: `"${item.title}" has been updated.`
-      });
+      await updateItem(selectedItem.id, item);
     } else {
-      // Create new item
-      setItems(prev => [...prev, item]);
-      toast({
-        title: "Item Created",
-        description: `"${item.title}" has been created.`
-      });
+      await createItem(item);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-96 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
@@ -493,7 +315,6 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
                         <TableHead>Type</TableHead>
                         <TableHead>Start Date</TableHead>
                         <TableHead>End Date</TableHead>
-                        <TableHead>Duration</TableHead>
                         <TableHead>Progress</TableHead>
                         <TableHead>Assignee</TableHead>
                         <TableHead>Priority</TableHead>
@@ -509,8 +330,6 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
               </CardContent>
             </Card>
           </TabsContent>
-
-          {/* Keep existing TabsContent for milestones, tasks, and subtasks */}
         </Tabs>
       ) : (
         <Card>

@@ -1,228 +1,137 @@
-import { useState, useCallback } from 'react';
+
+import { useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
-
-interface KnowledgeBaseLink {
-  id: string;
-  title: string;
-  type: 'document' | 'image' | 'guide' | 'policy' | 'other';
-  url?: string;
-}
-
-interface Update {
-  id: number;
-  title: string;
-  date: string;
-  author: string;
-  department: string;
-  priority: 'high' | 'medium' | 'low';
-  preview: string;
-  content: string;
-  attachments: string[];
-  knowledgeBaseLinks: KnowledgeBaseLink[];
-}
-
-interface Project {
-  id: number;
-  title: string;
-  lead: string;
-  team: string;
-  status: 'Planning' | 'In Progress' | 'Completed';
-  priority: 'High' | 'Medium' | 'Low';
-  progress: number;
-  startDate: string;
-  dueDate: string;
-  description: string;
-  tasks: any[];
-  attachments: string[];
-  knowledgeBaseLinks: KnowledgeBaseLink[];
-}
-
-interface GanttItem {
-  id: number;
-  title: string;
-  type: 'milestone' | 'task' | 'subtask';
-  parentId?: number;
-  startDate: string;
-  endDate: string;
-  progress: number;
-  assignee: string;
-  priority: 'High' | 'Medium' | 'Low';
-  status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
-  resources: string[];
-  dependencies: number[];
-  description: string;
-}
+import { useLatestUpdates } from '@/hooks/useLatestUpdates';
+import { useProjects } from '@/hooks/useProjects';
+import { useGanttItems } from '@/hooks/useGanttItems';
 
 export const useContentManager = () => {
   const { toast } = useToast();
+  const { createUpdate, updateUpdate, deleteUpdate } = useLatestUpdates();
+  const { createProject, updateProject, deleteProject } = useProjects();
+  const { createItem, updateItem, deleteItem } = useGanttItems();
 
-  const createUpdateFromAI = useCallback((updateData: any) => {
+  const createUpdateFromAI = useCallback(async (updateData: any) => {
     console.log('AI-created update:', updateData);
     
-    const newUpdate: Update = {
-      id: Date.now(),
-      title: updateData.title || 'Untitled Update',
-      date: new Date().toISOString().split('T')[0],
-      author: updateData.author || 'AI Assistant',
-      department: updateData.department || 'General',
-      priority: updateData.priority || 'medium',
-      preview: updateData.preview || updateData.content?.substring(0, 100) + '...' || '',
-      content: updateData.content || '',
-      attachments: updateData.attachments || [],
-      knowledgeBaseLinks: updateData.knowledgeBaseLinks || []
-    };
+    try {
+      await createUpdate({
+        title: updateData.title || 'Untitled Update',
+        preview: updateData.preview || updateData.content?.substring(0, 100) + '...' || '',
+        content: updateData.content || '',
+        author: updateData.author || 'AI Assistant',
+        department: updateData.department || 'General',
+        priority: updateData.priority || 'medium',
+        attachments: updateData.attachments || []
+      });
+    } catch (error) {
+      console.error('Error creating update from AI:', error);
+    }
+  }, [createUpdate]);
 
-    // Trigger custom event to update LatestUpdates component
-    window.dispatchEvent(new CustomEvent('ai-created-update', { 
-      detail: newUpdate 
-    }));
-
-    toast({
-      title: "Update Created",
-      description: `"${newUpdate.title}" has been added to Latest Updates.`
-    });
-  }, [toast]);
-
-  const editUpdateFromAI = useCallback((updateData: any) => {
+  const editUpdateFromAI = useCallback(async (updateData: any) => {
     console.log('AI-edited update:', updateData);
     
-    // Trigger custom event to edit update
-    window.dispatchEvent(new CustomEvent('ai-edited-update', { 
-      detail: updateData 
-    }));
+    try {
+      await updateUpdate(updateData.id, updateData);
+    } catch (error) {
+      console.error('Error editing update from AI:', error);
+    }
+  }, [updateUpdate]);
 
-    toast({
-      title: "Update Edited",
-      description: `"${updateData.title}" has been updated.`
-    });
-  }, [toast]);
-
-  const deleteUpdateFromAI = useCallback((updateId: number, title: string) => {
+  const deleteUpdateFromAI = useCallback(async (updateId: string, title: string) => {
     console.log('AI-deleted update:', updateId);
     
-    // Trigger custom event to delete update
-    window.dispatchEvent(new CustomEvent('ai-deleted-update', { 
-      detail: { id: updateId } 
-    }));
+    try {
+      await deleteUpdate(updateId);
+    } catch (error) {
+      console.error('Error deleting update from AI:', error);
+    }
+  }, [deleteUpdate]);
 
-    toast({
-      title: "Update Deleted",
-      description: `"${title}" has been removed from Latest Updates.`
-    });
-  }, [toast]);
-
-  const createProjectFromAI = useCallback((projectData: any) => {
+  const createProjectFromAI = useCallback(async (projectData: any) => {
     console.log('AI-created project:', projectData);
     
-    const newProject: Project = {
-      id: Date.now(),
-      title: projectData.title || 'Untitled Project',
-      lead: projectData.lead || 'Unassigned',
-      team: projectData.team || 'General',
-      status: 'Planning',
-      priority: projectData.priority || 'Medium',
-      progress: 0,
-      startDate: projectData.startDate || new Date().toISOString().split('T')[0],
-      dueDate: projectData.dueDate || '',
-      description: projectData.description || '',
-      tasks: [],
-      attachments: [],
-      knowledgeBaseLinks: projectData.knowledgeBaseLinks || []
-    };
+    try {
+      await createProject({
+        title: projectData.title || 'Untitled Project',
+        description: projectData.description || '',
+        lead: projectData.lead || 'Unassigned',
+        team: projectData.team || 'General',
+        status: 'Planning',
+        priority: projectData.priority || 'Medium',
+        progress: 0,
+        start_date: projectData.startDate || undefined,
+        due_date: projectData.dueDate || undefined,
+        attachments: projectData.attachments || []
+      });
+    } catch (error) {
+      console.error('Error creating project from AI:', error);
+    }
+  }, [createProject]);
 
-    // Trigger custom event to update WorksInProgress component
-    window.dispatchEvent(new CustomEvent('ai-created-project', { 
-      detail: newProject 
-    }));
-
-    toast({
-      title: "Project Created",
-      description: `"${newProject.title}" has been added to Works in Progress.`
-    });
-  }, [toast]);
-
-  const editProjectFromAI = useCallback((projectData: any) => {
+  const editProjectFromAI = useCallback(async (projectData: any) => {
     console.log('AI-edited project:', projectData);
     
-    // Trigger custom event to edit project
-    window.dispatchEvent(new CustomEvent('ai-edited-project', { 
-      detail: projectData 
-    }));
+    try {
+      await updateProject(projectData.id, projectData);
+    } catch (error) {
+      console.error('Error editing project from AI:', error);
+    }
+  }, [updateProject]);
 
-    toast({
-      title: "Project Edited",
-      description: `"${projectData.title}" has been updated.`
-    });
-  }, [toast]);
-
-  const deleteProjectFromAI = useCallback((projectId: number, title: string) => {
+  const deleteProjectFromAI = useCallback(async (projectId: string, title: string) => {
     console.log('AI-deleted project:', projectId);
     
-    // Trigger custom event to delete project
-    window.dispatchEvent(new CustomEvent('ai-deleted-project', { 
-      detail: { id: projectId } 
-    }));
+    try {
+      await deleteProject(projectId);
+    } catch (error) {
+      console.error('Error deleting project from AI:', error);
+    }
+  }, [deleteProject]);
 
-    toast({
-      title: "Project Deleted",
-      description: `"${title}" has been removed from Works in Progress.`
-    });
-  }, [toast]);
-
-  const createGanttItemFromAI = useCallback((itemData: any) => {
+  const createGanttItemFromAI = useCallback(async (itemData: any) => {
     console.log('AI-created gantt item:', itemData);
     
-    const newItem: GanttItem = {
-      id: Date.now(),
-      title: itemData.title || 'Untitled Item',
-      type: itemData.type || 'task',
-      parentId: itemData.parentId,
-      startDate: itemData.startDate || new Date().toISOString().split('T')[0],
-      endDate: itemData.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      progress: itemData.progress || 0,
-      assignee: itemData.assignee || 'Unassigned',
-      priority: itemData.priority || 'Medium',
-      status: itemData.status || 'Not Started',
-      resources: itemData.resources || [],
-      dependencies: itemData.dependencies || [],
-      description: itemData.description || ''
-    };
+    try {
+      await createItem({
+        title: itemData.title || 'Untitled Item',
+        type: itemData.type || 'task',
+        parent_id: itemData.parentId,
+        assignee: itemData.assignee || 'Unassigned',
+        priority: itemData.priority || 'Medium',
+        status: itemData.status || 'Not Started',
+        start_date: itemData.startDate || new Date().toISOString().split('T')[0],
+        end_date: itemData.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        progress: itemData.progress || 0,
+        resources: itemData.resources || [],
+        dependencies: itemData.dependencies || [],
+        description: itemData.description || ''
+      });
+    } catch (error) {
+      console.error('Error creating gantt item from AI:', error);
+    }
+  }, [createItem]);
 
-    window.dispatchEvent(new CustomEvent('ai-created-gantt-item', { 
-      detail: newItem 
-    }));
-
-    toast({
-      title: "Gantt Item Created",
-      description: `"${newItem.title}" has been added to the Gantt Chart.`
-    });
-  }, [toast]);
-
-  const editGanttItemFromAI = useCallback((itemData: any) => {
+  const editGanttItemFromAI = useCallback(async (itemData: any) => {
     console.log('AI-edited gantt item:', itemData);
     
-    window.dispatchEvent(new CustomEvent('ai-edited-gantt-item', { 
-      detail: itemData 
-    }));
+    try {
+      await updateItem(itemData.id, itemData);
+    } catch (error) {
+      console.error('Error editing gantt item from AI:', error);
+    }
+  }, [updateItem]);
 
-    toast({
-      title: "Gantt Item Edited",
-      description: `"${itemData.title}" has been updated.`
-    });
-  }, [toast]);
-
-  const deleteGanttItemFromAI = useCallback((itemId: number, title: string) => {
+  const deleteGanttItemFromAI = useCallback(async (itemId: string, title: string) => {
     console.log('AI-deleted gantt item:', itemId);
     
-    window.dispatchEvent(new CustomEvent('ai-deleted-gantt-item', { 
-      detail: { id: itemId } 
-    }));
-
-    toast({
-      title: "Gantt Item Deleted",
-      description: `"${title}" has been removed from the Gantt Chart.`
-    });
-  }, [toast]);
+    try {
+      await deleteItem(itemId);
+    } catch (error) {
+      console.error('Error deleting gantt item from AI:', error);
+    }
+  }, [deleteItem]);
 
   return {
     createUpdateFromAI,

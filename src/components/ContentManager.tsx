@@ -7,49 +7,30 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Plus, FileText, Folder } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface ContentItem {
-  id: string;
-  title: string;
-  content: string;
-  category: string;
-  subcategory?: string;
-  type: 'article' | 'guide' | 'policy' | 'procedure';
-  tags: string[];
-  author: string;
-  lastUpdated: string;
-  files?: File[];
-}
+import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
 
 const ContentManager: React.FC = () => {
+  const { createArticle } = useKnowledgeBase();
   const [isUploading, setIsUploading] = useState(false);
-  const [newContent, setNewContent] = useState<Partial<ContentItem>>({
+  const [newContent, setNewContent] = useState({
     title: '',
+    description: '',
     content: '',
-    category: '',
-    type: 'article',
-    tags: [],
-    author: ''
+    category: 'all' as 'all' | 'hr' | 'engineering' | 'sales' | 'finance' | 'operations',
+    author: '',
+    read_time: '5 min read',
+    tags: [] as string[]
   });
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const { toast } = useToast();
 
   const categories = [
-    'Human Resources',
-    'Engineering', 
-    'Sales & Marketing',
-    'Finance',
-    'Operations',
-    'Legal & Compliance',
-    'IT & Security',
-    'Product Management'
-  ];
-
-  const contentTypes = [
-    { value: 'article', label: 'Knowledge Article' },
-    { value: 'guide', label: 'Step-by-Step Guide' },
-    { value: 'policy', label: 'Company Policy' },
-    { value: 'procedure', label: 'Standard Procedure' }
+    { value: 'all', label: 'General' },
+    { value: 'hr', label: 'Human Resources' },
+    { value: 'engineering', label: 'Engineering' }, 
+    { value: 'sales', label: 'Sales & Marketing' },
+    { value: 'finance', label: 'Finance' },
+    { value: 'operations', label: 'Operations' }
   ];
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,37 +40,37 @@ const ContentManager: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!newContent.title || !newContent.author) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill in title and author",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsUploading(true);
 
     try {
-      // Here you would typically send to your backend API
-      console.log('Uploading content:', newContent);
-      console.log('Attached files:', selectedFiles);
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      toast({
-        title: "Content uploaded successfully",
-        description: `${newContent.title} has been added to the knowledge base.`
+      await createArticle({
+        ...newContent,
+        description: newContent.description || newContent.content?.substring(0, 150) + '...' || ''
       });
 
       // Reset form
       setNewContent({
         title: '',
+        description: '',
         content: '',
-        category: '',
-        type: 'article',
-        tags: [],
-        author: ''
+        category: 'all',
+        author: '',
+        read_time: '5 min read',
+        tags: []
       });
       setSelectedFiles([]);
     } catch (error) {
-      toast({
-        title: "Upload failed",
-        description: "There was an error uploading your content. Please try again.",
-        variant: "destructive"
-      });
+      // Error is handled by the hook
     } finally {
       setIsUploading(false);
     }
@@ -122,7 +103,7 @@ const ContentManager: React.FC = () => {
                   Title *
                 </label>
                 <Input
-                  value={newContent.title || ''}
+                  value={newContent.title}
                   onChange={(e) => setNewContent(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Enter content title..."
                   required
@@ -133,7 +114,7 @@ const ContentManager: React.FC = () => {
                   Author *
                 </label>
                 <Input
-                  value={newContent.author || ''}
+                  value={newContent.author}
                   onChange={(e) => setNewContent(prev => ({ ...prev, author: e.target.value }))}
                   placeholder="Your name..."
                   required
@@ -147,38 +128,42 @@ const ContentManager: React.FC = () => {
                   Category *
                 </label>
                 <Select
-                  value={newContent.category || ''}
-                  onValueChange={(value) => setNewContent(prev => ({ ...prev, category: value }))}
+                  value={newContent.category}
+                  onValueChange={(value: any) => setNewContent(prev => ({ ...prev, category: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select category..." />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map(category => (
-                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Content Type *
+                  Read Time
                 </label>
-                <Select
-                  value={newContent.type || 'article'}
-                  onValueChange={(value: 'article' | 'guide' | 'policy' | 'procedure') => 
-                    setNewContent(prev => ({ ...prev, type: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {contentTypes.map(type => (
-                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  value={newContent.read_time}
+                  onChange={(e) => setNewContent(prev => ({ ...prev, read_time: e.target.value }))}
+                  placeholder="5 min read"
+                />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description
+              </label>
+              <Input
+                value={newContent.description}
+                onChange={(e) => setNewContent(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Brief description of the content..."
+              />
             </div>
 
             <div>
@@ -193,14 +178,13 @@ const ContentManager: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Content *
+                Content
               </label>
               <Textarea
-                value={newContent.content || ''}
+                value={newContent.content}
                 onChange={(e) => setNewContent(prev => ({ ...prev, content: e.target.value }))}
                 placeholder="Enter the main content here... (Markdown supported)"
                 className="min-h-[200px]"
-                required
               />
             </div>
 
@@ -246,7 +230,7 @@ const ContentManager: React.FC = () => {
               className="w-full bg-blue-600 hover:bg-blue-700"
               disabled={isUploading}
             >
-              {isUploading ? 'Uploading...' : 'Add to Knowledge Base'}
+              {isUploading ? 'Adding to Knowledge Base...' : 'Add to Knowledge Base'}
             </Button>
           </form>
         </CardContent>
