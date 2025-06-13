@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,6 +61,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasUnreadMessage, setHasUnreadMessage] = useState(true); // Start with true since there's an initial AI message
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -73,10 +73,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   }, [messages]);
 
   useEffect(() => {
-    if (isOpen && hasNewMessage && onMessageRead) {
+    if (isOpen && hasUnreadMessage && onMessageRead) {
+      setHasUnreadMessage(false);
       onMessageRead();
     }
-  }, [isOpen, hasNewMessage, onMessageRead]);
+  }, [isOpen, hasUnreadMessage, onMessageRead]);
 
   const generateSystemPrompt = () => {
     let basePrompt = `You are a helpful AI assistant for AeroMail's company knowledge base website. Your role is to help employees navigate the knowledge base and find information.
@@ -317,9 +318,12 @@ Be helpful, professional, and concise in your responses.`;
 
       setMessages(prev => [...prev, aiMessage]);
       
-      // Trigger notification for new AI message
-      if (!isOpen && onNewMessage) {
-        onNewMessage();
+      // Show notification for new AI message if chat is closed
+      if (!isOpen) {
+        setHasUnreadMessage(true);
+        if (onNewMessage) {
+          onNewMessage();
+        }
       }
     } catch (error) {
       console.error('Error calling Gemini API:', error);
@@ -330,6 +334,14 @@ Be helpful, professional, and concise in your responses.`;
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
+      
+      // Show notification for error message if chat is closed
+      if (!isOpen) {
+        setHasUnreadMessage(true);
+        if (onNewMessage) {
+          onNewMessage();
+        }
+      }
     }
 
     setIsLoading(false);
@@ -359,7 +371,7 @@ Be helpful, professional, and concise in your responses.`;
           size="icon"
         >
           {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
-          {hasNewMessage && !isOpen && (
+          {(hasUnreadMessage || hasNewMessage) && !isOpen && (
             <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
               <Bell className="h-2 w-2 text-white" />
             </div>
