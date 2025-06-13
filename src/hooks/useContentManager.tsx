@@ -2,6 +2,13 @@
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
+interface KnowledgeBaseLink {
+  id: string;
+  title: string;
+  type: 'document' | 'image' | 'guide' | 'policy' | 'other';
+  url?: string;
+}
+
 interface Update {
   id: number;
   title: string;
@@ -12,6 +19,7 @@ interface Update {
   preview: string;
   content: string;
   attachments: string[];
+  knowledgeBaseLinks: KnowledgeBaseLink[];
 }
 
 interface Project {
@@ -27,6 +35,7 @@ interface Project {
   description: string;
   tasks: any[];
   attachments: string[];
+  knowledgeBaseLinks: KnowledgeBaseLink[];
 }
 
 export const useContentManager = () => {
@@ -44,7 +53,8 @@ export const useContentManager = () => {
       priority: updateData.priority || 'medium',
       preview: updateData.preview || updateData.content?.substring(0, 100) + '...' || '',
       content: updateData.content || '',
-      attachments: updateData.attachments || []
+      attachments: updateData.attachments || [],
+      knowledgeBaseLinks: updateData.knowledgeBaseLinks || []
     };
 
     // Trigger custom event to update LatestUpdates component
@@ -101,7 +111,8 @@ export const useContentManager = () => {
       dueDate: projectData.dueDate || '',
       description: projectData.description || '',
       tasks: [],
-      attachments: []
+      attachments: [],
+      knowledgeBaseLinks: projectData.knowledgeBaseLinks || []
     };
 
     // Trigger custom event to update WorksInProgress component

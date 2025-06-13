@@ -5,8 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Link, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+interface KnowledgeBaseLink {
+  id: string;
+  title: string;
+  type: 'document' | 'image' | 'guide' | 'policy' | 'other';
+  url?: string;
+}
 
 interface Update {
   id: number;
@@ -18,6 +25,7 @@ interface Update {
   preview: string;
   content: string;
   attachments: string[];
+  knowledgeBaseLinks: KnowledgeBaseLink[];
 }
 
 interface LatestUpdatesProps {
@@ -61,6 +69,10 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onManagingChange }) => {
         Looking forward to seeing everyone there!
       `,
       attachments: ['Q4-Agenda.pdf', 'Performance-Summary.xlsx'],
+      knowledgeBaseLinks: [
+        { id: '1', title: 'Company Performance Guidelines', type: 'guide' },
+        { id: '2', title: 'Meeting Protocols', type: 'policy' }
+      ]
     },
     {
       id: 2,
@@ -89,6 +101,9 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onManagingChange }) => {
         Questions? Contact the HR team at hr@company.com
       `,
       attachments: ['Onboarding-Guide.pdf'],
+      knowledgeBaseLinks: [
+        { id: '3', title: 'Onboarding Process Overview', type: 'guide' }
+      ]
     },
     {
       id: 3,
@@ -121,6 +136,9 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onManagingChange }) => {
         Support: security@company.com | ext. 2847
       `,
       attachments: ['Security-Policy-2024.pdf', '2FA-Setup-Guide.pdf'],
+      knowledgeBaseLinks: [
+        { id: '4', title: 'Security Policy Details', type: 'guide' }
+      ]
     },
     {
       id: 4,
@@ -153,6 +171,9 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onManagingChange }) => {
         Thank you for your patience during this improvement process!
       `,
       attachments: [],
+      knowledgeBaseLinks: [
+        { id: '5', title: 'Office Renovation Plan', type: 'guide' }
+      ]
     },
   ]);
 
@@ -183,9 +204,41 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onManagingChange }) => {
       priority: 'medium',
       preview: '',
       content: '',
-      attachments: []
+      attachments: [],
+      knowledgeBaseLinks: []
     });
     setIsDialogOpen(true);
+  };
+
+  const addKnowledgeBaseLink = () => {
+    if (!editingUpdate) return;
+    const newLink: KnowledgeBaseLink = {
+      id: Date.now().toString(),
+      title: '',
+      type: 'document'
+    };
+    setEditingUpdate(prev => prev ? {
+      ...prev,
+      knowledgeBaseLinks: [...prev.knowledgeBaseLinks, newLink]
+    } : null);
+  };
+
+  const updateKnowledgeBaseLink = (linkId: string, field: keyof KnowledgeBaseLink, value: string) => {
+    if (!editingUpdate) return;
+    setEditingUpdate(prev => prev ? {
+      ...prev,
+      knowledgeBaseLinks: prev.knowledgeBaseLinks.map(link =>
+        link.id === linkId ? { ...link, [field]: value } : link
+      )
+    } : null);
+  };
+
+  const removeKnowledgeBaseLink = (linkId: string) => {
+    if (!editingUpdate) return;
+    setEditingUpdate(prev => prev ? {
+      ...prev,
+      knowledgeBaseLinks: prev.knowledgeBaseLinks.filter(link => link.id !== linkId)
+    } : null);
   };
 
   const handleEditUpdate = (update: Update) => {
@@ -383,6 +436,52 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onManagingChange }) => {
                         rows={6}
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Knowledge Base Links</label>
+                      <div className="space-y-2">
+                        {editingUpdate.knowledgeBaseLinks.map((link) => (
+                          <div key={link.id} className="flex items-center space-x-2 p-2 border rounded">
+                            <Input
+                              placeholder="Link title..."
+                              value={link.title}
+                              onChange={(e) => updateKnowledgeBaseLink(link.id, 'title', e.target.value)}
+                              className="flex-1"
+                            />
+                            <Select
+                              value={link.type}
+                              onValueChange={(value: any) => updateKnowledgeBaseLink(link.id, 'type', value)}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="document">Document</SelectItem>
+                                <SelectItem value="guide">Guide</SelectItem>
+                                <SelectItem value="policy">Policy</SelectItem>
+                                <SelectItem value="image">Image</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => removeKnowledgeBaseLink(link.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={addKnowledgeBaseLink}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Add Knowledge Base Link
+                        </Button>
+                      </div>
+                    </div>
                     <div className="flex justify-end space-x-2">
                       <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                         Cancel
@@ -451,6 +550,36 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onManagingChange }) => {
                       {update.content}
                     </pre>
                   </div>
+                  
+                  {update.knowledgeBaseLinks.length > 0 && (
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                      <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
+                        <Link className="w-4 h-4 mr-2" />
+                        Related Knowledge Base:
+                      </h4>
+                      <div className="space-y-2">
+                        {update.knowledgeBaseLinks.map((link) => (
+                          <div key={link.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                            <div className="flex items-center">
+                              <span className={`px-2 py-1 text-xs rounded mr-2 ${
+                                link.type === 'document' ? 'bg-blue-100 text-blue-800' :
+                                link.type === 'guide' ? 'bg-green-100 text-green-800' :
+                                link.type === 'policy' ? 'bg-purple-100 text-purple-800' :
+                                link.type === 'image' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {link.type}
+                              </span>
+                              <span className="text-sm font-medium">{link.title}</span>
+                            </div>
+                            {link.url && (
+                              <ExternalLink className="w-4 h-4 text-blue-600 cursor-pointer" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   
                   {update.attachments.length > 0 && (
                     <div className="mt-4 p-3 bg-gray-50 rounded-lg">

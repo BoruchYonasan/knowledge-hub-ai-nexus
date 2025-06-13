@@ -5,8 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Link, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+interface KnowledgeBaseLink {
+  id: string;
+  title: string;
+  type: 'document' | 'image' | 'guide' | 'policy' | 'other';
+  url?: string;
+}
 
 interface Task {
   name: string;
@@ -27,6 +34,7 @@ interface Project {
   description: string;
   tasks: Task[];
   attachments: string[];
+  knowledgeBaseLinks: KnowledgeBaseLink[];
 }
 
 interface WorksInProgressProps {
@@ -60,6 +68,10 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
         { name: 'Testing & QA', completed: false },
       ],
       attachments: ['Design-Mockups.fig', 'User-Research.pdf'],
+      knowledgeBaseLinks: [
+        { id: '1', title: 'UX Design Guidelines', type: 'guide' },
+        { id: '2', title: 'Customer Portal Requirements', type: 'document' }
+      ]
     },
     {
       id: 2,
@@ -80,6 +92,9 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
         { name: 'Review & Publishing', completed: false },
       ],
       attachments: ['API-Audit.xlsx'],
+      knowledgeBaseLinks: [
+        { id: '3', title: 'API Documentation Guidelines', type: 'guide' }
+      ]
     },
     {
       id: 3,
@@ -100,6 +115,9 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
         { name: 'Release Preparation', completed: false },
       ],
       attachments: ['Performance-Report.pdf', 'Optimization-Plan.docx'],
+      knowledgeBaseLinks: [
+        { id: '4', title: 'Mobile App Performance Best Practices', type: 'guide' }
+      ]
     },
     {
       id: 4,
@@ -120,6 +138,9 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
         { name: 'Certification Submission', completed: true },
       ],
       attachments: ['Security-Audit.pdf', 'Compliance-Report.pdf'],
+      knowledgeBaseLinks: [
+        { id: '5', title: 'SOC 2 Compliance Guidelines', type: 'guide' }
+      ]
     },
     {
       id: 5,
@@ -140,6 +161,9 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
         { name: 'Pilot Testing', completed: false },
       ],
       attachments: ['Training-Requirements.docx'],
+      knowledgeBaseLinks: [
+        { id: '6', title: 'Training Platform Guidelines', type: 'guide' }
+      ]
     },
   ]);
 
@@ -182,9 +206,41 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
       dueDate: '',
       description: '',
       tasks: [],
-      attachments: []
+      attachments: [],
+      knowledgeBaseLinks: []
     });
     setIsDialogOpen(true);
+  };
+
+  const addKnowledgeBaseLink = () => {
+    if (!editingProject) return;
+    const newLink: KnowledgeBaseLink = {
+      id: Date.now().toString(),
+      title: '',
+      type: 'document'
+    };
+    setEditingProject(prev => prev ? {
+      ...prev,
+      knowledgeBaseLinks: [...prev.knowledgeBaseLinks, newLink]
+    } : null);
+  };
+
+  const updateKnowledgeBaseLink = (linkId: string, field: keyof KnowledgeBaseLink, value: string) => {
+    if (!editingProject) return;
+    setEditingProject(prev => prev ? {
+      ...prev,
+      knowledgeBaseLinks: prev.knowledgeBaseLinks.map(link =>
+        link.id === linkId ? { ...link, [field]: value } : link
+      )
+    } : null);
+  };
+
+  const removeKnowledgeBaseLink = (linkId: string) => {
+    if (!editingProject) return;
+    setEditingProject(prev => prev ? {
+      ...prev,
+      knowledgeBaseLinks: prev.knowledgeBaseLinks.filter(link => link.id !== linkId)
+    } : null);
   };
 
   const handleEditProject = (project: Project) => {
@@ -389,6 +445,52 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
                         {editingProject.id && projects.find(p => p.id === editingProject.id) ? 'Update' : 'Create'}
                       </Button>
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Knowledge Base Links</label>
+                      <div className="space-y-2">
+                        {editingProject.knowledgeBaseLinks.map((link) => (
+                          <div key={link.id} className="flex items-center space-x-2 p-2 border rounded">
+                            <Input
+                              placeholder="Link title..."
+                              value={link.title}
+                              onChange={(e) => updateKnowledgeBaseLink(link.id, 'title', e.target.value)}
+                              className="flex-1"
+                            />
+                            <Select
+                              value={link.type}
+                              onValueChange={(value: any) => updateKnowledgeBaseLink(link.id, 'type', value)}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="document">Document</SelectItem>
+                                <SelectItem value="guide">Guide</SelectItem>
+                                <SelectItem value="policy">Policy</SelectItem>
+                                <SelectItem value="image">Image</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => removeKnowledgeBaseLink(link.id)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={addKnowledgeBaseLink}
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Add Knowledge Base Link
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </DialogContent>
@@ -500,6 +602,36 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
                         ))}
                       </div>
                     </div>
+
+                    {project.knowledgeBaseLinks.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
+                          <Link className="w-4 h-4 mr-2" />
+                          Related Knowledge Base:
+                        </h4>
+                        <div className="space-y-2">
+                          {project.knowledgeBaseLinks.map((link) => (
+                            <div key={link.id} className="flex items-center justify-between p-2 bg-blue-50 rounded border">
+                              <div className="flex items-center">
+                                <span className={`px-2 py-1 text-xs rounded mr-2 ${
+                                  link.type === 'document' ? 'bg-blue-100 text-blue-800' :
+                                  link.type === 'guide' ? 'bg-green-100 text-green-800' :
+                                  link.type === 'policy' ? 'bg-purple-100 text-purple-800' :
+                                  link.type === 'image' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {link.type}
+                                </span>
+                                <span className="text-sm font-medium">{link.title}</span>
+                              </div>
+                              {link.url && (
+                                <ExternalLink className="w-4 h-4 text-blue-600 cursor-pointer" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {project.attachments.length > 0 && (
                       <div>
