@@ -1,13 +1,42 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react';
+import AuthGuard from '@/components/AuthGuard';
+import Navbar from '@/components/Navbar';
+import Dashboard from '@/components/Dashboard';
+import KnowledgeBase from '@/components/KnowledgeBase';
+import LatestUpdates from '@/components/LatestUpdates';
+import WorksInProgress from '@/components/WorksInProgress';
+import Search from '@/components/Search';
 
 const Index = () => {
+  const [currentPage, setCurrentPage] = useState('dashboard');
+
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'dashboard':
+        return <Dashboard onNavigate={setCurrentPage} />;
+      case 'knowledge':
+        return <KnowledgeBase />;
+      case 'updates':
+        return <LatestUpdates />;
+      case 'progress':
+        return <WorksInProgress />;
+      case 'search':
+        return <Search />;
+      default:
+        return <Dashboard onNavigate={setCurrentPage} />;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <AuthGuard>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar currentPage={currentPage} onNavigate={setCurrentPage} />
+        <main>
+          {renderCurrentPage()}
+        </main>
       </div>
-    </div>
+    </AuthGuard>
   );
 };
 
