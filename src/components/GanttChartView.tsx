@@ -6,10 +6,10 @@ import { Calendar, ZoomIn, ZoomOut, Diamond, Users, Clock } from 'lucide-react';
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
 
 interface GanttItem {
-  id: number;
+  id: string; // Changed from number to string
   title: string;
   type: 'milestone' | 'task' | 'subtask';
-  parentId?: number;
+  parent_id?: string; // Changed from parentId to parent_id and from number to string
   startDate: string;
   endDate: string;
   progress: number;
@@ -17,8 +17,10 @@ interface GanttItem {
   priority: 'High' | 'Medium' | 'Low';
   status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
   resources: string[];
-  dependencies: number[];
-  description: string;
+  dependencies: string[]; // Changed from number[] to string[]
+  description?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface GanttChartViewProps {
@@ -36,8 +38,8 @@ const GanttChartView: React.FC<GanttChartViewProps> = ({
 }) => {
   const [timeScale, setTimeScale] = useState<TimeScale>('weeks');
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [selectedItem, setSelectedItem] = useState<number | null>(null);
-  const [draggedItem, setDraggedItem] = useState<number | null>(null);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null); // Changed from number to string
+  const [draggedItem, setDraggedItem] = useState<string | null>(null); // Changed from number to string
   const [showResourceView, setShowResourceView] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -111,7 +113,7 @@ const GanttChartView: React.FC<GanttChartViewProps> = ({
   };
 
   // Handle item drag
-  const handleMouseDown = (e: React.MouseEvent, itemId: number) => {
+  const handleMouseDown = (e: React.MouseEvent, itemId: string) => { // Changed from number to string
     e.preventDefault();
     setDraggedItem(itemId);
     setSelectedItem(itemId);
