@@ -2,40 +2,43 @@
 import React, { useState } from 'react';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Edit, Save, X, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Edit, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface GanttItem {
-  id: number;
+  id: string;
   title: string;
   type: 'milestone' | 'task' | 'subtask';
-  parentId?: number;
-  startDate: string;
-  endDate: string;
-  progress: number;
+  parent_id?: string;
   assignee: string;
   priority: 'High' | 'Medium' | 'Low';
   status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
+  startDate: string;
+  endDate: string;
+  progress: number;
   resources: string[];
-  dependencies: number[];
-  description: string;
+  dependencies: string[];
+  description?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface GanttTableRowProps {
   item: GanttItem;
   isSelected: boolean;
-  onSelect: (id: number, selected: boolean) => void;
+  onSelect: (id: string, selected: boolean) => void;
   onEdit: (item: GanttItem) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
   isManaging: boolean;
   assignees: string[];
-  hasSubItems: boolean;
-  isExpanded: boolean;
-  onToggleExpand: (id: number) => void;
-  level: number;
+  hasSubItems?: boolean;
+  isExpanded?: boolean;
+  onToggleExpand?: (id: string) => void;
+  level?: number;
 }
 
 const GanttTableRow: React.FC<GanttTableRowProps> = ({
@@ -46,152 +49,101 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
   onDelete,
   isManaging,
   assignees,
-  hasSubItems,
-  isExpanded,
+  hasSubItems = false,
+  isExpanded = false,
   onToggleExpand,
-  level
+  level = 0
 }) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState(item);
-
-  const calculateDuration = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
+  const [editingField, setEditingField] = useState<string | null>(null);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Completed': return 'bg-green-100 text-green-800';
-      case 'In Progress': return 'bg-blue-100 text-blue-800';
-      case 'On Hold': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Completed': return 'bg-green-500';
+      case 'In Progress': return 'bg-blue-500';
+      case 'On Hold': return 'bg-yellow-500';
+      default: return 'bg-gray-500';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'High': return 'bg-red-100 text-red-800';
-      case 'Medium': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'High': return 'text-red-600 bg-red-50 border-red-200';
+      case 'Medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'Low': return 'text-green-600 bg-green-50 border-green-200';
+      default: return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   };
 
-  const handleSave = () => {
-    onEdit(editData);
-    setIsEditing(false);
+  const getTypeIcon = (type: string) => {
+    switch (type) {
+      case 'milestone': return '🎯';
+      case 'task': return '📋';
+      case 'subtask': return '📝';
+      default: return '📋';
+    }
   };
 
-  const handleCancel = () => {
-    setEditData(item);
-    setIsEditing(false);
+  const handleFieldUpdate = async (field: string, value: any) => {
+    const updatedItem = { ...item, [field]: value };
+    await onEdit(updatedItem);
+    setEditingField(null);
   };
 
-  const indentStyle = { paddingLeft: `${level * 20}px` };
+  const paddingLeft = level * 20;
 
   return (
-    <TableRow className={`${isSelected ? 'bg-blue-50' : ''} ${level > 0 ? 'bg-gray-50' : ''}`}>
-      <TableCell className="w-8">
-        {isManaging && (
+    <TableRow className={isSelected ? 'bg-blue-50' : ''}>
+      {isManaging && (
+        <TableCell className="w-8">
           <Checkbox
             checked={isSelected}
-            onCheckedChange={(checked) => onSelect(item.id, checked as boolean)}
+            onCheckedChange={(checked) => onSelect(item.id, !!checked)}
           />
-        )}
-      </TableCell>
+        </TableCell>
+      )}
       
-      <TableCell style={indentStyle}>
+      <TableCell style={{ paddingLeft: `${paddingLeft + 16}px` }}>
         <div className="flex items-center space-x-2">
-          {hasSubItems && (
+          {hasSubItems && onToggleExpand && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onToggleExpand(item.id)}
-              className="h-6 w-6 p-0"
+              className="p-1 h-6 w-6"
             >
               {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </Button>
           )}
-          {isEditing ? (
-            <Input
-              value={editData.title}
-              onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-              className="font-medium"
-            />
-          ) : (
-            <span className="font-medium">{item.title}</span>
-          )}
+          <span className="mr-2">{getTypeIcon(item.type)}</span>
+          <span className="font-medium">{item.title}</span>
         </div>
       </TableCell>
 
       <TableCell>
-        <Badge variant="outline" className={
-          item.type === 'milestone' ? 'border-purple-200 text-purple-700' :
-          item.type === 'task' ? 'border-blue-200 text-blue-700' :
-          'border-green-200 text-green-700'
-        }>
+        <Badge variant="outline" className="capitalize">
           {item.type}
         </Badge>
       </TableCell>
 
       <TableCell>
-        {isEditing ? (
-          <Input
-            type="date"
-            value={editData.startDate}
-            onChange={(e) => setEditData({ ...editData, startDate: e.target.value })}
-          />
-        ) : (
-          new Date(item.startDate).toLocaleDateString()
-        )}
+        {format(new Date(item.startDate), 'MMM dd, yyyy')}
       </TableCell>
 
       <TableCell>
-        {isEditing ? (
-          <Input
-            type="date"
-            value={editData.endDate}
-            onChange={(e) => setEditData({ ...editData, endDate: e.target.value })}
-          />
-        ) : (
-          new Date(item.endDate).toLocaleDateString()
-        )}
+        {format(new Date(item.endDate), 'MMM dd, yyyy')}
       </TableCell>
-
-      <TableCell>{calculateDuration(item.startDate, item.endDate)} days</TableCell>
 
       <TableCell>
         <div className="flex items-center space-x-2">
-          <div className="w-16 bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full"
-              style={{ width: `${item.progress}%` }}
-            ></div>
-          </div>
-          {isEditing ? (
-            <Input
-              type="number"
-              min="0"
-              max="100"
-              value={editData.progress}
-              onChange={(e) => setEditData({ ...editData, progress: parseInt(e.target.value) || 0 })}
-              className="w-16"
-            />
-          ) : (
-            <span className="text-sm text-gray-600">{item.progress}%</span>
-          )}
+          <Progress value={item.progress} className="w-16" />
+          <span className="text-sm text-gray-600">{item.progress}%</span>
         </div>
       </TableCell>
 
       <TableCell>
-        {isEditing ? (
-          <Select
-            value={editData.assignee}
-            onValueChange={(value) => setEditData({ ...editData, assignee: value })}
-          >
-            <SelectTrigger>
+        {isManaging && editingField === 'assignee' ? (
+          <Select value={item.assignee} onValueChange={(value) => handleFieldUpdate('assignee', value)}>
+            <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -201,39 +153,25 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
             </SelectContent>
           </Select>
         ) : (
-          item.assignee
+          <span 
+            className={isManaging ? "cursor-pointer hover:bg-gray-100 px-2 py-1 rounded" : ""}
+            onClick={() => isManaging && setEditingField('assignee')}
+          >
+            {item.assignee}
+          </span>
         )}
       </TableCell>
 
       <TableCell>
-        {isEditing ? (
-          <Select
-            value={editData.priority}
-            onValueChange={(value) => setEditData({ ...editData, priority: value as any })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="High">High</SelectItem>
-              <SelectItem value="Medium">Medium</SelectItem>
-              <SelectItem value="Low">Low</SelectItem>
-            </SelectContent>
-          </Select>
-        ) : (
-          <Badge className={getPriorityColor(item.priority)}>
-            {item.priority}
-          </Badge>
-        )}
+        <Badge className={getPriorityColor(item.priority)}>
+          {item.priority}
+        </Badge>
       </TableCell>
 
       <TableCell>
-        {isEditing ? (
-          <Select
-            value={editData.status}
-            onValueChange={(value) => setEditData({ ...editData, status: value as any })}
-          >
-            <SelectTrigger>
+        {isManaging && editingField === 'status' ? (
+          <Select value={item.status} onValueChange={(value) => handleFieldUpdate('status', value)}>
+            <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -244,34 +182,35 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
             </SelectContent>
           </Select>
         ) : (
-          <Badge className={getStatusColor(item.status)}>
-            {item.status}
-          </Badge>
+          <div 
+            className={`flex items-center space-x-2 ${isManaging ? "cursor-pointer hover:bg-gray-100 px-2 py-1 rounded" : ""}`}
+            onClick={() => isManaging && setEditingField('status')}
+          >
+            <div className={`w-2 h-2 rounded-full ${getStatusColor(item.status)}`}></div>
+            <span>{item.status}</span>
+          </div>
         )}
       </TableCell>
 
       {isManaging && (
         <TableCell>
-          <div className="flex space-x-2">
-            {isEditing ? (
-              <>
-                <Button size="sm" onClick={handleSave}>
-                  <Save className="w-4 h-4" />
-                </Button>
-                <Button size="sm" variant="outline" onClick={handleCancel}>
-                  <X className="w-4 h-4" />
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
-                  <Edit className="w-4 h-4" />
-                </Button>
-                <Button size="sm" variant="destructive" onClick={() => onDelete(item.id)}>
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </>
-            )}
+          <div className="flex space-x-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(item)}
+              className="h-8 w-8 p-0"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(item.id)}
+              className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </TableCell>
       )}

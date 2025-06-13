@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trash2, Edit, Users, CheckCircle } from 'lucide-react';
 
 interface GanttBulkActionsProps {
-  selectedItems: number[];
+  selectedItems: string[]; // Changed from number[] to string[]
   onClearSelection: () => void;
   onBulkStatusUpdate: (status: string) => void;
   onBulkAssigneeUpdate: (assignee: string) => void;
