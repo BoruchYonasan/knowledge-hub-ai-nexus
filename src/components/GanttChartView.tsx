@@ -323,18 +323,18 @@ const GanttChartView: React.FC<GanttChartViewProps> = ({
                           
                           {/* Task Bar */}
                           <div
-                            className={`absolute h-6 top-3 rounded cursor-pointer transition-all duration-200 ${
+                            className={`absolute top-3 rounded cursor-pointer transition-all duration-200 ${
                               item.type === 'milestone' 
-                                ? 'bg-purple-400 transform rotate-45' 
+                                ? 'bg-purple-400 transform rotate-45 w-6 h-6' 
                                 : item.type === 'task' 
-                                ? 'bg-blue-400' 
-                                : 'bg-green-400'
+                                ? 'bg-blue-400 h-6' 
+                                : 'bg-green-400 h-6'
                             } ${isSelected ? 'ring-2 ring-blue-500 ring-offset-1' : ''} ${
                               draggedItem === item.id ? 'shadow-lg scale-105' : ''
                             }`}
                             style={{
                               left: `${startOffset}%`,
-                              width: item.type === 'milestone' ? '12px' : `${width}%`,
+                              width: item.type === 'milestone' ? undefined : `${width}%`,
                             }}
                             onMouseDown={(e) => handleMouseDown(e, item.id)}
                             onClick={() => onItemClick(item)}
