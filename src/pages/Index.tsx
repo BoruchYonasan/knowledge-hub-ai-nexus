@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import Navbar from '@/components/Navbar';
@@ -16,7 +15,14 @@ const Index = () => {
   const [isManagingUpdates, setIsManagingUpdates] = useState(false);
   const [isManagingProjects, setIsManagingProjects] = useState(false);
   
-  const { createUpdateFromAI, createProjectFromAI } = useContentManager();
+  const { 
+    createUpdateFromAI, 
+    editUpdateFromAI, 
+    deleteUpdateFromAI,
+    createProjectFromAI, 
+    editProjectFromAI, 
+    deleteProjectFromAI 
+  } = useContentManager();
 
   const renderCurrentPage = () => {
     switch (currentPage) {
@@ -62,7 +68,11 @@ const Index = () => {
           knowledgeBaseContext={getKnowledgeBaseContext()}
           onNavigate={setCurrentPage}
           onCreateUpdate={createUpdateFromAI}
+          onEditUpdate={editUpdateFromAI}
+          onDeleteUpdate={deleteUpdateFromAI}
           onCreateProject={createProjectFromAI}
+          onEditProject={editProjectFromAI}
+          onDeleteProject={deleteProjectFromAI}
           isManagingUpdates={isManagingUpdates}
           isManagingProjects={isManagingProjects}
         />

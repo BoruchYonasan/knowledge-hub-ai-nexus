@@ -234,17 +234,31 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onManagingChange }) => {
     'Operations'
   ];
 
-  // Listen for AI-created updates
+  // Listen for AI-created, edited, and deleted updates
   useEffect(() => {
     const handleAICreatedUpdate = (event: CustomEvent) => {
       const newUpdate = event.detail;
       setUpdates(prev => [newUpdate, ...prev]);
     };
 
+    const handleAIEditedUpdate = (event: CustomEvent) => {
+      const editedUpdate = event.detail;
+      setUpdates(prev => prev.map(u => u.id === editedUpdate.id ? { ...u, ...editedUpdate } : u));
+    };
+
+    const handleAIDeletedUpdate = (event: CustomEvent) => {
+      const { id } = event.detail;
+      setUpdates(prev => prev.filter(u => u.id !== id));
+    };
+
     window.addEventListener('ai-created-update', handleAICreatedUpdate as EventListener);
+    window.addEventListener('ai-edited-update', handleAIEditedUpdate as EventListener);
+    window.addEventListener('ai-deleted-update', handleAIDeletedUpdate as EventListener);
     
     return () => {
       window.removeEventListener('ai-created-update', handleAICreatedUpdate as EventListener);
+      window.removeEventListener('ai-edited-update', handleAIEditedUpdate as EventListener);
+      window.removeEventListener('ai-deleted-update', handleAIDeletedUpdate as EventListener);
     };
   }, []);
 

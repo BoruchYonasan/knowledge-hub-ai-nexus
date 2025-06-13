@@ -222,17 +222,31 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
     });
   };
 
-  // Listen for AI-created projects
+  // Listen for AI-created, edited, and deleted projects
   useEffect(() => {
     const handleAICreatedProject = (event: CustomEvent) => {
       const newProject = event.detail;
       setProjects(prev => [...prev, newProject]);
     };
 
+    const handleAIEditedProject = (event: CustomEvent) => {
+      const editedProject = event.detail;
+      setProjects(prev => prev.map(p => p.id === editedProject.id ? { ...p, ...editedProject } : p));
+    };
+
+    const handleAIDeletedProject = (event: CustomEvent) => {
+      const { id } = event.detail;
+      setProjects(prev => prev.filter(p => p.id !== id));
+    };
+
     window.addEventListener('ai-created-project', handleAICreatedProject as EventListener);
+    window.addEventListener('ai-edited-project', handleAIEditedProject as EventListener);
+    window.addEventListener('ai-deleted-project', handleAIDeletedProject as EventListener);
     
     return () => {
       window.removeEventListener('ai-created-project', handleAICreatedProject as EventListener);
+      window.removeEventListener('ai-edited-project', handleAIEditedProject as EventListener);
+      window.removeEventListener('ai-deleted-project', handleAIDeletedProject as EventListener);
     };
   }, []);
 

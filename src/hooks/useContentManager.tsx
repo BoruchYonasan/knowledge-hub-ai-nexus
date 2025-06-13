@@ -58,6 +58,34 @@ export const useContentManager = () => {
     });
   }, [toast]);
 
+  const editUpdateFromAI = useCallback((updateData: any) => {
+    console.log('AI-edited update:', updateData);
+    
+    // Trigger custom event to edit update
+    window.dispatchEvent(new CustomEvent('ai-edited-update', { 
+      detail: updateData 
+    }));
+
+    toast({
+      title: "Update Edited",
+      description: `"${updateData.title}" has been updated.`
+    });
+  }, [toast]);
+
+  const deleteUpdateFromAI = useCallback((updateId: number, title: string) => {
+    console.log('AI-deleted update:', updateId);
+    
+    // Trigger custom event to delete update
+    window.dispatchEvent(new CustomEvent('ai-deleted-update', { 
+      detail: { id: updateId } 
+    }));
+
+    toast({
+      title: "Update Deleted",
+      description: `"${title}" has been removed from Latest Updates.`
+    });
+  }, [toast]);
+
   const createProjectFromAI = useCallback((projectData: any) => {
     console.log('AI-created project:', projectData);
     
@@ -87,8 +115,40 @@ export const useContentManager = () => {
     });
   }, [toast]);
 
+  const editProjectFromAI = useCallback((projectData: any) => {
+    console.log('AI-edited project:', projectData);
+    
+    // Trigger custom event to edit project
+    window.dispatchEvent(new CustomEvent('ai-edited-project', { 
+      detail: projectData 
+    }));
+
+    toast({
+      title: "Project Edited",
+      description: `"${projectData.title}" has been updated.`
+    });
+  }, [toast]);
+
+  const deleteProjectFromAI = useCallback((projectId: number, title: string) => {
+    console.log('AI-deleted project:', projectId);
+    
+    // Trigger custom event to delete project
+    window.dispatchEvent(new CustomEvent('ai-deleted-project', { 
+      detail: { id: projectId } 
+    }));
+
+    toast({
+      title: "Project Deleted",
+      description: `"${title}" has been removed from Works in Progress.`
+    });
+  }, [toast]);
+
   return {
     createUpdateFromAI,
-    createProjectFromAI
+    editUpdateFromAI,
+    deleteUpdateFromAI,
+    createProjectFromAI,
+    editProjectFromAI,
+    deleteProjectFromAI
   };
 };

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,11 @@ interface AIAssistantProps {
   knowledgeBaseContext: string;
   onNavigate: (page: string) => void;
   onCreateUpdate?: (update: any) => void;
+  onEditUpdate?: (update: any) => void;
+  onDeleteUpdate?: (updateId: number, title: string) => void;
   onCreateProject?: (project: any) => void;
+  onEditProject?: (project: any) => void;
+  onDeleteProject?: (projectId: number, title: string) => void;
   isManagingUpdates?: boolean;
   isManagingProjects?: boolean;
 }
@@ -24,7 +29,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   knowledgeBaseContext, 
   onNavigate, 
   onCreateUpdate,
+  onEditUpdate,
+  onDeleteUpdate,
   onCreateProject,
+  onEditProject,
+  onDeleteProject,
   isManagingUpdates = false,
   isManagingProjects = false
 }) => {
@@ -74,25 +83,45 @@ You can help users by:
       basePrompt += `
 
 CONTENT MANAGEMENT MODE ACTIVE:
-You can now help create content directly! When the user asks you to create content:
+You can now help create, edit, and delete content directly! When the user asks you to manage content:
 
 ${isManagingUpdates ? `
 FOR LATEST UPDATES:
-- Listen for requests to create company updates/announcements
-- Ask for: title, content, department, priority (high/medium/low), and author if not provided
-- When you have enough information, respond with: "CREATING_UPDATE:" followed by a JSON object with the update details
-- JSON format: {"title": "...", "content": "...", "department": "...", "priority": "...", "author": "...", "preview": "first 100 chars of content"}
+- CREATE: Listen for requests to create company updates/announcements
+  - Ask for: title, content, department, priority (high/medium/low), and author if not provided
+  - When you have enough information, respond with: "CREATING_UPDATE:" followed by a JSON object
+  - JSON format: {"title": "...", "content": "...", "department": "...", "priority": "...", "author": "...", "preview": "first 100 chars of content"}
+
+- EDIT: Listen for requests to edit existing updates
+  - Ask which update to edit and what changes to make
+  - When you have the information, respond with: "EDITING_UPDATE:" followed by a JSON object
+  - JSON format: {"id": updateId, "title": "...", "content": "...", "department": "...", "priority": "...", "author": "...", "preview": "first 100 chars of content"}
+
+- DELETE: Listen for requests to delete updates
+  - Ask which update to delete for confirmation
+  - When confirmed, respond with: "DELETING_UPDATE:" followed by a JSON object
+  - JSON format: {"id": updateId, "title": "title for confirmation"}
 ` : ''}
 
 ${isManagingProjects ? `
 FOR WORKS IN PROGRESS:
-- Listen for requests to create new projects
-- Ask for: title, description, lead, team, priority (High/Medium/Low), start date, due date if not provided
-- When you have enough information, respond with: "CREATING_PROJECT:" followed by a JSON object with the project details
-- JSON format: {"title": "...", "description": "...", "lead": "...", "team": "...", "priority": "...", "startDate": "YYYY-MM-DD", "dueDate": "YYYY-MM-DD"}
+- CREATE: Listen for requests to create new projects
+  - Ask for: title, description, lead, team, priority (High/Medium/Low), start date, due date if not provided
+  - When you have enough information, respond with: "CREATING_PROJECT:" followed by a JSON object
+  - JSON format: {"title": "...", "description": "...", "lead": "...", "team": "...", "priority": "...", "startDate": "YYYY-MM-DD", "dueDate": "YYYY-MM-DD"}
+
+- EDIT: Listen for requests to edit existing projects
+  - Ask which project to edit and what changes to make
+  - When you have the information, respond with: "EDITING_PROJECT:" followed by a JSON object
+  - JSON format: {"id": projectId, "title": "...", "description": "...", "lead": "...", "team": "...", "priority": "...", "startDate": "YYYY-MM-DD", "dueDate": "YYYY-MM-DD", "status": "Planning/In Progress/Completed", "progress": number}
+
+- DELETE: Listen for requests to delete projects
+  - Ask which project to delete for confirmation
+  - When confirmed, respond with: "DELETING_PROJECT:" followed by a JSON object
+  - JSON format: {"id": projectId, "title": "title for confirmation"}
 ` : ''}
 
-Always confirm the details before creating content and be helpful in gathering missing information.`;
+Always confirm the details before creating, editing, or deleting content and be helpful in gathering missing information.`;
     }
 
     basePrompt += `
@@ -148,7 +177,7 @@ Be helpful, professional, and concise in your responses.`;
       const data = await response.json();
       let aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I encountered an error. Please try again.';
 
-      // Check if AI is trying to create content
+      // Check if AI is trying to manage content
       if (aiResponse.includes('CREATING_UPDATE:') && onCreateUpdate) {
         const jsonStart = aiResponse.indexOf('CREATING_UPDATE:') + 'CREATING_UPDATE:'.length;
         const jsonStr = aiResponse.substring(jsonStart).trim();
@@ -160,6 +189,28 @@ Be helpful, professional, and concise in your responses.`;
           console.error('Error parsing update JSON:', error);
           aiResponse = 'I had trouble creating that update. Please provide the details again.';
         }
+      } else if (aiResponse.includes('EDITING_UPDATE:') && onEditUpdate) {
+        const jsonStart = aiResponse.indexOf('EDITING_UPDATE:') + 'EDITING_UPDATE:'.length;
+        const jsonStr = aiResponse.substring(jsonStart).trim();
+        try {
+          const updateData = JSON.parse(jsonStr);
+          onEditUpdate(updateData);
+          aiResponse = `✅ I've updated the update "${updateData.title}" for you!`;
+        } catch (error) {
+          console.error('Error parsing update JSON:', error);
+          aiResponse = 'I had trouble editing that update. Please provide the details again.';
+        }
+      } else if (aiResponse.includes('DELETING_UPDATE:') && onDeleteUpdate) {
+        const jsonStart = aiResponse.indexOf('DELETING_UPDATE:') + 'DELETING_UPDATE:'.length;
+        const jsonStr = aiResponse.substring(jsonStart).trim();
+        try {
+          const deleteData = JSON.parse(jsonStr);
+          onDeleteUpdate(deleteData.id, deleteData.title);
+          aiResponse = `✅ I've deleted the update "${deleteData.title}" for you!`;
+        } catch (error) {
+          console.error('Error parsing delete JSON:', error);
+          aiResponse = 'I had trouble deleting that update. Please specify which update to delete.';
+        }
       } else if (aiResponse.includes('CREATING_PROJECT:') && onCreateProject) {
         const jsonStart = aiResponse.indexOf('CREATING_PROJECT:') + 'CREATING_PROJECT:'.length;
         const jsonStr = aiResponse.substring(jsonStart).trim();
@@ -170,6 +221,28 @@ Be helpful, professional, and concise in your responses.`;
         } catch (error) {
           console.error('Error parsing project JSON:', error);
           aiResponse = 'I had trouble creating that project. Please provide the details again.';
+        }
+      } else if (aiResponse.includes('EDITING_PROJECT:') && onEditProject) {
+        const jsonStart = aiResponse.indexOf('EDITING_PROJECT:') + 'EDITING_PROJECT:'.length;
+        const jsonStr = aiResponse.substring(jsonStart).trim();
+        try {
+          const projectData = JSON.parse(jsonStr);
+          onEditProject(projectData);
+          aiResponse = `✅ I've updated the project "${projectData.title}" for you!`;
+        } catch (error) {
+          console.error('Error parsing project JSON:', error);
+          aiResponse = 'I had trouble editing that project. Please provide the details again.';
+        }
+      } else if (aiResponse.includes('DELETING_PROJECT:') && onDeleteProject) {
+        const jsonStart = aiResponse.indexOf('DELETING_PROJECT:') + 'DELETING_PROJECT:'.length;
+        const jsonStr = aiResponse.substring(jsonStart).trim();
+        try {
+          const deleteData = JSON.parse(jsonStr);
+          onDeleteProject(deleteData.id, deleteData.title);
+          aiResponse = `✅ I've deleted the project "${deleteData.title}" for you!`;
+        } catch (error) {
+          console.error('Error parsing delete JSON:', error);
+          aiResponse = 'I had trouble deleting that project. Please specify which project to delete.';
         }
       }
 
@@ -287,7 +360,7 @@ Be helpful, professional, and concise in your responses.`;
                   onKeyPress={handleKeyPress}
                   placeholder={
                     isManagingUpdates || isManagingProjects 
-                      ? "Tell me what content to create..." 
+                      ? "Tell me what content to create, edit, or delete..." 
                       : "Ask me about the knowledge base..."
                   }
                   disabled={isLoading}
