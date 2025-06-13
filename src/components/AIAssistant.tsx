@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -369,7 +370,7 @@ Be helpful, professional, and concise in your responses.`;
       {/* Chat Window */}
       {isOpen && (
         <Card className="fixed bottom-24 right-6 w-96 h-[500px] shadow-xl z-40 flex flex-col">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 flex-shrink-0">
             <CardTitle className="flex items-center space-x-2 text-lg">
               <Bot className="h-5 w-5 text-blue-600" />
               <span>AeroMail AI Assistant</span>
@@ -380,26 +381,26 @@ Be helpful, professional, and concise in your responses.`;
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 flex flex-col p-0">
+          <CardContent className="flex-1 flex flex-col p-0 min-h-0">
             {/* Messages Container */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] rounded-lg p-3 ${
+                    className={`max-w-[85%] rounded-lg p-3 break-words ${
                       message.sender === 'user'
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-100 text-gray-900'
                     }`}
                   >
                     <div className="flex items-start space-x-2">
-                      {message.sender === 'ai' && <Bot className="h-4 w-4 mt-0.5 text-blue-600" />}
-                      {message.sender === 'user' && <User className="h-4 w-4 mt-0.5" />}
-                      <div className="flex-1">
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      {message.sender === 'ai' && <Bot className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />}
+                      {message.sender === 'user' && <User className="h-4 w-4 mt-0.5 flex-shrink-0" />}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere">{message.content}</p>
                         <p className={`text-xs mt-1 ${
                           message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
                         }`}>
@@ -412,7 +413,7 @@ Be helpful, professional, and concise in your responses.`;
               ))}
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 rounded-lg p-3 max-w-[80%]">
+                  <div className="bg-gray-100 rounded-lg p-3 max-w-[85%]">
                     <div className="flex items-center space-x-2">
                       <Bot className="h-4 w-4 text-blue-600" />
                       <div className="flex space-x-1">
@@ -428,7 +429,7 @@ Be helpful, professional, and concise in your responses.`;
             </div>
 
             {/* Input Area */}
-            <div className="border-t p-4">
+            <div className="border-t p-4 flex-shrink-0">
               <div className="flex space-x-2">
                 <Input
                   value={inputMessage}
