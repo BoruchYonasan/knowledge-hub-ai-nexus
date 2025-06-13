@@ -77,8 +77,8 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
       if (filters.status && item.status !== filters.status) return false;
       if (filters.priority && item.priority !== filters.priority) return false;
       if (filters.assignee && item.assignee !== filters.assignee) return false;
-      if (filters.startDate && new Date(item.start_date) < filters.startDate) return false;
-      if (filters.endDate && new Date(item.end_date) > filters.endDate) return false;
+      if (filters.startDate && new Date(item.startDate) < filters.startDate) return false;
+      if (filters.endDate && new Date(item.endDate) > filters.endDate) return false;
       return true;
     });
 
@@ -87,7 +87,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
         let aValue = a[filters.sortBy as keyof typeof a];
         let bValue = b[filters.sortBy as keyof typeof b];
         
-        if (filters.sortBy === 'start_date' || filters.sortBy === 'end_date') {
+        if (filters.sortBy === 'startDate' || filters.sortBy === 'endDate') {
           aValue = new Date(aValue as string).getTime();
           bValue = new Date(bValue as string).getTime();
         }
@@ -111,7 +111,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
   };
 
   const handleBulkStatusUpdate = async (status: string) => {
-    await bulkUpdateStatus(selectedItems, status);
+    await bulkUpdateStatus(selectedItems, status as 'Not Started' | 'In Progress' | 'Completed' | 'On Hold');
     setSelectedItems([]);
   };
 

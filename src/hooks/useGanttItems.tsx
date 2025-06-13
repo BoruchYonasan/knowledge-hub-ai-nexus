@@ -11,8 +11,8 @@ interface GanttItem {
   assignee: string;
   priority: 'High' | 'Medium' | 'Low';
   status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
-  start_date: string;
-  end_date: string;
+  startDate: string; // Changed from start_date to match component expectations
+  endDate: string;   // Changed from end_date to match component expectations
   progress: number;
   resources: string[];
   dependencies: string[];
@@ -34,7 +34,17 @@ export const useGanttItems = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setItems(data || []);
+      
+      // Transform database format to component format
+      const transformedItems = (data || []).map(item => ({
+        ...item,
+        startDate: item.start_date,
+        endDate: item.end_date,
+        resources: item.resources || [],
+        dependencies: item.dependencies || []
+      }));
+      
+      setItems(transformedItems);
     } catch (error) {
       console.error('Error fetching gantt items:', error);
       toast({
@@ -49,19 +59,36 @@ export const useGanttItems = () => {
 
   const createItem = async (item: Omit<GanttItem, 'id' | 'created_at' | 'updated_at'>) => {
     try {
+      // Transform component format to database format
+      const dbItem = {
+        ...item,
+        start_date: item.startDate,
+        end_date: item.endDate
+      };
+      
       const { data, error } = await supabase
         .from('gantt_items')
-        .insert([item])
+        .insert([dbItem])
         .select()
         .single();
 
       if (error) throw error;
-      setItems(prev => [data, ...prev]);
+      
+      // Transform back to component format
+      const transformedItem = {
+        ...data,
+        startDate: data.start_date,
+        endDate: data.end_date,
+        resources: data.resources || [],
+        dependencies: data.dependencies || []
+      };
+      
+      setItems(prev => [transformedItem, ...prev]);
       toast({
         title: "Gantt Item Created",
         description: "Gantt item has been created successfully"
       });
-      return data;
+      return transformedItem;
     } catch (error) {
       console.error('Error creating gantt item:', error);
       toast({
@@ -75,22 +102,39 @@ export const useGanttItems = () => {
 
   const updateItem = async (id: string, updates: Partial<GanttItem>) => {
     try {
+      // Transform component format to database format
+      const dbUpdates = {
+        ...updates,
+        ...(updates.startDate && { start_date: updates.startDate }),
+        ...(updates.endDate && { end_date: updates.endDate })
+      };
+      
       const { data, error } = await supabase
         .from('gantt_items')
-        .update(updates)
+        .update(dbUpdates)
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
+      
+      // Transform back to component format
+      const transformedItem = {
+        ...data,
+        startDate: data.start_date,
+        endDate: data.end_date,
+        resources: data.resources || [],
+        dependencies: data.dependencies || []
+      };
+      
       setItems(prev => prev.map(item => 
-        item.id === id ? data : item
+        item.id === id ? transformedItem : item
       ));
       toast({
         title: "Gantt Item Updated",
         description: "Gantt item has been updated successfully"
       });
-      return data;
+      return transformedItem;
     } catch (error) {
       console.error('Error updating gantt item:', error);
       toast({
@@ -126,7 +170,7 @@ export const useGanttItems = () => {
     }
   };
 
-  const bulkUpdateStatus = async (ids: string[], status: string) => {
+  const bulkUpdateStatus = async (ids: string[], status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold') => {
     try {
       const { error } = await supabase
         .from('gantt_items')
@@ -136,7 +180,7 @@ export const useGanttItems = () => {
       if (error) throw error;
       
       setItems(prev => prev.map(item => 
-        ids.includes(item.id) ? { ...item, status: status as any } : item
+        ids.includes(item.id) ? { ...item, status } : item
       ));
       
       toast({

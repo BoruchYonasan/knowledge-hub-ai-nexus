@@ -1,237 +1,341 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, User, Target, Plus, Edit, Trash2, CheckCircle, Clock } from 'lucide-react';
+import { Users, Calendar, Target, Search, Plus, Edit, Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
-import { useContentManager } from '@/hooks/useContentManager';
 
-const WorksInProgress: React.FC = () => {
-  const { projects, loading, toggleTask } = useProjects();
-  const { createProjectFromAI, editProjectFromAI, deleteProjectFromAI } = useContentManager();
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [newTaskInputs, setNewTaskInputs] = useState<{ [key: string]: string }>({});
+interface WorksInProgressProps {
+  onManagingChange?: (isManaging: boolean) => void;
+}
 
-  // Listen for AI-created projects
-  useEffect(() => {
-    const handleAICreatedProject = (event: CustomEvent) => {
-      const newProject = event.detail;
-      // The hook will automatically refetch
-    };
+const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) => {
+  const { projects, loading, createProject, updateProject, deleteProject } = useProjects();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterPriority, setFilterPriority] = useState('all');
+  const [isManaging, setIsManaging] = useState(false);
+  const { toast } = useToast();
 
-    const handleAIEditedProject = (event: CustomEvent) => {
-      const updatedProject = event.detail;
-      // Handle AI edits
-    };
+  React.useEffect(() => {
+    onManagingChange?.(isManaging);
+  }, [isManaging, onManagingChange]);
 
-    const handleAIDeletedProject = (event: CustomEvent) => {
-      const { id } = event.detail;
-      // Handle AI deletions  
-    };
-
-    window.addEventListener('ai-created-project', handleAICreatedProject as EventListener);
-    window.addEventListener('ai-edited-project', handleAIEditedProject as EventListener);
-    window.addEventListener('ai-deleted-project', handleAIDeletedProject as EventListener);
-
-    return () => {
-      window.removeEventListener('ai-created-project', handleAICreatedProject as EventListener);
-      window.removeEventListener('ai-edited-project', handleAIEditedProject as EventListener);
-      window.removeEventListener('ai-deleted-project', handleAIDeletedProject as EventListener);
-    };
-  }, []);
-
-  const filteredProjects = projects.filter(project => {
-    if (selectedStatus === 'all') return true;
-    return project.status === selectedStatus;
-  });
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'No date set';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesStatus = filterStatus === 'all' || project.status === filterStatus;
+      const matchesPriority = filterPriority === 'all' || project.priority === filterPriority;
+      
+      return matchesSearch && matchesStatus && matchesPriority;
     });
+  }, [projects, searchTerm, filterStatus, filterPriority]);
+
+  const handleEdit = async (id: string, updatedData: any) => {
+    await updateProject(id, updatedData);
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteProject(id);
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Planning': return 'secondary';
-      case 'In Progress': return 'default';
-      case 'Completed': return 'default';
-      default: return 'secondary';
+      case 'Planning': return 'bg-blue-100 text-blue-800';
+      case 'In Progress': return 'bg-yellow-100 text-yellow-800';
+      case 'Completed': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'High': return 'destructive';
-      case 'Medium': return 'default';
-      case 'Low': return 'secondary';
-      default: return 'default';
+      case 'High': return 'bg-red-100 text-red-800';
+      case 'Medium': return 'bg-yellow-100 text-yellow-800';
+      case 'Low': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-  };
-
-  const handleTaskToggle = async (taskId: string, completed: boolean) => {
-    await toggleTask(taskId, completed);
   };
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
           <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-64 bg-gray-200 rounded"></div>
-            ))}
-          </div>
+          <div className="h-96 bg-gray-200 rounded"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Works in Progress</h1>
           <p className="text-gray-600">Track ongoing projects and their progress</p>
         </div>
-        <Button className="flex items-center">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Project
-        </Button>
+        <div className="flex space-x-2">
+          <Button className="flex items-center">
+            <Plus className="w-4 h-4 mr-2" />
+            New Project
+          </Button>
+          <Button
+            variant={isManaging ? 'destructive' : 'default'}
+            onClick={() => setIsManaging(!isManaging)}
+          >
+            {isManaging ? 'Exit Manage Mode' : 'Manage Mode'}
+          </Button>
+        </div>
       </div>
 
-      <Tabs value={selectedStatus} onValueChange={setSelectedStatus}>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Input
+            placeholder="Search projects..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="Planning">Planning</SelectItem>
+            <SelectItem value="In Progress">In Progress</SelectItem>
+            <SelectItem value="Completed">Completed</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterPriority} onValueChange={setFilterPriority}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Priority" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Priorities</SelectItem>
+            <SelectItem value="High">High</SelectItem>
+            <SelectItem value="Medium">Medium</SelectItem>
+            <SelectItem value="Low">Low</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Tabs defaultValue="active" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="all">All Projects</TabsTrigger>
-          <TabsTrigger value="Planning">Planning</TabsTrigger>
-          <TabsTrigger value="In Progress">In Progress</TabsTrigger>
-          <TabsTrigger value="Completed">Completed</TabsTrigger>
+          <TabsTrigger value="active">Active Projects ({filteredProjects.filter(p => p.status !== 'Completed').length})</TabsTrigger>
+          <TabsTrigger value="planning">Planning ({filteredProjects.filter(p => p.status === 'Planning').length})</TabsTrigger>
+          <TabsTrigger value="completed">Completed ({filteredProjects.filter(p => p.status === 'Completed').length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value={selectedStatus} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredProjects.map(project => (
+        <TabsContent value="active" className="space-y-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredProjects.filter(project => project.status !== 'Completed').map((project) => (
               <Card key={project.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <CardTitle className="text-xl mb-2">{project.title}</CardTitle>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Badge variant={getStatusColor(project.status) as any}>
+                      <CardTitle className="text-lg mb-2">{project.title}</CardTitle>
+                      <div className="flex gap-2 mb-3">
+                        <Badge className={getStatusColor(project.status)}>
                           {project.status}
                         </Badge>
-                        <Badge variant={getPriorityColor(project.priority) as any}>
+                        <Badge className={getPriorityColor(project.priority)}>
                           {project.priority}
                         </Badge>
                       </div>
-                      <div className="space-y-2 text-sm text-gray-600">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4" />
-                          <span>Lead: {project.lead}</span>
-                        </div>
-                        {project.team && (
-                          <div className="flex items-center gap-2">
-                            <Target className="w-4 h-4" />
-                            <span>Team: {project.team}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
-                          <span>Due: {formatDate(project.due_date)}</span>
-                        </div>
+                    </div>
+                    {isManaging && (
+                      <div className="flex flex-col space-y-1">
+                        <Button variant="outline" size="sm">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDelete(project.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {project.description && (
-                    <p className="text-gray-700 text-sm">{project.description}</p>
+                    <p className="text-sm text-gray-600">{project.description}</p>
                   )}
                   
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Progress</span>
-                      <span className="text-sm text-gray-600">{project.progress}%</span>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Progress</span>
+                      <span>{project.progress}%</span>
                     </div>
                     <Progress value={project.progress} className="h-2" />
                   </div>
 
-                  {project.tasks && project.tasks.length > 0 && (
-                    <div className="border-t pt-4">
-                      <h4 className="text-sm font-medium text-gray-900 mb-3">Tasks</h4>
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {project.tasks.map(task => (
-                          <div key={task.id} className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleTaskToggle(task.id, !task.completed)}
-                              className={`w-4 h-4 rounded border flex items-center justify-center ${
-                                task.completed 
-                                  ? 'bg-green-500 border-green-500 text-white' 
-                                  : 'border-gray-300 hover:border-gray-400'
-                              }`}
-                            >
-                              {task.completed && <CheckCircle className="w-3 h-3" />}
-                            </button>
-                            <span className={`text-sm flex-1 ${
-                              task.completed ? 'line-through text-gray-500' : 'text-gray-700'
-                            }`}>
-                              {task.name}
-                            </span>
-                            {task.in_progress && !task.completed && (
-                              <Clock className="w-4 h-4 text-blue-500" />
-                            )}
-                          </div>
-                        ))}
-                      </div>
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <Users className="w-4 h-4 mr-1" />
+                      {project.lead}
                     </div>
-                  )}
-
-                  {project.attachments && project.attachments.length > 0 && (
-                    <div className="border-t pt-4">
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">Attachments</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {project.attachments.map((attachment, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {attachment}
-                          </Badge>
-                        ))}
+                    {project.due_date && (
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        {new Date(project.due_date).toLocaleDateString()}
                       </div>
+                    )}
+                  </div>
+
+                  {project.team && (
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Target className="w-4 h-4 mr-1" />
+                      {project.team}
                     </div>
                   )}
                 </CardContent>
               </Card>
             ))}
           </div>
+        </TabsContent>
 
-          {filteredProjects.length === 0 && (
-            <div className="text-center py-12">
-              <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
-              <p className="text-gray-600">
-                {selectedStatus === 'all' 
-                  ? 'No projects have been created yet.'
-                  : `No projects with status "${selectedStatus}".`
-                }
-              </p>
-            </div>
-          )}
+        <TabsContent value="planning" className="space-y-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredProjects.filter(project => project.status === 'Planning').map((project) => (
+              <Card key={project.id} className="hover:shadow-lg transition-shadow border-blue-200">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg mb-2">{project.title}</CardTitle>
+                      <div className="flex gap-2 mb-3">
+                        <Badge className="bg-blue-100 text-blue-800">Planning</Badge>
+                        <Badge className={getPriorityColor(project.priority)}>
+                          {project.priority}
+                        </Badge>
+                      </div>
+                    </div>
+                    {isManaging && (
+                      <div className="flex flex-col space-y-1">
+                        <Button variant="outline" size="sm">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDelete(project.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {project.description && (
+                    <p className="text-sm text-gray-600">{project.description}</p>
+                  )}
+
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <Users className="w-4 h-4 mr-1" />
+                      {project.lead}
+                    </div>
+                    {project.start_date && (
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        {new Date(project.start_date).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+
+                  {project.team && (
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Target className="w-4 h-4 mr-1" />
+                      {project.team}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="completed" className="space-y-4">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredProjects.filter(project => project.status === 'Completed').map((project) => (
+              <Card key={project.id} className="hover:shadow-lg transition-shadow border-green-200">
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg mb-2">{project.title}</CardTitle>
+                      <div className="flex gap-2 mb-3">
+                        <Badge className="bg-green-100 text-green-800">Completed</Badge>
+                        <Badge className={getPriorityColor(project.priority)}>
+                          {project.priority}
+                        </Badge>
+                      </div>
+                    </div>
+                    {isManaging && (
+                      <div className="flex flex-col space-y-1">
+                        <Button variant="outline" size="sm">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleDelete(project.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {project.description && (
+                    <p className="text-sm text-gray-600">{project.description}</p>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Progress</span>
+                      <span>100%</span>
+                    </div>
+                    <Progress value={100} className="h-2" />
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center">
+                      <Users className="w-4 h-4 mr-1" />
+                      {project.lead}
+                    </div>
+                    {project.due_date && (
+                      <div className="flex items-center">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        {new Date(project.due_date).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+
+                  {project.team && (
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Target className="w-4 h-4 mr-1" />
+                      {project.team}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
       </Tabs>
     </div>
