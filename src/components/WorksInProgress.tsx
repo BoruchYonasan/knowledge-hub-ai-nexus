@@ -499,11 +499,11 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="flex flex-wrap gap-6">
         {projects.map((project) => (
           <Card 
             key={project.id} 
-            className="hover:shadow-lg transition-shadow cursor-pointer relative"
+            className="hover:shadow-lg transition-shadow cursor-pointer relative flex-shrink-0 w-full lg:w-[calc(50%-12px)] xl:w-[calc(33.333%-16px)]"
             onClick={() => !isManaging && setSelectedProject(selectedProject === project.id ? null : project.id)}
           >
             {isManaging && (
