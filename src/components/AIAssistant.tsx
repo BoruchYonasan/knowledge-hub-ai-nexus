@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,9 +14,20 @@ interface Message {
 interface AIAssistantProps {
   knowledgeBaseContext: string;
   onNavigate: (page: string) => void;
+  onCreateUpdate?: (update: any) => void;
+  onCreateProject?: (project: any) => void;
+  isManagingUpdates?: boolean;
+  isManagingProjects?: boolean;
 }
 
-const AIAssistant: React.FC<AIAssistantProps> = ({ knowledgeBaseContext, onNavigate }) => {
+const AIAssistant: React.FC<AIAssistantProps> = ({ 
+  knowledgeBaseContext, 
+  onNavigate, 
+  onCreateUpdate,
+  onCreateProject,
+  isManagingUpdates = false,
+  isManagingProjects = false
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -40,7 +50,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ knowledgeBaseContext, onNavig
   }, [messages]);
 
   const generateSystemPrompt = () => {
-    return `You are a helpful AI assistant for a company knowledge base website. Your role is to help employees navigate the knowledge base and find information.
+    let basePrompt = `You are a helpful AI assistant for a company knowledge base website. Your role is to help employees navigate the knowledge base and find information.
 
 Current context: ${knowledgeBaseContext}
 
@@ -57,11 +67,39 @@ You can help users by:
 2. Suggesting which page they should visit for specific needs
 3. Providing guidance on company policies and procedures
 4. Helping new employees understand the knowledge base structure
-5. Answering questions about company information
+5. Answering questions about company information`;
 
-If a user asks about navigating to a specific page, you can mention it but cannot directly navigate for them.
+    // Add content management capabilities when in manage mode
+    if (isManagingUpdates || isManagingProjects) {
+      basePrompt += `
+
+CONTENT MANAGEMENT MODE ACTIVE:
+You can now help create content directly! When the user asks you to create content:
+
+${isManagingUpdates ? `
+FOR LATEST UPDATES:
+- Listen for requests to create company updates/announcements
+- Ask for: title, content, department, priority (high/medium/low), and author if not provided
+- When you have enough information, respond with: "CREATING_UPDATE:" followed by a JSON object with the update details
+- JSON format: {"title": "...", "content": "...", "department": "...", "priority": "...", "author": "...", "preview": "first 100 chars of content"}
+` : ''}
+
+${isManagingProjects ? `
+FOR WORKS IN PROGRESS:
+- Listen for requests to create new projects
+- Ask for: title, description, lead, team, priority (High/Medium/Low), start date, due date if not provided
+- When you have enough information, respond with: "CREATING_PROJECT:" followed by a JSON object with the project details
+- JSON format: {"title": "...", "description": "...", "lead": "...", "team": "...", "priority": "...", "startDate": "YYYY-MM-DD", "dueDate": "YYYY-MM-DD"}
+` : ''}
+
+Always confirm the details before creating content and be helpful in gathering missing information.`;
+    }
+
+    basePrompt += `
 
 Be helpful, professional, and concise in your responses.`;
+
+    return basePrompt;
   };
 
   const sendMessage = async () => {
@@ -108,7 +146,32 @@ Be helpful, professional, and concise in your responses.`;
       }
 
       const data = await response.json();
-      const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I encountered an error. Please try again.';
+      let aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I encountered an error. Please try again.';
+
+      // Check if AI is trying to create content
+      if (aiResponse.includes('CREATING_UPDATE:') && onCreateUpdate) {
+        const jsonStart = aiResponse.indexOf('CREATING_UPDATE:') + 'CREATING_UPDATE:'.length;
+        const jsonStr = aiResponse.substring(jsonStart).trim();
+        try {
+          const updateData = JSON.parse(jsonStr);
+          onCreateUpdate(updateData);
+          aiResponse = `✅ I've created the update "${updateData.title}" for you! It should now appear in the Latest Updates section.`;
+        } catch (error) {
+          console.error('Error parsing update JSON:', error);
+          aiResponse = 'I had trouble creating that update. Please provide the details again.';
+        }
+      } else if (aiResponse.includes('CREATING_PROJECT:') && onCreateProject) {
+        const jsonStart = aiResponse.indexOf('CREATING_PROJECT:') + 'CREATING_PROJECT:'.length;
+        const jsonStr = aiResponse.substring(jsonStart).trim();
+        try {
+          const projectData = JSON.parse(jsonStr);
+          onCreateProject(projectData);
+          aiResponse = `✅ I've created the project "${projectData.title}" for you! It should now appear in the Works in Progress section.`;
+        } catch (error) {
+          console.error('Error parsing project JSON:', error);
+          aiResponse = 'I had trouble creating that project. Please provide the details again.';
+        }
+      }
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -144,7 +207,11 @@ Be helpful, professional, and concise in your responses.`;
       {/* Chat Toggle Button */}
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg z-50"
+        className={`fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 ${
+          isManagingUpdates || isManagingProjects 
+            ? 'bg-green-600 hover:bg-green-700' 
+            : 'bg-blue-600 hover:bg-blue-700'
+        }`}
         size="icon"
       >
         {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
@@ -157,6 +224,11 @@ Be helpful, professional, and concise in your responses.`;
             <CardTitle className="flex items-center space-x-2 text-lg">
               <Bot className="h-5 w-5 text-blue-600" />
               <span>Knowledge Base Assistant</span>
+              {(isManagingUpdates || isManagingProjects) && (
+                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                  Content Manager
+                </span>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col p-0">
@@ -213,7 +285,11 @@ Be helpful, professional, and concise in your responses.`;
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Ask me about the knowledge base..."
+                  placeholder={
+                    isManagingUpdates || isManagingProjects 
+                      ? "Tell me what content to create..." 
+                      : "Ask me about the knowledge base..."
+                  }
                   disabled={isLoading}
                   className="flex-1"
                 />

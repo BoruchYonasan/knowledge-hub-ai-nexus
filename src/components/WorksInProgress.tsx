@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,7 +29,11 @@ interface Project {
   attachments: string[];
 }
 
-const WorksInProgress: React.FC = () => {
+interface WorksInProgressProps {
+  onManagingChange?: (isManaging: boolean) => void;
+}
+
+const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) => {
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
   const [isManaging, setIsManaging] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -218,12 +222,38 @@ const WorksInProgress: React.FC = () => {
     });
   };
 
+  // Listen for AI-created projects
+  useEffect(() => {
+    const handleAICreatedProject = (event: CustomEvent) => {
+      const newProject = event.detail;
+      setProjects(prev => [...prev, newProject]);
+    };
+
+    window.addEventListener('ai-created-project', handleAICreatedProject as EventListener);
+    
+    return () => {
+      window.removeEventListener('ai-created-project', handleAICreatedProject as EventListener);
+    };
+  }, []);
+
+  // Notify parent about manage mode changes
+  useEffect(() => {
+    onManagingChange?.(isManaging);
+  }, [isManaging, onManagingChange]);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Works in Progress</h1>
-          <p className="text-gray-600">Track ongoing projects and their current status.</p>
+          <p className="text-gray-600">
+            Track ongoing projects and their current status.
+            {isManaging && (
+              <span className="block text-sm text-green-600 mt-1">
+                💬 Manage mode active - You can ask the AI assistant to create projects for you!
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex space-x-2">
           <Button

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,11 @@ interface Update {
   attachments: string[];
 }
 
-const LatestUpdates: React.FC = () => {
+interface LatestUpdatesProps {
+  onManagingChange?: (isManaging: boolean) => void;
+}
+
+const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onManagingChange }) => {
   const [expandedUpdate, setExpandedUpdate] = useState<number | null>(null);
   const [isManaging, setIsManaging] = useState(false);
   const [editingUpdate, setEditingUpdate] = useState<Update | null>(null);
@@ -230,12 +234,38 @@ const LatestUpdates: React.FC = () => {
     'Operations'
   ];
 
+  // Listen for AI-created updates
+  useEffect(() => {
+    const handleAICreatedUpdate = (event: CustomEvent) => {
+      const newUpdate = event.detail;
+      setUpdates(prev => [newUpdate, ...prev]);
+    };
+
+    window.addEventListener('ai-created-update', handleAICreatedUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('ai-created-update', handleAICreatedUpdate as EventListener);
+    };
+  }, []);
+
+  // Notify parent about manage mode changes
+  useEffect(() => {
+    onManagingChange?.(isManaging);
+  }, [isManaging, onManagingChange]);
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Latest Updates</h1>
-          <p className="text-gray-600">Stay informed with the latest company news and announcements.</p>
+          <p className="text-gray-600">
+            Stay informed with the latest company news and announcements.
+            {isManaging && (
+              <span className="block text-sm text-green-600 mt-1">
+                💬 Manage mode active - You can ask the AI assistant to create updates for you!
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex space-x-2">
           <Button
