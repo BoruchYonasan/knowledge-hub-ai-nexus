@@ -499,160 +499,161 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-6">
+      <div className="space-y-6">
         {projects.map((project) => (
-          <Card 
-            key={project.id} 
-            className="hover:shadow-lg transition-shadow cursor-pointer relative flex-shrink-0 w-full lg:w-[calc(50%-12px)] xl:w-[calc(33.333%-16px)]"
-            onClick={() => !isManaging && setSelectedProject(selectedProject === project.id ? null : project.id)}
-          >
-            {isManaging && (
-              <div className="absolute top-2 right-2 flex space-x-1 z-10">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleEditProject(project);
-                  }}
-                >
-                  <Edit className="h-3 w-3" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteProject(project.id);
-                  }}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            )}
-            <CardHeader>
-              <div className="flex items-start justify-between mb-2">
-                <CardTitle className="text-lg font-semibold text-gray-900 leading-tight">
-                  {project.title}
-                </CardTitle>
-                <div className="flex space-x-1 ml-2">
-                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(project.status)}`}>
-                    {project.status}
+          <div key={project.id} className="w-full">
+            <Card 
+              className="hover:shadow-lg transition-shadow cursor-pointer relative w-full"
+              onClick={() => !isManaging && setSelectedProject(selectedProject === project.id ? null : project.id)}
+            >
+              {isManaging && (
+                <div className="absolute top-2 right-2 flex space-x-1 z-10">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditProject(project);
+                    }}
+                  >
+                    <Edit className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteProject(project.id);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+              <CardHeader>
+                <div className="flex items-start justify-between mb-2">
+                  <CardTitle className="text-lg font-semibold text-gray-900 leading-tight">
+                    {project.title}
+                  </CardTitle>
+                  <div className="flex space-x-1 ml-2">
+                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(project.status)}`}>
+                      {project.status}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(project.priority)}`}>
+                    {project.priority}
                   </span>
+                  <span className="text-sm text-gray-600">{project.team}</span>
                 </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(project.priority)}`}>
-                  {project.priority}
-                </span>
-                <span className="text-sm text-gray-600">{project.team}</span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">Lead: {project.lead}</p>
-                  <p className="text-sm text-gray-700">{project.description}</p>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-sm text-gray-600 mb-1">
-                    <span>Progress</span>
-                    <span>{project.progress}%</span>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-2">Lead: {project.lead}</p>
+                    <p className="text-sm text-gray-700">{project.description}</p>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full ${
-                        project.status === 'Completed' ? 'bg-green-600' :
-                        project.status === 'In Progress' ? 'bg-blue-600' :
-                        'bg-yellow-600'
-                      }`}
-                      style={{ width: `${project.progress}%` }}
-                    ></div>
-                  </div>
-                </div>
 
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>Start: {new Date(project.startDate).toLocaleDateString()}</span>
-                  <span>Due: {new Date(project.dueDate).toLocaleDateString()}</span>
-                </div>
-
-                {selectedProject === project.id && !isManaging && (
-                  <div className="border-t pt-4 mt-4 space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900 mb-2">Tasks:</h4>
-                      <div className="space-y-2">
-                        {project.tasks.map((task, index) => (
-                          <div key={index} className="flex items-center text-sm">
-                            {task.completed ? (
-                              <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center mr-2">
-                                <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              </div>
-                            ) : task.inProgress ? (
-                              <div className="w-4 h-4 bg-blue-500 rounded-full mr-2"></div>
-                            ) : (
-                              <div className="w-4 h-4 bg-gray-300 rounded-full mr-2"></div>
-                            )}
-                            <span className={task.completed ? 'line-through text-gray-500' : 'text-gray-700'}>
-                              {task.name}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                  <div>
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                      <span>Progress</span>
+                      <span>{project.progress}%</span>
                     </div>
-
-                    {project.knowledgeBaseLinks.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
-                          <Link className="w-4 h-4 mr-2" />
-                          Related Knowledge Base:
-                        </h4>
-                        <div className="space-y-2">
-                          {project.knowledgeBaseLinks.map((link) => (
-                            <div key={link.id} className="flex items-center justify-between p-2 bg-blue-50 rounded border">
-                              <div className="flex items-center">
-                                <span className={`px-2 py-1 text-xs rounded mr-2 ${
-                                  link.type === 'document' ? 'bg-blue-100 text-blue-800' :
-                                  link.type === 'guide' ? 'bg-green-100 text-green-800' :
-                                  link.type === 'policy' ? 'bg-purple-100 text-purple-800' :
-                                  link.type === 'image' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-gray-100 text-gray-800'
-                                }`}>
-                                  {link.type}
-                                </span>
-                                <span className="text-sm font-medium">{link.title}</span>
-                              </div>
-                              {link.url && (
-                                <ExternalLink className="w-4 h-4 text-blue-600 cursor-pointer" />
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {project.attachments.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900 mb-2">Attachments:</h4>
-                        <div className="space-y-1">
-                          {project.attachments.map((attachment, index) => (
-                            <div key={index} className="flex items-center text-sm text-blue-600 hover:text-blue-800">
-                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                              </svg>
-                              <span className="cursor-pointer hover:underline">{attachment}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${
+                          project.status === 'Completed' ? 'bg-green-600' :
+                          project.status === 'In Progress' ? 'bg-blue-600' :
+                          'bg-yellow-600'
+                        }`}
+                        style={{ width: `${project.progress}%` }}
+                      ></div>
+                    </div>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Start: {new Date(project.startDate).toLocaleDateString()}</span>
+                    <span>Due: {new Date(project.dueDate).toLocaleDateString()}</span>
+                  </div>
+
+                  {selectedProject === project.id && !isManaging && (
+                    <div className="border-t pt-4 mt-4 space-y-4">
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900 mb-2">Tasks:</h4>
+                        <div className="space-y-2">
+                          {project.tasks.map((task, index) => (
+                            <div key={index} className="flex items-center text-sm">
+                              {task.completed ? (
+                                <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center mr-2">
+                                  <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                              ) : task.inProgress ? (
+                                <div className="w-4 h-4 bg-blue-500 rounded-full mr-2"></div>
+                              ) : (
+                                <div className="w-4 h-4 bg-gray-300 rounded-full mr-2"></div>
+                              )}
+                              <span className={task.completed ? 'line-through text-gray-500' : 'text-gray-700'}>
+                                {task.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {project.knowledgeBaseLinks.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
+                            <Link className="w-4 h-4 mr-2" />
+                            Related Knowledge Base:
+                          </h4>
+                          <div className="space-y-2">
+                            {project.knowledgeBaseLinks.map((link) => (
+                              <div key={link.id} className="flex items-center justify-between p-2 bg-blue-50 rounded border">
+                                <div className="flex items-center">
+                                  <span className={`px-2 py-1 text-xs rounded mr-2 ${
+                                    link.type === 'document' ? 'bg-blue-100 text-blue-800' :
+                                    link.type === 'guide' ? 'bg-green-100 text-green-800' :
+                                    link.type === 'policy' ? 'bg-purple-100 text-purple-800' :
+                                    link.type === 'image' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {link.type}
+                                  </span>
+                                  <span className="text-sm font-medium">{link.title}</span>
+                                </div>
+                                {link.url && (
+                                  <ExternalLink className="w-4 h-4 text-blue-600 cursor-pointer" />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {project.attachments.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-900 mb-2">Attachments:</h4>
+                          <div className="space-y-1">
+                            {project.attachments.map((attachment, index) => (
+                              <div key={index} className="flex items-center text-sm text-blue-600 hover:text-blue-800">
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                </svg>
+                                <span className="cursor-pointer hover:underline">{attachment}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         ))}
       </div>
 
