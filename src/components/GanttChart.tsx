@@ -11,6 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import GanttFilters from './GanttFilters';
 import GanttBulkActions from './GanttBulkActions';
 import GanttTableRow from './GanttTableRow';
+import GanttChartView from './GanttChartView';
+import GanttItemDialog from './GanttItemDialog';
 
 interface GanttItem {
   id: number;
@@ -378,6 +380,37 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     );
   };
 
+  const [selectedItem, setSelectedItem] = useState<GanttItem | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleItemClick = (item: GanttItem) => {
+    setSelectedItem(item);
+    setIsDialogOpen(true);
+  };
+
+  const handleCreateNew = () => {
+    setSelectedItem(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveItem = (item: GanttItem) => {
+    if (selectedItem) {
+      // Update existing item
+      setItems(prev => prev.map(i => i.id === item.id ? item : i));
+      toast({
+        title: "Item Updated",
+        description: `"${item.title}" has been updated.`
+      });
+    } else {
+      // Create new item
+      setItems(prev => [...prev, item]);
+      toast({
+        title: "Item Created",
+        description: `"${item.title}" has been created.`
+      });
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -386,6 +419,10 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
           <p className="text-gray-600">Manage project timelines, milestones, and tasks</p>
         </div>
         <div className="flex space-x-2">
+          <Button onClick={handleCreateNew} className="flex items-center">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Item
+          </Button>
           <Button
             variant={viewMode === 'table' ? 'default' : 'outline'}
             onClick={() => setViewMode('table')}
@@ -478,13 +515,26 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>Gantt Chart Visualization</CardTitle>
+            <CardTitle>Interactive Gantt Chart</CardTitle>
           </CardHeader>
           <CardContent>
-            {renderGanttChart()}
+            <GanttChartView
+              items={filteredAndSortedItems}
+              onItemEdit={handleEditItem}
+              onItemClick={handleItemClick}
+            />
           </CardContent>
         </Card>
       )}
+
+      <GanttItemDialog
+        item={selectedItem}
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSave={handleSaveItem}
+        allItems={items}
+        assignees={assignees}
+      />
     </div>
   );
 };
