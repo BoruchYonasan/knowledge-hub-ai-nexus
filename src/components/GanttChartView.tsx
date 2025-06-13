@@ -1,27 +1,12 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, ZoomIn, ZoomOut, Diamond, Users, Clock } from 'lucide-react';
 import { format, addDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from 'date-fns';
+import { useGanttItems } from '@/hooks/useGanttItems';
 
-interface GanttItem {
-  id: string; // Changed from number to string
-  title: string;
-  type: 'milestone' | 'task' | 'subtask';
-  parent_id?: string; // Changed from parentId to parent_id and from number to string
-  startDate: string;
-  endDate: string;
-  progress: number;
-  assignee: string;
-  priority: 'High' | 'Medium' | 'Low';
-  status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
-  resources: string[];
-  dependencies: string[]; // Changed from number[] to string[]
-  description?: string;
-  created_at: string;
-  updated_at: string;
-}
+// Use the GanttItem type from the hook to ensure consistency
+type GanttItem = ReturnType<typeof useGanttItems>['items'][0];
 
 interface GanttChartViewProps {
   items: GanttItem[];
@@ -38,8 +23,8 @@ const GanttChartView: React.FC<GanttChartViewProps> = ({
 }) => {
   const [timeScale, setTimeScale] = useState<TimeScale>('weeks');
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [selectedItem, setSelectedItem] = useState<string | null>(null); // Changed from number to string
-  const [draggedItem, setDraggedItem] = useState<string | null>(null); // Changed from number to string
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [showResourceView, setShowResourceView] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
@@ -113,7 +98,7 @@ const GanttChartView: React.FC<GanttChartViewProps> = ({
   };
 
   // Handle item drag
-  const handleMouseDown = (e: React.MouseEvent, itemId: string) => { // Changed from number to string
+  const handleMouseDown = (e: React.MouseEvent, itemId: string) => {
     e.preventDefault();
     setDraggedItem(itemId);
     setSelectedItem(itemId);
