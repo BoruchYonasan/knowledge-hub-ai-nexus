@@ -1,11 +1,42 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+interface Task {
+  name: string;
+  completed: boolean;
+  inProgress?: boolean;
+}
+
+interface Project {
+  id: number;
+  title: string;
+  lead: string;
+  team: string;
+  status: 'Planning' | 'In Progress' | 'Completed';
+  priority: 'High' | 'Medium' | 'Low';
+  progress: number;
+  startDate: string;
+  dueDate: string;
+  description: string;
+  tasks: Task[];
+  attachments: string[];
+}
 
 const WorksInProgress: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
+  const [isManaging, setIsManaging] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
 
-  const projects = [
+  const [projects, setProjects] = useState<Project[]>([
     {
       id: 1,
       title: 'Customer Portal Redesign',
@@ -106,7 +137,7 @@ const WorksInProgress: React.FC = () => {
       ],
       attachments: ['Training-Requirements.docx'],
     },
-  ];
+  ]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -134,20 +165,225 @@ const WorksInProgress: React.FC = () => {
     }
   };
 
+  const handleCreateProject = () => {
+    setEditingProject({
+      id: Date.now(),
+      title: '',
+      lead: '',
+      team: '',
+      status: 'Planning',
+      priority: 'Medium',
+      progress: 0,
+      startDate: '',
+      dueDate: '',
+      description: '',
+      tasks: [],
+      attachments: []
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleEditProject = (project: Project) => {
+    setEditingProject({ ...project });
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveProject = () => {
+    if (!editingProject) return;
+
+    if (projects.find(p => p.id === editingProject.id)) {
+      setProjects(prev => prev.map(p => p.id === editingProject.id ? editingProject : p));
+      toast({
+        title: "Project updated",
+        description: `${editingProject.title} has been updated successfully.`
+      });
+    } else {
+      setProjects(prev => [...prev, editingProject]);
+      toast({
+        title: "Project created",
+        description: `${editingProject.title} has been added to works in progress.`
+      });
+    }
+
+    setEditingProject(null);
+    setIsDialogOpen(false);
+  };
+
+  const handleDeleteProject = (projectId: number) => {
+    const project = projects.find(p => p.id === projectId);
+    setProjects(prev => prev.filter(p => p.id !== projectId));
+    toast({
+      title: "Project deleted",
+      description: `${project?.title} has been removed from works in progress.`
+    });
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Works in Progress</h1>
-        <p className="text-gray-600">Track ongoing projects and their current status.</p>
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Works in Progress</h1>
+          <p className="text-gray-600">Track ongoing projects and their current status.</p>
+        </div>
+        <div className="flex space-x-2">
+          <Button
+            variant={isManaging ? "default" : "outline"}
+            onClick={() => setIsManaging(!isManaging)}
+          >
+            {isManaging ? 'View Mode' : 'Manage'}
+          </Button>
+          {isManaging && (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={handleCreateProject}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Project
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingProject?.id && projects.find(p => p.id === editingProject.id) ? 'Edit Project' : 'Create New Project'}
+                  </DialogTitle>
+                </DialogHeader>
+                {editingProject && (
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Title *</label>
+                        <Input
+                          value={editingProject.title}
+                          onChange={(e) => setEditingProject(prev => prev ? { ...prev, title: e.target.value } : null)}
+                          placeholder="Project title..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Lead *</label>
+                        <Input
+                          value={editingProject.lead}
+                          onChange={(e) => setEditingProject(prev => prev ? { ...prev, lead: e.target.value } : null)}
+                          placeholder="Project lead..."
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Team</label>
+                        <Input
+                          value={editingProject.team}
+                          onChange={(e) => setEditingProject(prev => prev ? { ...prev, team: e.target.value } : null)}
+                          placeholder="Team name..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Priority</label>
+                        <Select
+                          value={editingProject.priority}
+                          onValueChange={(value: 'High' | 'Medium' | 'Low') => 
+                            setEditingProject(prev => prev ? { ...prev, priority: value } : null)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="High">High</SelectItem>
+                            <SelectItem value="Medium">Medium</SelectItem>
+                            <SelectItem value="Low">Low</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Status</label>
+                        <Select
+                          value={editingProject.status}
+                          onValueChange={(value: 'Planning' | 'In Progress' | 'Completed') => 
+                            setEditingProject(prev => prev ? { ...prev, status: value } : null)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Planning">Planning</SelectItem>
+                            <SelectItem value="In Progress">In Progress</SelectItem>
+                            <SelectItem value="Completed">Completed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Start Date</label>
+                        <Input
+                          type="date"
+                          value={editingProject.startDate}
+                          onChange={(e) => setEditingProject(prev => prev ? { ...prev, startDate: e.target.value } : null)}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Due Date</label>
+                        <Input
+                          type="date"
+                          value={editingProject.dueDate}
+                          onChange={(e) => setEditingProject(prev => prev ? { ...prev, dueDate: e.target.value } : null)}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Description</label>
+                      <Textarea
+                        value={editingProject.description}
+                        onChange={(e) => setEditingProject(prev => prev ? { ...prev, description: e.target.value } : null)}
+                        placeholder="Project description..."
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleSaveProject}>
+                        {editingProject.id && projects.find(p => p.id === editingProject.id) ? 'Update' : 'Create'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {projects.map((project) => (
           <Card 
             key={project.id} 
-            className="hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => setSelectedProject(selectedProject === project.id ? null : project.id)}
+            className="hover:shadow-lg transition-shadow cursor-pointer relative"
+            onClick={() => !isManaging && setSelectedProject(selectedProject === project.id ? null : project.id)}
           >
+            {isManaging && (
+              <div className="absolute top-2 right-2 flex space-x-1 z-10">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditProject(project);
+                  }}
+                >
+                  <Edit className="h-3 w-3" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteProject(project.id);
+                  }}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
             <CardHeader>
               <div className="flex items-start justify-between mb-2">
                 <CardTitle className="text-lg font-semibold text-gray-900 leading-tight">
@@ -195,7 +431,7 @@ const WorksInProgress: React.FC = () => {
                   <span>Due: {new Date(project.dueDate).toLocaleDateString()}</span>
                 </div>
 
-                {selectedProject === project.id && (
+                {selectedProject === project.id && !isManaging && (
                   <div className="border-t pt-4 mt-4 space-y-4">
                     <div>
                       <h4 className="text-sm font-medium text-gray-900 mb-2">Tasks:</h4>

@@ -1,12 +1,33 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+interface Update {
+  id: number;
+  title: string;
+  date: string;
+  author: string;
+  department: string;
+  priority: 'high' | 'medium' | 'low';
+  preview: string;
+  content: string;
+  attachments: string[];
+}
 
 const LatestUpdates: React.FC = () => {
   const [expandedUpdate, setExpandedUpdate] = useState<number | null>(null);
+  const [isManaging, setIsManaging] = useState(false);
+  const [editingUpdate, setEditingUpdate] = useState<Update | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { toast } = useToast();
 
-  const updates = [
+  const [updates, setUpdates] = useState<Update[]>([
     {
       id: 1,
       title: 'Q4 Company All-Hands Meeting',
@@ -129,7 +150,7 @@ const LatestUpdates: React.FC = () => {
       `,
       attachments: [],
     },
-  ];
+  ]);
 
   const toggleExpand = (updateId: number) => {
     setExpandedUpdate(expandedUpdate === updateId ? null : updateId);
@@ -148,16 +169,213 @@ const LatestUpdates: React.FC = () => {
     }
   };
 
+  const handleCreateUpdate = () => {
+    setEditingUpdate({
+      id: Date.now(),
+      title: '',
+      date: new Date().toISOString().split('T')[0],
+      author: '',
+      department: '',
+      priority: 'medium',
+      preview: '',
+      content: '',
+      attachments: []
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleEditUpdate = (update: Update) => {
+    setEditingUpdate({ ...update });
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveUpdate = () => {
+    if (!editingUpdate) return;
+
+    if (updates.find(u => u.id === editingUpdate.id)) {
+      setUpdates(prev => prev.map(u => u.id === editingUpdate.id ? editingUpdate : u));
+      toast({
+        title: "Update saved",
+        description: `${editingUpdate.title} has been updated successfully.`
+      });
+    } else {
+      setUpdates(prev => [editingUpdate, ...prev]);
+      toast({
+        title: "Update created",
+        description: `${editingUpdate.title} has been added to latest updates.`
+      });
+    }
+
+    setEditingUpdate(null);
+    setIsDialogOpen(false);
+  };
+
+  const handleDeleteUpdate = (updateId: number) => {
+    const update = updates.find(u => u.id === updateId);
+    setUpdates(prev => prev.filter(u => u.id !== updateId));
+    toast({
+      title: "Update deleted",
+      description: `${update?.title} has been removed.`
+    });
+  };
+
+  const departments = [
+    'Leadership',
+    'HR',
+    'IT Security',
+    'Facilities',
+    'Engineering',
+    'Sales & Marketing',
+    'Finance',
+    'Operations'
+  ];
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Latest Updates</h1>
-        <p className="text-gray-600">Stay informed with the latest company news and announcements.</p>
+      <div className="mb-8 flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Latest Updates</h1>
+          <p className="text-gray-600">Stay informed with the latest company news and announcements.</p>
+        </div>
+        <div className="flex space-x-2">
+          <Button
+            variant={isManaging ? "default" : "outline"}
+            onClick={() => setIsManaging(!isManaging)}
+          >
+            {isManaging ? 'View Mode' : 'Manage'}
+          </Button>
+          {isManaging && (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={handleCreateUpdate}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Update
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingUpdate?.id && updates.find(u => u.id === editingUpdate.id) ? 'Edit Update' : 'Create New Update'}
+                  </DialogTitle>
+                </DialogHeader>
+                {editingUpdate && (
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Title *</label>
+                        <Input
+                          value={editingUpdate.title}
+                          onChange={(e) => setEditingUpdate(prev => prev ? { ...prev, title: e.target.value } : null)}
+                          placeholder="Update title..."
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Author *</label>
+                        <Input
+                          value={editingUpdate.author}
+                          onChange={(e) => setEditingUpdate(prev => prev ? { ...prev, author: e.target.value } : null)}
+                          placeholder="Your name..."
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Department</label>
+                        <Select
+                          value={editingUpdate.department}
+                          onValueChange={(value) => setEditingUpdate(prev => prev ? { ...prev, department: value } : null)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select department..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {departments.map(dept => (
+                              <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Priority</label>
+                        <Select
+                          value={editingUpdate.priority}
+                          onValueChange={(value: 'high' | 'medium' | 'low') => 
+                            setEditingUpdate(prev => prev ? { ...prev, priority: value } : null)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="low">Low</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Date</label>
+                        <Input
+                          type="date"
+                          value={editingUpdate.date}
+                          onChange={(e) => setEditingUpdate(prev => prev ? { ...prev, date: e.target.value } : null)}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Preview *</label>
+                      <Textarea
+                        value={editingUpdate.preview}
+                        onChange={(e) => setEditingUpdate(prev => prev ? { ...prev, preview: e.target.value } : null)}
+                        placeholder="Brief preview of the update..."
+                        rows={2}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Full Content *</label>
+                      <Textarea
+                        value={editingUpdate.content}
+                        onChange={(e) => setEditingUpdate(prev => prev ? { ...prev, content: e.target.value } : null)}
+                        placeholder="Full update content..."
+                        rows={6}
+                      />
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleSaveUpdate}>
+                        {editingUpdate.id && updates.find(u => u.id === editingUpdate.id) ? 'Update' : 'Create'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
       <div className="space-y-6">
         {updates.map((update) => (
-          <Card key={update.id} className="hover:shadow-lg transition-shadow">
+          <Card key={update.id} className="hover:shadow-lg transition-shadow relative">
+            {isManaging && (
+              <div className="absolute top-4 right-4 flex space-x-1 z-10">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleEditUpdate(update)}
+                >
+                  <Edit className="h-3 w-3" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleDeleteUpdate(update.id)}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              </div>
+            )}
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
