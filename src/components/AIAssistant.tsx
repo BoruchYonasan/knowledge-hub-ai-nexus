@@ -1,9 +1,8 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, User, Bell } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -21,8 +20,15 @@ interface AIAssistantProps {
   onCreateProject?: (project: any) => void;
   onEditProject?: (project: any) => void;
   onDeleteProject?: (projectId: number, title: string) => void;
+  onCreateGanttItem?: (item: any) => void;
+  onEditGanttItem?: (item: any) => void;
+  onDeleteGanttItem?: (itemId: number, title: string) => void;
   isManagingUpdates?: boolean;
   isManagingProjects?: boolean;
+  isManagingGantt?: boolean;
+  onNewMessage?: () => void;
+  hasNewMessage?: boolean;
+  onMessageRead?: () => void;
 }
 
 const AIAssistant: React.FC<AIAssistantProps> = ({ 
@@ -34,14 +40,21 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   onCreateProject,
   onEditProject,
   onDeleteProject,
+  onCreateGanttItem,
+  onEditGanttItem,
+  onDeleteGanttItem,
   isManagingUpdates = false,
-  isManagingProjects = false
+  isManagingProjects = false,
+  isManagingGantt = false,
+  onNewMessage,
+  hasNewMessage = false,
+  onMessageRead
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Hello! I'm your company knowledge base assistant. I can help you navigate our knowledge base, find information about company policies, procedures, and answer questions about our organization. What would you like to know?",
+      content: "Hello! I'm your AeroMail knowledge base assistant. I can help you navigate our knowledge base, find information about company policies, procedures, and answer questions about our organization. I can also help manage content when you're in manage mode. What would you like to know?",
       sender: 'ai',
       timestamp: new Date()
     }
@@ -58,8 +71,14 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    if (isOpen && hasNewMessage && onMessageRead) {
+      onMessageRead();
+    }
+  }, [isOpen, hasNewMessage, onMessageRead]);
+
   const generateSystemPrompt = () => {
-    let basePrompt = `You are a helpful AI assistant for a company knowledge base website. Your role is to help employees navigate the knowledge base and find information.
+    let basePrompt = `You are a helpful AI assistant for AeroMail's company knowledge base website. Your role is to help employees navigate the knowledge base and find information.
 
 Current context: ${knowledgeBaseContext}
 
@@ -68,6 +87,7 @@ Available pages and features:
 - Knowledge Base: Company policies, procedures, guides, and documentation
 - Latest Updates: Recent company announcements and news
 - Works in Progress: Current projects and their status
+- Gantt Chart: Project timelines, milestones, tasks, and resource management
 - Search: Find specific information across all content
 - Content Manager: Upload and organize knowledge base content
 
@@ -79,7 +99,7 @@ You can help users by:
 5. Answering questions about company information`;
 
     // Add content management capabilities when in manage mode
-    if (isManagingUpdates || isManagingProjects) {
+    if (isManagingUpdates || isManagingProjects || isManagingGantt) {
       basePrompt += `
 
 CONTENT MANAGEMENT MODE ACTIVE:
@@ -93,14 +113,10 @@ FOR LATEST UPDATES:
   - JSON format: {"title": "...", "content": "...", "department": "...", "priority": "...", "author": "...", "preview": "first 100 chars of content"}
 
 - EDIT: Listen for requests to edit existing updates
-  - Ask which update to edit and what changes to make
   - When you have the information, respond with: "EDITING_UPDATE:" followed by a JSON object
-  - JSON format: {"id": updateId, "title": "...", "content": "...", "department": "...", "priority": "...", "author": "...", "preview": "first 100 chars of content"}
 
 - DELETE: Listen for requests to delete updates
-  - Ask which update to delete for confirmation
   - When confirmed, respond with: "DELETING_UPDATE:" followed by a JSON object
-  - JSON format: {"id": updateId, "title": "title for confirmation"}
 ` : ''}
 
 ${isManagingProjects ? `
@@ -108,17 +124,28 @@ FOR WORKS IN PROGRESS:
 - CREATE: Listen for requests to create new projects
   - Ask for: title, description, lead, team, priority (High/Medium/Low), start date, due date if not provided
   - When you have enough information, respond with: "CREATING_PROJECT:" followed by a JSON object
-  - JSON format: {"title": "...", "description": "...", "lead": "...", "team": "...", "priority": "...", "startDate": "YYYY-MM-DD", "dueDate": "YYYY-MM-DD"}
 
 - EDIT: Listen for requests to edit existing projects
-  - Ask which project to edit and what changes to make
   - When you have the information, respond with: "EDITING_PROJECT:" followed by a JSON object
-  - JSON format: {"id": projectId, "title": "...", "description": "...", "lead": "...", "team": "...", "priority": "...", "startDate": "YYYY-MM-DD", "dueDate": "YYYY-MM-DD", "status": "Planning/In Progress/Completed", "progress": number}
 
 - DELETE: Listen for requests to delete projects
-  - Ask which project to delete for confirmation
   - When confirmed, respond with: "DELETING_PROJECT:" followed by a JSON object
-  - JSON format: {"id": projectId, "title": "title for confirmation"}
+` : ''}
+
+${isManagingGantt ? `
+FOR GANTT CHART:
+- CREATE: Listen for requests to create milestones, tasks, or subtasks
+  - Ask for: title, type (milestone/task/subtask), startDate, endDate, assignee, priority (High/Medium/Low), description if not provided
+  - When you have enough information, respond with: "CREATING_GANTT_ITEM:" followed by a JSON object
+  - JSON format: {"title": "...", "type": "milestone/task/subtask", "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "assignee": "...", "priority": "...", "description": "...", "parentId": number (optional for subtasks)}
+
+- EDIT: Listen for requests to edit existing gantt items
+  - When you have the information, respond with: "EDITING_GANTT_ITEM:" followed by a JSON object
+  - JSON format: {"id": itemId, "title": "...", "startDate": "...", "endDate": "...", "progress": number, "status": "Not Started/In Progress/Completed/On Hold", etc.}
+
+- DELETE: Listen for requests to delete gantt items
+  - When confirmed, respond with: "DELETING_GANTT_ITEM:" followed by a JSON object
+  - JSON format: {"id": itemId, "title": "title for confirmation"}
 ` : ''}
 
 Always confirm the details before creating, editing, or deleting content and be helpful in gathering missing information.`;
@@ -177,7 +204,7 @@ Be helpful, professional, and concise in your responses.`;
       const data = await response.json();
       let aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I encountered an error. Please try again.';
 
-      // Check if AI is trying to manage content
+      // Handle content management responses
       if (aiResponse.includes('CREATING_UPDATE:') && onCreateUpdate) {
         const jsonStart = aiResponse.indexOf('CREATING_UPDATE:') + 'CREATING_UPDATE:'.length;
         const jsonStr = aiResponse.substring(jsonStart).trim();
@@ -189,7 +216,8 @@ Be helpful, professional, and concise in your responses.`;
           console.error('Error parsing update JSON:', error);
           aiResponse = 'I had trouble creating that update. Please provide the details again.';
         }
-      } else if (aiResponse.includes('EDITING_UPDATE:') && onEditUpdate) {
+      } 
+      else if (aiResponse.includes('EDITING_UPDATE:') && onEditUpdate) {
         const jsonStart = aiResponse.indexOf('EDITING_UPDATE:') + 'EDITING_UPDATE:'.length;
         const jsonStr = aiResponse.substring(jsonStart).trim();
         try {
@@ -244,6 +272,39 @@ Be helpful, professional, and concise in your responses.`;
           console.error('Error parsing delete JSON:', error);
           aiResponse = 'I had trouble deleting that project. Please specify which project to delete.';
         }
+      } else if (aiResponse.includes('CREATING_GANTT_ITEM:') && onCreateGanttItem) {
+        const jsonStart = aiResponse.indexOf('CREATING_GANTT_ITEM:') + 'CREATING_GANTT_ITEM:'.length;
+        const jsonStr = aiResponse.substring(jsonStart).trim();
+        try {
+          const itemData = JSON.parse(jsonStr);
+          onCreateGanttItem(itemData);
+          aiResponse = `✅ I've created the ${itemData.type} "${itemData.title}" for you! It should now appear in the Gantt Chart section.`;
+        } catch (error) {
+          console.error('Error parsing gantt item JSON:', error);
+          aiResponse = 'I had trouble creating that gantt item. Please provide the details again.';
+        }
+      } else if (aiResponse.includes('EDITING_GANTT_ITEM:') && onEditGanttItem) {
+        const jsonStart = aiResponse.indexOf('EDITING_GANTT_ITEM:') + 'EDITING_GANTT_ITEM:'.length;
+        const jsonStr = aiResponse.substring(jsonStart).trim();
+        try {
+          const itemData = JSON.parse(jsonStr);
+          onEditGanttItem(itemData);
+          aiResponse = `✅ I've updated the gantt item "${itemData.title}" for you!`;
+        } catch (error) {
+          console.error('Error parsing gantt item JSON:', error);
+          aiResponse = 'I had trouble editing that gantt item. Please provide the details again.';
+        }
+      } else if (aiResponse.includes('DELETING_GANTT_ITEM:') && onDeleteGanttItem) {
+        const jsonStart = aiResponse.indexOf('DELETING_GANTT_ITEM:') + 'DELETING_GANTT_ITEM:'.length;
+        const jsonStr = aiResponse.substring(jsonStart).trim();
+        try {
+          const deleteData = JSON.parse(jsonStr);
+          onDeleteGanttItem(deleteData.id, deleteData.title);
+          aiResponse = `✅ I've deleted the gantt item "${deleteData.title}" for you!`;
+        } catch (error) {
+          console.error('Error parsing delete JSON:', error);
+          aiResponse = 'I had trouble deleting that gantt item. Please specify which item to delete.';
+        }
       }
 
       const aiMessage: Message = {
@@ -254,6 +315,11 @@ Be helpful, professional, and concise in your responses.`;
       };
 
       setMessages(prev => [...prev, aiMessage]);
+      
+      // Trigger notification for new AI message
+      if (!isOpen && onNewMessage) {
+        onNewMessage();
+      }
     } catch (error) {
       console.error('Error calling Gemini API:', error);
       const errorMessage: Message = {
@@ -275,20 +341,30 @@ Be helpful, professional, and concise in your responses.`;
     }
   };
 
+  const getButtonColor = () => {
+    if (isManagingUpdates || isManagingProjects || isManagingGantt) {
+      return 'bg-green-600 hover:bg-green-700';
+    }
+    return 'bg-blue-600 hover:bg-blue-700';
+  };
+
   return (
     <>
-      {/* Chat Toggle Button */}
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 ${
-          isManagingUpdates || isManagingProjects 
-            ? 'bg-green-600 hover:bg-green-700' 
-            : 'bg-blue-600 hover:bg-blue-700'
-        }`}
-        size="icon"
-      >
-        {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
-      </Button>
+      {/* Chat Toggle Button with Notification */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <Button
+          onClick={() => setIsOpen(!isOpen)}
+          className={`h-14 w-14 rounded-full shadow-lg relative ${getButtonColor()}`}
+          size="icon"
+        >
+          {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+          {hasNewMessage && !isOpen && (
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+              <Bell className="h-2 w-2 text-white" />
+            </div>
+          )}
+        </Button>
+      </div>
 
       {/* Chat Window */}
       {isOpen && (
@@ -296,8 +372,8 @@ Be helpful, professional, and concise in your responses.`;
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center space-x-2 text-lg">
               <Bot className="h-5 w-5 text-blue-600" />
-              <span>Knowledge Base Assistant</span>
-              {(isManagingUpdates || isManagingProjects) && (
+              <span>AeroMail AI Assistant</span>
+              {(isManagingUpdates || isManagingProjects || isManagingGantt) && (
                 <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
                   Content Manager
                 </span>
@@ -359,9 +435,9 @@ Be helpful, professional, and concise in your responses.`;
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder={
-                    isManagingUpdates || isManagingProjects 
+                    isManagingUpdates || isManagingProjects || isManagingGantt
                       ? "Tell me what content to create, edit, or delete..." 
-                      : "Ask me about the knowledge base..."
+                      : "Ask me about AeroMail's knowledge base..."
                   }
                   disabled={isLoading}
                   className="flex-1"

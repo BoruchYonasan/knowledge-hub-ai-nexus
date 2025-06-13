@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import Navbar from '@/components/Navbar';
@@ -5,6 +6,7 @@ import Dashboard from '@/components/Dashboard';
 import KnowledgeBase from '@/components/KnowledgeBase';
 import LatestUpdates from '@/components/LatestUpdates';
 import WorksInProgress from '@/components/WorksInProgress';
+import GanttChart from '@/components/GanttChart';
 import Search from '@/components/Search';
 import ContentManager from '@/components/ContentManager';
 import AIAssistant from '@/components/AIAssistant';
@@ -14,6 +16,8 @@ const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isManagingUpdates, setIsManagingUpdates] = useState(false);
   const [isManagingProjects, setIsManagingProjects] = useState(false);
+  const [isManagingGantt, setIsManagingGantt] = useState(false);
+  const [hasNewAIMessage, setHasNewAIMessage] = useState(false);
   
   const { 
     createUpdateFromAI, 
@@ -21,7 +25,10 @@ const Index = () => {
     deleteUpdateFromAI,
     createProjectFromAI, 
     editProjectFromAI, 
-    deleteProjectFromAI 
+    deleteProjectFromAI,
+    createGanttItemFromAI,
+    editGanttItemFromAI,
+    deleteGanttItemFromAI
   } = useContentManager();
 
   const renderCurrentPage = () => {
@@ -34,6 +41,8 @@ const Index = () => {
         return <LatestUpdates onManagingChange={setIsManagingUpdates} />;
       case 'progress':
         return <WorksInProgress onManagingChange={setIsManagingProjects} />;
+      case 'gantt':
+        return <GanttChart onManagingChange={setIsManagingGantt} />;
       case 'search':
         return <Search />;
       case 'content-manager':
@@ -44,7 +53,7 @@ const Index = () => {
   };
 
   const getKnowledgeBaseContext = () => {
-    let context = `Current page: ${currentPage}. Available sections: Dashboard, Knowledge Base, Latest Updates, Works in Progress, Search, Content Manager.`;
+    let context = `Current page: ${currentPage}. Available sections: Dashboard, Knowledge Base, Latest Updates, Works in Progress, Gantt Chart, Search, Content Manager.`;
     
     if (isManagingUpdates) {
       context += " Currently in MANAGE MODE for Latest Updates - can create announcements and updates.";
@@ -52,6 +61,10 @@ const Index = () => {
     
     if (isManagingProjects) {
       context += " Currently in MANAGE MODE for Works in Progress - can create new projects.";
+    }
+
+    if (isManagingGantt) {
+      context += " Currently in MANAGE MODE for Gantt Chart - can create milestones, tasks, and subtasks.";
     }
     
     return context;
@@ -73,8 +86,15 @@ const Index = () => {
           onCreateProject={createProjectFromAI}
           onEditProject={editProjectFromAI}
           onDeleteProject={deleteProjectFromAI}
+          onCreateGanttItem={createGanttItemFromAI}
+          onEditGanttItem={editGanttItemFromAI}
+          onDeleteGanttItem={deleteGanttItemFromAI}
           isManagingUpdates={isManagingUpdates}
           isManagingProjects={isManagingProjects}
+          isManagingGantt={isManagingGantt}
+          onNewMessage={() => setHasNewAIMessage(true)}
+          hasNewMessage={hasNewAIMessage}
+          onMessageRead={() => setHasNewAIMessage(false)}
         />
       </div>
     </AuthGuard>

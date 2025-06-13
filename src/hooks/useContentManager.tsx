@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -36,6 +35,22 @@ interface Project {
   tasks: any[];
   attachments: string[];
   knowledgeBaseLinks: KnowledgeBaseLink[];
+}
+
+interface GanttItem {
+  id: number;
+  title: string;
+  type: 'milestone' | 'task' | 'subtask';
+  parentId?: number;
+  startDate: string;
+  endDate: string;
+  progress: number;
+  assignee: string;
+  priority: 'High' | 'Medium' | 'Low';
+  status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
+  resources: string[];
+  dependencies: number[];
+  description: string;
 }
 
 export const useContentManager = () => {
@@ -154,12 +169,70 @@ export const useContentManager = () => {
     });
   }, [toast]);
 
+  const createGanttItemFromAI = useCallback((itemData: any) => {
+    console.log('AI-created gantt item:', itemData);
+    
+    const newItem: GanttItem = {
+      id: Date.now(),
+      title: itemData.title || 'Untitled Item',
+      type: itemData.type || 'task',
+      parentId: itemData.parentId,
+      startDate: itemData.startDate || new Date().toISOString().split('T')[0],
+      endDate: itemData.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      progress: itemData.progress || 0,
+      assignee: itemData.assignee || 'Unassigned',
+      priority: itemData.priority || 'Medium',
+      status: itemData.status || 'Not Started',
+      resources: itemData.resources || [],
+      dependencies: itemData.dependencies || [],
+      description: itemData.description || ''
+    };
+
+    window.dispatchEvent(new CustomEvent('ai-created-gantt-item', { 
+      detail: newItem 
+    }));
+
+    toast({
+      title: "Gantt Item Created",
+      description: `"${newItem.title}" has been added to the Gantt Chart.`
+    });
+  }, [toast]);
+
+  const editGanttItemFromAI = useCallback((itemData: any) => {
+    console.log('AI-edited gantt item:', itemData);
+    
+    window.dispatchEvent(new CustomEvent('ai-edited-gantt-item', { 
+      detail: itemData 
+    }));
+
+    toast({
+      title: "Gantt Item Edited",
+      description: `"${itemData.title}" has been updated.`
+    });
+  }, [toast]);
+
+  const deleteGanttItemFromAI = useCallback((itemId: number, title: string) => {
+    console.log('AI-deleted gantt item:', itemId);
+    
+    window.dispatchEvent(new CustomEvent('ai-deleted-gantt-item', { 
+      detail: { id: itemId } 
+    }));
+
+    toast({
+      title: "Gantt Item Deleted",
+      description: `"${title}" has been removed from the Gantt Chart.`
+    });
+  }, [toast]);
+
   return {
     createUpdateFromAI,
     editUpdateFromAI,
     deleteUpdateFromAI,
     createProjectFromAI,
     editProjectFromAI,
-    deleteProjectFromAI
+    deleteProjectFromAI,
+    createGanttItemFromAI,
+    editGanttItemFromAI,
+    deleteGanttItemFromAI
   };
 };

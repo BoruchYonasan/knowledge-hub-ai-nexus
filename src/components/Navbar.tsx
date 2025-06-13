@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -14,6 +15,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
     { id: 'knowledge', name: 'Knowledge Base', icon: '📚' },
     { id: 'updates', name: 'Latest Updates', icon: '📢' },
     { id: 'progress', name: 'Works in Progress', icon: '🚧' },
+    { id: 'gantt', name: 'Gantt Chart', icon: '📊' },
     { id: 'content-manager', name: 'Content Manager', icon: '📝' },
     { id: 'search', name: 'Search', icon: '🔍' },
   ];
@@ -34,7 +36,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
-              <span className="ml-2 text-xl font-bold text-gray-900">Knowledge Base</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">AeroMail Knowledge Base</span>
             </div>
             
             <div className="hidden md:flex space-x-1">
