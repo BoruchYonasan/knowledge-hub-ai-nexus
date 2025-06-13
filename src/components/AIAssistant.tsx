@@ -1,14 +1,24 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
+import { MessageCircle, X, Send, Bot, User, Upload, FileText, Trash2 } from 'lucide-react';
 
 interface Message {
   id: string;
   content: string;
   sender: 'user' | 'ai';
   timestamp: Date;
+  files?: UploadedFile[];
+}
+
+interface UploadedFile {
+  id: string;
+  name: string;
+  content: string;
+  type: string;
+  size: number;
 }
 
 interface AIAssistantProps {
@@ -54,15 +64,17 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Hello! I'm your AeroMail knowledge base assistant. I can help you navigate our knowledge base, find information about company policies, procedures, and answer questions about our organization. I can also help manage content when you're in manage mode. What would you like to know?",
+      content: "Hello! I'm your AeroMail knowledge base assistant. I can help you navigate our knowledge base, find information about company policies, procedures, and answer questions about our organization. I can also help manage content when you're in manage mode. You can now upload files to share large contexts with me. What would you like to know?",
       sender: 'ai',
       timestamp: new Date()
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [hasUnreadMessage, setHasUnreadMessage] = useState(true); // Start with true since there's an initial AI message
+  const [hasUnreadMessage, setHasUnreadMessage] = useState(true);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -78,6 +90,85 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
       onMessageRead();
     }
   }, [isOpen, hasUnreadMessage, onMessageRead]);
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    const newFiles: UploadedFile[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      // Check file size (limit to 10MB per file)
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+        continue;
+      }
+
+      // Only accept text files, PDFs, and common document formats
+      const allowedTypes = [
+        'text/plain',
+        'text/markdown',
+        'text/csv',
+        'application/json',
+        'text/html',
+        'text/xml',
+        'application/pdf'
+      ];
+
+      if (!allowedTypes.includes(file.type) && !file.name.match(/\.(txt|md|csv|json|html|xml|pdf)$/i)) {
+        alert(`File type ${file.type} is not supported. Please upload text files, PDFs, or documents.`);
+        continue;
+      }
+
+      try {
+        const content = await readFileContent(file);
+        const uploadedFile: UploadedFile = {
+          id: Date.now().toString() + i,
+          name: file.name,
+          content,
+          type: file.type,
+          size: file.size
+        };
+        newFiles.push(uploadedFile);
+      } catch (error) {
+        console.error('Error reading file:', error);
+        alert(`Error reading file ${file.name}`);
+      }
+    }
+
+    setUploadedFiles(prev => [...prev, ...newFiles]);
+    
+    // Clear the input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const readFileContent = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        resolve(content);
+      };
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  };
+
+  const removeFile = (fileId: string) => {
+    setUploadedFiles(prev => prev.filter(f => f.id !== fileId));
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   const generateSystemPrompt = () => {
     let basePrompt = `You are a helpful AI assistant for AeroMail's company knowledge base website. Your role is to help employees navigate the knowledge base and find information.
@@ -160,6 +251,22 @@ Be helpful, professional, and concise in your responses.`;
     return basePrompt;
   };
 
+  const buildContextWithFiles = () => {
+    let context = generateSystemPrompt();
+    
+    if (uploadedFiles.length > 0) {
+      context += `\n\nUPLOADED FILES CONTEXT:\n`;
+      uploadedFiles.forEach(file => {
+        context += `\n--- FILE: ${file.name} (${formatFileSize(file.size)}) ---\n`;
+        context += file.content;
+        context += `\n--- END OF FILE: ${file.name} ---\n`;
+      });
+      context += `\nPlease use the information from these uploaded files to provide more accurate and detailed responses.`;
+    }
+    
+    return context;
+  };
+
   const sendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
@@ -167,7 +274,8 @@ Be helpful, professional, and concise in your responses.`;
       id: Date.now().toString(),
       content: inputMessage,
       sender: 'user',
-      timestamp: new Date()
+      timestamp: new Date(),
+      files: uploadedFiles.length > 0 ? [...uploadedFiles] : undefined
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -175,7 +283,7 @@ Be helpful, professional, and concise in your responses.`;
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=AIzaSyDoWesZjkIrFmzfBaWs-vHk7FOJyjDaG5M', {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyDoWesZjkIrFmzfBaWs-vHk7FOJyjDaG5M', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -185,7 +293,7 @@ Be helpful, professional, and concise in your responses.`;
             {
               parts: [
                 {
-                  text: `${generateSystemPrompt()}\n\nUser: ${inputMessage}`
+                  text: `${buildContextWithFiles()}\n\nUser: ${inputMessage}`
                 }
               ]
             }
@@ -194,7 +302,7 @@ Be helpful, professional, and concise in your responses.`;
             temperature: 0.7,
             topK: 40,
             topP: 0.95,
-            maxOutputTokens: 1024,
+            maxOutputTokens: 8192, // Increased from 1024 to 8192
           }
         })
       });
@@ -318,6 +426,9 @@ Be helpful, professional, and concise in your responses.`;
 
       setMessages(prev => [...prev, aiMessage]);
       
+      // Clear uploaded files after successful message
+      setUploadedFiles([]);
+      
       // Show notification for new AI message if chat is closed
       if (!isOpen) {
         setHasUnreadMessage(true);
@@ -381,7 +492,7 @@ Be helpful, professional, and concise in your responses.`;
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-24 right-6 w-96 h-[500px] shadow-xl z-40 flex flex-col">
+        <Card className="fixed bottom-24 right-6 w-96 h-[600px] shadow-xl z-40 flex flex-col">
           <CardHeader className="pb-2 flex-shrink-0">
             <CardTitle className="flex items-center space-x-2 text-lg">
               <Bot className="h-5 w-5 text-blue-600" />
@@ -413,6 +524,16 @@ Be helpful, professional, and concise in your responses.`;
                       {message.sender === 'user' && <User className="h-4 w-4 mt-0.5 flex-shrink-0" />}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere">{message.content}</p>
+                        {message.files && message.files.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {message.files.map((file) => (
+                              <div key={file.id} className="flex items-center space-x-2 text-xs opacity-80">
+                                <FileText className="h-3 w-3" />
+                                <span>{file.name} ({formatFileSize(file.size)})</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                         <p className={`text-xs mt-1 ${
                           message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
                         }`}>
@@ -440,9 +561,53 @@ Be helpful, professional, and concise in your responses.`;
               <div ref={messagesEndRef} />
             </div>
 
+            {/* File Upload Area */}
+            {uploadedFiles.length > 0 && (
+              <div className="border-t p-2 flex-shrink-0 max-h-32 overflow-y-auto">
+                <div className="space-y-1">
+                  {uploadedFiles.map((file) => (
+                    <div key={file.id} className="flex items-center justify-between bg-gray-50 rounded p-2">
+                      <div className="flex items-center space-x-2 flex-1 min-w-0">
+                        <FileText className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium truncate">{file.name}</p>
+                          <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => removeFile(file.id)}
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 w-6 p-0 flex-shrink-0"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Input Area */}
             <div className="border-t p-4 flex-shrink-0">
               <div className="flex space-x-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".txt,.md,.csv,.json,.html,.xml,.pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  size="icon"
+                  variant="outline"
+                  className="flex-shrink-0"
+                  disabled={isLoading}
+                >
+                  <Upload className="h-4 w-4" />
+                </Button>
                 <Input
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
