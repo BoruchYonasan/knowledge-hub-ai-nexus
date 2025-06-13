@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,13 +25,13 @@ interface AIAssistantProps {
   onNavigate: (page: string) => void;
   onCreateUpdate?: (update: any) => void;
   onEditUpdate?: (update: any) => void;
-  onDeleteUpdate?: (updateId: number, title: string) => void;
+  onDeleteUpdate?: (updateId: string, title: string) => void;
   onCreateProject?: (project: any) => void;
   onEditProject?: (project: any) => void;
-  onDeleteProject?: (projectId: number, title: string) => void;
+  onDeleteProject?: (projectId: string, title: string) => void;
   onCreateGanttItem?: (item: any) => void;
   onEditGanttItem?: (item: any) => void;
-  onDeleteGanttItem?: (itemId: number, title: string) => void;
+  onDeleteGanttItem?: (itemId: string, title: string) => void;
   isManagingUpdates?: boolean;
   isManagingProjects?: boolean;
   isManagingGantt?: boolean;
@@ -283,7 +282,7 @@ Be helpful, professional, and concise in your responses.`;
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyDoWesZjkIrFmzfBaWs-vHk7FOJyjDaG5M', {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-0605:generateContent?key=AIzaSyDoWesZjkIrFmzfBaWs-vHk7FOJyjDaG5M', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -302,7 +301,7 @@ Be helpful, professional, and concise in your responses.`;
             temperature: 0.7,
             topK: 40,
             topP: 0.95,
-            maxOutputTokens: 8192, // Increased from 1024 to 8192
+            maxOutputTokens: 8192,
           }
         })
       });
