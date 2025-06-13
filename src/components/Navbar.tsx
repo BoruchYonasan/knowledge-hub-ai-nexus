@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 interface NavbarProps {
@@ -8,12 +7,15 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
-  const navigationItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '🏠' },
-    { id: 'knowledge', label: 'Knowledge Base', icon: '📚' },
-    { id: 'updates', label: 'Latest Updates', icon: '📰' },
-    { id: 'progress', label: 'Works in Progress', icon: '🚧' },
-    { id: 'search', label: 'Search', icon: '🔍' },
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navItems = [
+    { id: 'dashboard', name: 'Dashboard', icon: '🏠' },
+    { id: 'knowledge', name: 'Knowledge Base', icon: '📚' },
+    { id: 'updates', name: 'Latest Updates', icon: '📢' },
+    { id: 'progress', name: 'Works in Progress', icon: '🚧' },
+    { id: 'content-manager', name: 'Content Manager', icon: '📝' },
+    { id: 'search', name: 'Search', icon: '🔍' },
   ];
 
   const handleLogout = () => {
@@ -22,7 +24,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="bg-white shadow-lg border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-8">
@@ -36,7 +38,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
             </div>
             
             <div className="hidden md:flex space-x-1">
-              {navigationItems.map((item) => (
+              {navItems.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => onNavigate(item.id)}
@@ -47,7 +49,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                   }`}
                 >
                   <span className="mr-2">{item.icon}</span>
-                  {item.label}
+                  {item.name}
                 </button>
               ))}
             </div>
@@ -66,25 +68,37 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
         </div>
       </div>
 
-      {/* Mobile navigation */}
-      <div className="md:hidden bg-white border-t">
-        <div className="px-2 pt-2 pb-3 space-y-1">
-          {navigationItems.map((item) => (
+      {/* Mobile menu */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  onNavigate(item.id);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`block px-3 py-2 text-base font-medium rounded-md transition-colors w-full text-left ${
+                  currentPage === item.id
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                }`}
+              >
+                <span className="mr-2">{item.icon}</span>
+                {item.name}
+              </button>
+            ))}
             <button
-              key={item.id}
-              onClick={() => onNavigate(item.id)}
-              className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                currentPage === item.id
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
+              onClick={handleLogout}
+              className="block px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors w-full text-left"
             >
-              <span className="mr-2">{item.icon}</span>
-              {item.label}
+              <span className="mr-2">🚪</span>
+              Logout
             </button>
-          ))}
+          </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 };

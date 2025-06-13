@@ -7,6 +7,8 @@ import KnowledgeBase from '@/components/KnowledgeBase';
 import LatestUpdates from '@/components/LatestUpdates';
 import WorksInProgress from '@/components/WorksInProgress';
 import Search from '@/components/Search';
+import ContentManager from '@/components/ContentManager';
+import AIAssistant from '@/components/AIAssistant';
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -23,9 +25,15 @@ const Index = () => {
         return <WorksInProgress />;
       case 'search':
         return <Search />;
+      case 'content-manager':
+        return <ContentManager />;
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }
+  };
+
+  const getKnowledgeBaseContext = () => {
+    return `Current page: ${currentPage}. Available sections: Dashboard, Knowledge Base, Latest Updates, Works in Progress, Search, Content Manager.`;
   };
 
   return (
@@ -35,6 +43,10 @@ const Index = () => {
         <main>
           {renderCurrentPage()}
         </main>
+        <AIAssistant 
+          knowledgeBaseContext={getKnowledgeBaseContext()}
+          onNavigate={setCurrentPage}
+        />
       </div>
     </AuthGuard>
   );
