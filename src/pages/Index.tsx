@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import Navbar from '@/components/Navbar';
@@ -16,6 +17,7 @@ const Index = () => {
   const [isManagingUpdates, setIsManagingUpdates] = useState(false);
   const [isManagingProjects, setIsManagingProjects] = useState(false);
   const [isManagingGantt, setIsManagingGantt] = useState(false);
+  const [isManagingKnowledge, setIsManagingKnowledge] = useState(false);
   const [hasNewAIMessage, setHasNewAIMessage] = useState(false);
   
   const { 
@@ -27,7 +29,10 @@ const Index = () => {
     deleteProjectFromAI,
     createGanttItemFromAI,
     editGanttItemFromAI,
-    deleteGanttItemFromAI
+    deleteGanttItemFromAI,
+    createArticleFromAI,
+    editArticleFromAI,
+    deleteArticleFromAI
   } = useContentManager();
 
   const renderCurrentPage = () => {
@@ -35,7 +40,7 @@ const Index = () => {
       case 'dashboard':
         return <Dashboard onNavigate={setCurrentPage} />;
       case 'knowledge':
-        return <KnowledgeBase onNavigate={setCurrentPage} />;
+        return <KnowledgeBase onNavigate={setCurrentPage} onManagingChange={setIsManagingKnowledge} />;
       case 'updates':
         return <LatestUpdates onManagingChange={setIsManagingUpdates} />;
       case 'progress':
@@ -65,6 +70,10 @@ const Index = () => {
     if (isManagingGantt) {
       context += " Currently in MANAGE MODE for Gantt Chart - can create milestones, tasks, and subtasks.";
     }
+
+    if (isManagingKnowledge) {
+      context += " Currently in MANAGE MODE for Knowledge Base - can create articles and documentation.";
+    }
     
     return context;
   };
@@ -88,9 +97,13 @@ const Index = () => {
           onCreateGanttItem={createGanttItemFromAI}
           onEditGanttItem={editGanttItemFromAI}
           onDeleteGanttItem={deleteGanttItemFromAI}
+          onCreateArticle={createArticleFromAI}
+          onEditArticle={editArticleFromAI}
+          onDeleteArticle={deleteArticleFromAI}
           isManagingUpdates={isManagingUpdates}
           isManagingProjects={isManagingProjects}
           isManagingGantt={isManagingGantt}
+          isManagingKnowledge={isManagingKnowledge}
           onNewMessage={() => setHasNewAIMessage(true)}
           hasNewMessage={hasNewAIMessage}
           onMessageRead={() => setHasNewAIMessage(false)}

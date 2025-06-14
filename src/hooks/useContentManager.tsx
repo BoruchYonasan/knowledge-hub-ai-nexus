@@ -4,12 +4,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useLatestUpdates } from '@/hooks/useLatestUpdates';
 import { useProjects } from '@/hooks/useProjects';
 import { useGanttItems } from '@/hooks/useGanttItems';
+import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
 
 export const useContentManager = () => {
   const { toast } = useToast();
   const { createUpdate, updateUpdate, deleteUpdate } = useLatestUpdates();
   const { createProject, updateProject, deleteProject } = useProjects();
   const { createItem, updateItem, deleteItem } = useGanttItems();
+  const { createArticle, updateArticle, deleteArticle } = useKnowledgeBase();
 
   const createUpdateFromAI = useCallback(async (updateData: any) => {
     console.log('AI-created update:', updateData);
@@ -133,6 +135,44 @@ export const useContentManager = () => {
     }
   }, [deleteItem]);
 
+  const createArticleFromAI = useCallback(async (articleData: any) => {
+    console.log('AI-created article:', articleData);
+    
+    try {
+      await createArticle({
+        title: articleData.title || 'Untitled Article',
+        description: articleData.description || '',
+        content: articleData.content || '',
+        category: articleData.category || 'all',
+        author: articleData.author || 'AI Assistant',
+        read_time: articleData.readTime || '5 min read',
+        tags: articleData.tags || []
+      });
+    } catch (error) {
+      console.error('Error creating article from AI:', error);
+    }
+  }, [createArticle]);
+
+  const editArticleFromAI = useCallback(async (articleData: any) => {
+    console.log('AI-edited article:', articleData);
+    
+    try {
+      await updateArticle(articleData.id, articleData);
+    } catch (error) {
+      console.error('Error editing article from AI:', error);
+    }
+  }, [updateArticle]);
+
+  const deleteArticleFromAI = useCallback(async (articleId: string, title: string) => {
+    console.log('AI-deleted article:', articleId);
+    
+    try {
+      await deleteArticle(articleId);
+    } catch (error) {
+      console.error('Error deleting article from AI:', error);
+    }
+  }, [deleteArticle]);
+
   return {
     createUpdateFromAI,
     editUpdateFromAI,
@@ -142,6 +182,9 @@ export const useContentManager = () => {
     deleteProjectFromAI,
     createGanttItemFromAI,
     editGanttItemFromAI,
-    deleteGanttItemFromAI
+    deleteGanttItemFromAI,
+    createArticleFromAI,
+    editArticleFromAI,
+    deleteArticleFromAI
   };
 };

@@ -32,9 +32,13 @@ interface AIAssistantProps {
   onCreateGanttItem?: (item: any) => void;
   onEditGanttItem?: (item: any) => void;
   onDeleteGanttItem?: (itemId: string, title: string) => void;
+  onCreateArticle?: (article: any) => void;
+  onEditArticle?: (article: any) => void;
+  onDeleteArticle?: (articleId: string, title: string) => void;
   isManagingUpdates?: boolean;
   isManagingProjects?: boolean;
   isManagingGantt?: boolean;
+  isManagingKnowledge?: boolean;
   onNewMessage?: () => void;
   hasNewMessage?: boolean;
   onMessageRead?: () => void;
@@ -52,9 +56,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   onCreateGanttItem,
   onEditGanttItem,
   onDeleteGanttItem,
+  onCreateArticle,
+  onEditArticle,
+  onDeleteArticle,
   isManagingUpdates = false,
   isManagingProjects = false,
   isManagingGantt = false,
+  isManagingKnowledge = false,
   onNewMessage,
   hasNewMessage = false,
   onMessageRead
@@ -191,7 +199,7 @@ You can help users by:
 5. Answering questions about company information`;
 
     // Add content management capabilities when in manage mode
-    if (isManagingUpdates || isManagingProjects || isManagingGantt) {
+    if (isManagingUpdates || isManagingProjects || isManagingGantt || isManagingKnowledge) {
       basePrompt += `
 
 CONTENT MANAGEMENT MODE ACTIVE:
@@ -238,6 +246,21 @@ FOR GANTT CHART:
 - DELETE: Listen for requests to delete gantt items
   - When confirmed, respond with: "DELETING_GANTT_ITEM:" followed by a JSON object
   - JSON format: {"id": itemId, "title": "title for confirmation"}
+` : ''}
+
+${isManagingKnowledge ? `
+FOR KNOWLEDGE BASE:
+- CREATE: Listen for requests to create new articles or documentation
+  - Ask for: title, content, category (all/hr/engineering/sales/finance/operations), author, description, tags if not provided
+  - When you have enough information, respond with: "CREATING_ARTICLE:" followed by a JSON object
+  - JSON format: {"title": "...", "content": "...", "category": "...", "author": "...", "description": "...", "tags": ["tag1", "tag2"], "readTime": "5 min read"}
+
+- EDIT: Listen for requests to edit existing articles
+  - When you have the information, respond with: "EDITING_ARTICLE:" followed by a JSON object
+
+- DELETE: Listen for requests to delete articles
+  - When confirmed, respond with: "DELETING_ARTICLE:" followed by a JSON object
+  - JSON format: {"id": articleId, "title": "title for confirmation"}
 ` : ''}
 
 Always confirm the details before creating, editing, or deleting content and be helpful in gathering missing information.`;
@@ -414,6 +437,39 @@ Be helpful, professional, and concise in your responses.`;
           console.error('Error parsing delete JSON:', error);
           aiResponse = 'I had trouble deleting that gantt item. Please specify which item to delete.';
         }
+      } else if (aiResponse.includes('CREATING_ARTICLE:') && onCreateArticle) {
+        const jsonStart = aiResponse.indexOf('CREATING_ARTICLE:') + 'CREATING_ARTICLE:'.length;
+        const jsonStr = aiResponse.substring(jsonStart).trim();
+        try {
+          const articleData = JSON.parse(jsonStr);
+          onCreateArticle(articleData);
+          aiResponse = `✅ I've created the article "${articleData.title}" for you! It should now appear in the Knowledge Base section.`;
+        } catch (error) {
+          console.error('Error parsing article JSON:', error);
+          aiResponse = 'I had trouble creating that article. Please provide the details again.';
+        }
+      } else if (aiResponse.includes('EDITING_ARTICLE:') && onEditArticle) {
+        const jsonStart = aiResponse.indexOf('EDITING_ARTICLE:') + 'EDITING_ARTICLE:'.length;
+        const jsonStr = aiResponse.substring(jsonStart).trim();
+        try {
+          const articleData = JSON.parse(jsonStr);
+          onEditArticle(articleData);
+          aiResponse = `✅ I've updated the article "${articleData.title}" for you!`;
+        } catch (error) {
+          console.error('Error parsing article JSON:', error);
+          aiResponse = 'I had trouble editing that article. Please provide the details again.';
+        }
+      } else if (aiResponse.includes('DELETING_ARTICLE:') && onDeleteArticle) {
+        const jsonStart = aiResponse.indexOf('DELETING_ARTICLE:') + 'DELETING_ARTICLE:'.length;
+        const jsonStr = aiResponse.substring(jsonStart).trim();
+        try {
+          const deleteData = JSON.parse(jsonStr);
+          onDeleteArticle(deleteData.id, deleteData.title);
+          aiResponse = `✅ I've deleted the article "${deleteData.title}" for you!`;
+        } catch (error) {
+          console.error('Error parsing delete JSON:', error);
+          aiResponse = 'I had trouble deleting that article. Please specify which article to delete.';
+        }
       }
 
       const aiMessage: Message = {
@@ -465,7 +521,7 @@ Be helpful, professional, and concise in your responses.`;
   };
 
   const getButtonColor = () => {
-    if (isManagingUpdates || isManagingProjects || isManagingGantt) {
+    if (isManagingUpdates || isManagingProjects || isManagingGantt || isManagingKnowledge) {
       return 'bg-green-600 hover:bg-green-700';
     }
     return 'bg-blue-600 hover:bg-blue-700';
@@ -496,7 +552,7 @@ Be helpful, professional, and concise in your responses.`;
             <CardTitle className="flex items-center space-x-2 text-lg">
               <Bot className="h-5 w-5 text-blue-600" />
               <span>AeroMail AI Assistant</span>
-              {(isManagingUpdates || isManagingProjects || isManagingGantt) && (
+              {(isManagingUpdates || isManagingProjects || isManagingGantt || isManagingKnowledge) && (
                 <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
                   Content Manager
                 </span>
@@ -612,7 +668,7 @@ Be helpful, professional, and concise in your responses.`;
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder={
-                    isManagingUpdates || isManagingProjects || isManagingGantt
+                    isManagingUpdates || isManagingProjects || isManagingGantt || isManagingKnowledge
                       ? "Tell me what content to create, edit, or delete..." 
                       : "Ask me about AeroMail's knowledge base..."
                   }
