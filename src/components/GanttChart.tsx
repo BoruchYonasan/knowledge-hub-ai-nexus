@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,9 @@ import GanttBulkActions from './GanttBulkActions';
 import GanttTableRow from './GanttTableRow';
 import GanttChartView from './GanttChartView';
 import GanttItemDialog from './GanttItemDialog';
+
+// Use the GanttItem type from the hook to ensure consistency
+type GanttItemType = ReturnType<typeof useGanttItems>['items'][0];
 
 interface FilterState {
   search: string;
@@ -125,7 +127,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     setSelectedItems([]);
   };
 
-  const handleEditItem = async (updatedItem: any) => {
+  const handleEditItem = async (updatedItem: GanttItemType) => {
     await updateItem(updatedItem.id, updatedItem);
   };
 
@@ -200,10 +202,10 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     return renderItems();
   };
 
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<GanttItemType | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleItemClick = (item: any) => {
+  const handleItemClick = (item: GanttItemType) => {
     setSelectedItem(item);
     setIsDialogOpen(true);
   };
