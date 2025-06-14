@@ -215,7 +215,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     setIsDialogOpen(true);
   };
 
-  const handleSaveItem = async (item: any) => {
+  const handleSaveItem = async (item: Omit<GanttItemType, 'id' | 'created_at' | 'updated_at'>) => {
     if (selectedItem) {
       await updateItem(selectedItem.id, item);
     } else {
