@@ -13,10 +13,10 @@ import { CalendarIcon, X, Users, Clock, Target } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface GanttItem {
-  id: number;
+  id: string; // Changed from number to string
   title: string;
   type: 'milestone' | 'task' | 'subtask';
-  parentId?: number;
+  parent_id?: string; // Changed from parentId to parent_id and number to string
   startDate: string;
   endDate: string;
   progress: number;
@@ -24,15 +24,17 @@ interface GanttItem {
   priority: 'High' | 'Medium' | 'Low';
   status: 'Not Started' | 'In Progress' | 'Completed' | 'On Hold';
   resources: string[];
-  dependencies: number[];
-  description: string;
+  dependencies: string[]; // Changed from number[] to string[]
+  description?: string; // Made optional to match hook
+  created_at: string;
+  updated_at: string;
 }
 
 interface GanttItemDialogProps {
   item: GanttItem | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (item: GanttItem) => void;
+  onSave: (item: Omit<GanttItem, 'id' | 'created_at' | 'updated_at'>) => void;
   allItems: GanttItem[];
   assignees: string[];
 }
@@ -86,9 +88,19 @@ const GanttItemDialog: React.FC<GanttItemDialogProps> = ({
   const handleSave = () => {
     if (formData.title && formData.startDate && formData.endDate && formData.assignee) {
       const itemToSave = {
-        ...formData,
-        id: item?.id || Date.now(),
-      } as GanttItem;
+        title: formData.title,
+        type: formData.type || 'task',
+        parent_id: formData.parent_id,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        progress: formData.progress || 0,
+        assignee: formData.assignee,
+        priority: formData.priority || 'Medium',
+        status: formData.status || 'Not Started',
+        resources: formData.resources || [],
+        dependencies: formData.dependencies || [],
+        description: formData.description || ''
+      };
       
       onSave(itemToSave);
       onClose();
@@ -112,7 +124,7 @@ const GanttItemDialog: React.FC<GanttItemDialogProps> = ({
     }));
   };
 
-  const toggleDependency = (itemId: number) => {
+  const toggleDependency = (itemId: string) => { // Changed from number to string
     setFormData(prev => {
       const dependencies = prev.dependencies || [];
       const isSelected = dependencies.includes(itemId);
