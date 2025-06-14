@@ -35,7 +35,7 @@ const Index = () => {
       case 'dashboard':
         return <Dashboard onNavigate={setCurrentPage} />;
       case 'knowledge':
-        return <KnowledgeBase />;
+        return <KnowledgeBase onNavigate={setCurrentPage} />;
       case 'updates':
         return <LatestUpdates onManagingChange={setIsManagingUpdates} />;
       case 'progress':

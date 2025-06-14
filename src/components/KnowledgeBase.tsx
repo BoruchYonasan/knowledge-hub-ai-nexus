@@ -8,7 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, BookOpen, FileText, Users, DollarSign, Settings, Plus } from 'lucide-react';
 import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
 
-const KnowledgeBase: React.FC = () => {
+interface KnowledgeBaseProps {
+  onNavigate?: (page: string) => void;
+}
+
+const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate }) => {
   const { articles, loading } = useKnowledgeBase();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -28,6 +32,12 @@ const KnowledgeBase: React.FC = () => {
     const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const handleAddArticle = () => {
+    if (onNavigate) {
+      onNavigate('content-manager');
+    }
+  };
 
   if (loading) {
     return (
@@ -52,7 +62,7 @@ const KnowledgeBase: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">Knowledge Base</h1>
           <p className="text-gray-600">Access company documentation, guides, and resources</p>
         </div>
-        <Button className="flex items-center">
+        <Button className="flex items-center" onClick={handleAddArticle}>
           <Plus className="w-4 h-4 mr-2" />
           Add Article
         </Button>

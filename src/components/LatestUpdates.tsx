@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, User, Filter, Search, Plus, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLatestUpdates } from '@/hooks/useLatestUpdates';
+import AddUpdateDialog from '@/components/AddUpdateDialog';
 
 interface LatestUpdatesProps {
   onManagingChange?: (isManaging: boolean) => void;
@@ -77,10 +78,7 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onManagingChange }) => {
           <p className="text-gray-600">Stay informed with the latest company news and announcements</p>
         </div>
         <div className="flex space-x-2">
-          <Button className="flex items-center">
-            <Plus className="w-4 h-4 mr-2" />
-            New Update
-          </Button>
+          <AddUpdateDialog />
           <Button
             variant={isManaging ? 'destructive' : 'default'}
             onClick={() => setIsManaging(!isManaging)}

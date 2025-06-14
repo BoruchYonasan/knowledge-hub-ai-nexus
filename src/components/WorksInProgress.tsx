@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, Calendar, Target, Search, Plus, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects } from '@/hooks/useProjects';
+import AddProjectDialog from '@/components/AddProjectDialog';
 
 interface WorksInProgressProps {
   onManagingChange?: (isManaging: boolean) => void;
@@ -83,10 +84,7 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
           <p className="text-gray-600">Track ongoing projects and their progress</p>
         </div>
         <div className="flex space-x-2">
-          <Button className="flex items-center">
-            <Plus className="w-4 h-4 mr-2" />
-            New Project
-          </Button>
+          <AddProjectDialog />
           <Button
             variant={isManaging ? 'destructive' : 'default'}
             onClick={() => setIsManaging(!isManaging)}
