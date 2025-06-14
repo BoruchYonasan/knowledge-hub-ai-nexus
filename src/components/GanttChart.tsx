@@ -13,8 +13,8 @@ import GanttTableRow from './GanttTableRow';
 import GanttChartView from './GanttChartView';
 import GanttItemDialog from './GanttItemDialog';
 
-// Use the GanttItem type from the hook to ensure consistency
-type GanttItem = ReturnType<typeof useGanttItems>['items'][0];
+// Use a unique type alias to avoid conflicts
+type GanttItemType = ReturnType<typeof useGanttItems>['items'][0];
 
 interface FilterState {
   search: string;
@@ -127,7 +127,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     setSelectedItems([]);
   };
 
-  const handleEditItem = async (updatedItem: GanttItem) => {
+  const handleEditItem = async (updatedItem: GanttItemType) => {
     await updateItem(updatedItem.id, updatedItem);
   };
 
@@ -202,10 +202,10 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     return renderItems();
   };
 
-  const [selectedItem, setSelectedItem] = useState<GanttItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<GanttItemType | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleItemClick = (item: GanttItem) => {
+  const handleItemClick = (item: GanttItemType) => {
     setSelectedItem(item);
     setIsDialogOpen(true);
   };
@@ -215,7 +215,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     setIsDialogOpen(true);
   };
 
-  const handleSaveItem = async (item: Omit<GanttItem, 'id' | 'created_at' | 'updated_at'>) => {
+  const handleSaveItem = async (item: Omit<GanttItemType, 'id' | 'created_at' | 'updated_at'>) => {
     if (selectedItem) {
       await updateItem(selectedItem.id, item);
     } else {
