@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, BookOpen, FileText, Users, DollarSign, Settings, Plus } from 'lucide-react';
 import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
+import ArticleView from './ArticleView';
 
 interface KnowledgeBaseProps {
   onNavigate?: (page: string) => void;
@@ -18,6 +19,7 @@ const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate, onManagingCha
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isManaging, setIsManaging] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState<any>(null);
 
   React.useEffect(() => {
     onManagingChange?.(isManaging);
@@ -45,6 +47,14 @@ const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate, onManagingCha
     }
   };
 
+  const handleArticleClick = (article: any) => {
+    setSelectedArticle(article);
+  };
+
+  const handleBackToList = () => {
+    setSelectedArticle(null);
+  };
+
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto p-6">
@@ -59,6 +69,11 @@ const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate, onManagingCha
         </div>
       </div>
     );
+  }
+
+  // Show article view if an article is selected
+  if (selectedArticle) {
+    return <ArticleView article={selectedArticle} onBack={handleBackToList} />;
   }
 
   return (
@@ -112,7 +127,11 @@ const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate, onManagingCha
           <TabsContent key={category.id} value={category.id} className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredArticles.map(article => (
-                <Card key={article.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                <Card 
+                  key={article.id} 
+                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => handleArticleClick(article)}
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-lg">{article.title}</CardTitle>
