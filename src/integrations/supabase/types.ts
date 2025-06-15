@@ -9,6 +9,143 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      calendar_events: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          end_time: string
+          event_type: Database["public"]["Enums"]["event_type"] | null
+          id: string
+          location: string | null
+          meeting_type: Database["public"]["Enums"]["meeting_type"] | null
+          parent_event_id: string | null
+          poll_id: string | null
+          recurrence_end: string | null
+          recurrence_type: Database["public"]["Enums"]["recurrence_type"] | null
+          start_time: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          end_time: string
+          event_type?: Database["public"]["Enums"]["event_type"] | null
+          id?: string
+          location?: string | null
+          meeting_type?: Database["public"]["Enums"]["meeting_type"] | null
+          parent_event_id?: string | null
+          poll_id?: string | null
+          recurrence_end?: string | null
+          recurrence_type?:
+            | Database["public"]["Enums"]["recurrence_type"]
+            | null
+          start_time: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          end_time?: string
+          event_type?: Database["public"]["Enums"]["event_type"] | null
+          id?: string
+          location?: string | null
+          meeting_type?: Database["public"]["Enums"]["meeting_type"] | null
+          parent_event_id?: string | null
+          poll_id?: string | null
+          recurrence_end?: string | null
+          recurrence_type?:
+            | Database["public"]["Enums"]["recurrence_type"]
+            | null
+          start_time?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_parent_event_id_fkey"
+            columns: ["parent_event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "meeting_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_attendees: {
+        Row: {
+          created_at: string | null
+          event_id: string | null
+          id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_attendees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_reminders: {
+        Row: {
+          created_at: string | null
+          event_id: string | null
+          id: string
+          reminder_time: string
+          sent: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          reminder_time: string
+          sent?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string | null
+          id?: string
+          reminder_time?: string
+          sent?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_reminders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gantt_items: {
         Row: {
           assignee: string
@@ -179,6 +316,151 @@ export type Database = {
         }
         Relationships: []
       }
+      meeting_polls: {
+        Row: {
+          created_at: string | null
+          creator_id: string
+          deadline: string
+          description: string | null
+          id: string
+          selected_option_id: string | null
+          status: Database["public"]["Enums"]["poll_status"] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id: string
+          deadline: string
+          description?: string | null
+          id?: string
+          selected_option_id?: string | null
+          status?: Database["public"]["Enums"]["poll_status"] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string
+          deadline?: string
+          description?: string | null
+          id?: string
+          selected_option_id?: string | null
+          status?: Database["public"]["Enums"]["poll_status"] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      poll_attendees: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_required: boolean | null
+          poll_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          poll_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_required?: boolean | null
+          poll_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_attendees_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "meeting_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      poll_options: {
+        Row: {
+          created_at: string | null
+          end_time: string
+          id: string
+          poll_id: string | null
+          start_time: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_time: string
+          id?: string
+          poll_id?: string | null
+          start_time: string
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string
+          id?: string
+          poll_id?: string | null
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_options_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "meeting_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      poll_responses: {
+        Row: {
+          created_at: string | null
+          id: string
+          option_id: string | null
+          poll_id: string | null
+          updated_at: string | null
+          user_id: string
+          vote: Database["public"]["Enums"]["vote_type"]
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          option_id?: string | null
+          poll_id?: string | null
+          updated_at?: string | null
+          user_id: string
+          vote: Database["public"]["Enums"]["vote_type"]
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          option_id?: string | null
+          poll_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+          vote?: Database["public"]["Enums"]["vote_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_responses_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "poll_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_responses_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "meeting_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_knowledge_links: {
         Row: {
           id: string
@@ -339,6 +621,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      event_type: "meeting" | "deadline" | "reminder" | "other"
       gantt_item_priority: "High" | "Medium" | "Low"
       gantt_item_status: "Not Started" | "In Progress" | "Completed" | "On Hold"
       gantt_item_type: "milestone" | "task" | "subtask"
@@ -350,9 +633,13 @@ export type Database = {
         | "finance"
         | "operations"
       link_type: "document" | "image" | "guide" | "policy" | "other"
+      meeting_type: "in-person" | "video-call" | "hybrid"
+      poll_status: "active" | "closed" | "resolved"
       project_priority: "High" | "Medium" | "Low"
       project_status: "Planning" | "In Progress" | "Completed"
+      recurrence_type: "none" | "daily" | "weekly" | "monthly"
       update_priority: "high" | "medium" | "low"
+      vote_type: "available" | "busy" | "maybe"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -468,6 +755,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      event_type: ["meeting", "deadline", "reminder", "other"],
       gantt_item_priority: ["High", "Medium", "Low"],
       gantt_item_status: ["Not Started", "In Progress", "Completed", "On Hold"],
       gantt_item_type: ["milestone", "task", "subtask"],
@@ -480,9 +768,13 @@ export const Constants = {
         "operations",
       ],
       link_type: ["document", "image", "guide", "policy", "other"],
+      meeting_type: ["in-person", "video-call", "hybrid"],
+      poll_status: ["active", "closed", "resolved"],
       project_priority: ["High", "Medium", "Low"],
       project_status: ["Planning", "In Progress", "Completed"],
+      recurrence_type: ["none", "daily", "weekly", "monthly"],
       update_priority: ["high", "medium", "low"],
+      vote_type: ["available", "busy", "maybe"],
     },
   },
 } as const

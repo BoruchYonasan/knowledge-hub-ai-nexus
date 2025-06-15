@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Search, Users, MessageSquare, Phone, Mail, Plus } from 'lucide-react';
+import { Search, Users, MessageSquare, Phone, Mail, Plus, Vote, Calendar as CalendarIcon } from 'lucide-react';
 import { useLatestUpdates } from '@/hooks/useLatestUpdates';
+import MeetingPolls from './company-hub/MeetingPolls';
+import TeamCalendar from './company-hub/TeamCalendar';
 
 interface CompanyHubProps {
   isManaging?: boolean;
@@ -142,7 +143,7 @@ const CompanyHub: React.FC<CompanyHubProps> = ({ isManaging = false }) => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Company Hub</h1>
-          <p className="text-gray-600">Team directory, communications, and vendor contacts</p>
+          <p className="text-gray-600">Team directory, communications, calendar, and vendor contacts</p>
         </div>
         {isManaging && (
           <Button className="flex items-center">
@@ -156,7 +157,7 @@ const CompanyHub: React.FC<CompanyHubProps> = ({ isManaging = false }) => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search team, meetings, or vendors..."
+            placeholder="Search team, meetings, polls, calendar, or vendors..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -165,10 +166,18 @@ const CompanyHub: React.FC<CompanyHubProps> = ({ isManaging = false }) => {
       </div>
 
       <Tabs defaultValue="team" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="team">
             <Users className="w-4 h-4 mr-2" />
             Team Directory
+          </TabsTrigger>
+          <TabsTrigger value="polls">
+            <Vote className="w-4 h-4 mr-2" />
+            Meeting Polls
+          </TabsTrigger>
+          <TabsTrigger value="calendar">
+            <CalendarIcon className="w-4 h-4 mr-2" />
+            Team Calendar
           </TabsTrigger>
           <TabsTrigger value="meetings">
             <MessageSquare className="w-4 h-4 mr-2" />
@@ -225,6 +234,14 @@ const CompanyHub: React.FC<CompanyHubProps> = ({ isManaging = false }) => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="polls" className="space-y-4">
+          <MeetingPolls />
+        </TabsContent>
+
+        <TabsContent value="calendar" className="space-y-4">
+          <TeamCalendar />
         </TabsContent>
 
         <TabsContent value="meetings" className="space-y-4">
