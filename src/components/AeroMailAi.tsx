@@ -436,7 +436,29 @@ Be helpful, professional, and concise in your responses.`;
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col relative">
+        {/* Floating Model Selector */}
+        <div className="absolute top-4 left-4 z-40">
+          <div className="relative">
+            <Select value={selectedModel} onValueChange={setSelectedModel}>
+              <SelectTrigger className="w-48 bg-white border border-gray-300 hover:border-gray-400 shadow-lg text-gray-700 text-sm h-9 backdrop-blur-sm">
+                <SelectValue placeholder="Select model" />
+              </SelectTrigger>
+              <SelectContent className="z-50 bg-white border border-gray-300 shadow-xl">
+                {AI_MODELS.map((model) => (
+                  <SelectItem 
+                    key={model.value} 
+                    value={model.value}
+                    className="hover:bg-gray-50 cursor-pointer text-sm"
+                  >
+                    {model.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="bg-white border-b border-gray-200 p-4">
           <div className="flex items-center justify-between">
@@ -448,30 +470,8 @@ Be helpful, professional, and concise in your responses.`;
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 pt-16">
           <div className="max-w-4xl mx-auto space-y-6">
-            {/* Model Selector - ChatGPT Style */}
-            <div className="flex justify-start mb-4">
-              <div className="relative z-50">
-                <Select value={selectedModel} onValueChange={setSelectedModel}>
-                  <SelectTrigger className="w-48 bg-white border border-gray-300 hover:border-gray-400 shadow-sm text-gray-700 text-sm h-8">
-                    <SelectValue placeholder="Select model" />
-                  </SelectTrigger>
-                  <SelectContent className="z-50 bg-white border border-gray-300 shadow-lg">
-                    {AI_MODELS.map((model) => (
-                      <SelectItem 
-                        key={model.value} 
-                        value={model.value}
-                        className="hover:bg-gray-50 cursor-pointer text-sm"
-                      >
-                        {model.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
             {messages.map((message) => (
               <div
                 key={message.id}
