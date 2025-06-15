@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,11 +8,10 @@ import { Progress } from '@/components/ui/progress';
 import { Calendar, Target, Beaker, Settings, Plus } from 'lucide-react';
 
 interface ProductDevelopmentProps {
-  onNavigate?: (page: string, tab?: string) => void;
   isManaging?: boolean;
 }
 
-const ProductDevelopment: React.FC<ProductDevelopmentProps> = ({ onNavigate, isManaging = false }) => {
+const ProductDevelopment: React.FC<ProductDevelopmentProps> = ({ isManaging = false }) => {
   const [activeTab, setActiveTab] = useState('roadmap');
 
   const productRoadmap = [
