@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,35 +14,33 @@ interface WorksInProgressProps {
 
 const WorksInProgress: React.FC<WorksInProgressProps> = ({ onNavigate, isManaging = false }) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const { projects, createProject, updateProject, deleteProject } = useProjects();
+  const { projects, addProject, updateProject, deleteProject } = useProjects();
 
-  const handleAddProject = async (projectData: {
+  const handleAddProject = (projectData: {
     title: string;
     description: string;
-    status: 'Planning' | 'In Progress' | 'Completed';
-    priority: 'Low' | 'Medium' | 'High';
-    lead: string;
-    due_date: string;
+    status: 'planning' | 'in-progress' | 'review' | 'completed';
+    priority: 'low' | 'medium' | 'high';
+    assignee: string;
+    dueDate: string;
   }) => {
-    try {
-      await createProject({
-        ...projectData,
-        progress: 0,
-        attachments: [],
-      });
-      setIsAddDialogOpen(false);
-    } catch (error) {
-      // Error is handled by the hook
-    }
+    addProject({
+      ...projectData,
+      progress: 0,
+      tags: [],
+    });
+    setIsAddDialogOpen(false);
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Completed':
+      case 'completed':
         return 'default';
-      case 'In Progress':
+      case 'in-progress':
         return 'secondary';
-      case 'Planning':
+      case 'review':
+        return 'outline';
+      case 'planning':
         return 'outline';
       default:
         return 'secondary';
@@ -52,11 +49,11 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onNavigate, isManagin
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'High':
+      case 'high':
         return 'destructive';
-      case 'Medium':
+      case 'medium':
         return 'default';
-      case 'Low':
+      case 'low':
         return 'secondary';
       default:
         return 'secondary';
@@ -84,35 +81,35 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onNavigate, isManagin
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
                 <CardTitle className="text-lg">{project.title}</CardTitle>
-                <Badge variant={getPriorityColor(project.priority || 'Medium')}>{project.priority}</Badge>
+                <Badge variant={getPriorityColor(project.priority)}>{project.priority}</Badge>
               </div>
               <p className="text-sm text-gray-600">{project.description}</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">Progress</span>
-                <span className="font-medium">{project.progress || 0}%</span>
+                <span className="font-medium">{project.progress}%</span>
               </div>
-              <Progress value={project.progress || 0} className="w-full" />
+              <Progress value={project.progress} className="w-full" />
               
               <div className="flex items-center space-x-4 text-xs text-gray-500">
                 <div className="flex items-center">
                   <Users className="w-3 h-3 mr-1" />
-                  {project.lead}
+                  {project.assignee}
                 </div>
-                {project.due_date && (
-                  <div className="flex items-center">
-                    <Calendar className="w-3 h-3 mr-1" />
-                    {new Date(project.due_date).toLocaleDateString()}
-                  </div>
-                )}
+                <div className="flex items-center">
+                  <Calendar className="w-3 h-3 mr-1" />
+                  {new Date(project.dueDate).toLocaleDateString()}
+                </div>
               </div>
               
               <div className="flex justify-between items-center">
-                <Badge variant={getStatusColor(project.status || 'Planning')}>{project.status}</Badge>
-                {project.team && (
-                  <Badge variant="outline" className="text-xs">{project.team}</Badge>
-                )}
+                <Badge variant={getStatusColor(project.status)}>{project.status}</Badge>
+                <div className="flex space-x-1">
+                  {project.tags.map((tag, index) => (
+                    <Badge key={index} variant="outline" className="text-xs">{tag}</Badge>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

@@ -1,27 +1,18 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus } from 'lucide-react';
+import { useProjects } from '@/hooks/useProjects';
 import { useToast } from '@/hooks/use-toast';
 
-interface AddProjectDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onAddProject: (projectData: {
-    title: string;
-    description: string;
-    status: 'Planning' | 'In Progress' | 'Completed';
-    priority: 'Low' | 'Medium' | 'High';
-    lead: string;
-    due_date: string;
-  }) => void;
-}
-
-const AddProjectDialog: React.FC<AddProjectDialogProps> = ({ open, onOpenChange, onAddProject }) => {
+const AddProjectDialog: React.FC = () => {
+  const { createProject } = useProjects();
   const { toast } = useToast();
+  const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -45,13 +36,17 @@ const AddProjectDialog: React.FC<AddProjectDialogProps> = ({ open, onOpenChange,
     }
 
     try {
-      onAddProject({
+      await createProject({
         title: formData.title,
-        description: formData.description,
+        description: formData.description || undefined,
         lead: formData.lead,
+        team: formData.team || undefined,
         status: 'Planning',
         priority: formData.priority,
-        due_date: formData.dueDate
+        progress: 0,
+        start_date: formData.startDate || undefined,
+        due_date: formData.dueDate || undefined,
+        attachments: []
       });
 
       setFormData({
@@ -63,13 +58,20 @@ const AddProjectDialog: React.FC<AddProjectDialogProps> = ({ open, onOpenChange,
         startDate: '',
         dueDate: ''
       });
+      setOpen(false);
     } catch (error) {
-      // Error is handled by the parent component
+      // Error is handled by the hook
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="flex items-center">
+          <Plus className="w-4 h-4 mr-2" />
+          New Project
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
@@ -149,7 +151,7 @@ const AddProjectDialog: React.FC<AddProjectDialogProps> = ({ open, onOpenChange,
           </div>
 
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button type="submit">
