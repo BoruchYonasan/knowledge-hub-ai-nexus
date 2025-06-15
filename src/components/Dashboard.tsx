@@ -53,12 +53,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
         </div>
 
-        {/* Main Grid Layout - Expanded to 4 columns for better tile distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column - Latest Updates & Gantt Overview */}
-          <div className="lg:col-span-3">
+        {/* Main Grid Layout - 3 columns evenly distributed */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
+          {/* Left Column */}
+          <div className="space-y-6 overflow-y-auto">
             <Card 
-              className="h-fit cursor-pointer hover:shadow-lg transition-shadow"
+              className="cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => onNavigate('latest-updates')}
             >
               <CardHeader>
@@ -102,14 +102,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </CardContent>
             </Card>
 
-            {/* Gantt Chart Overview */}
-            <div className="mt-6">
-              <GanttOverviewTile onNavigate={onNavigate} />
-            </div>
+            <GanttOverviewTile onNavigate={onNavigate} />
+            
+            <TeamActivityTile onNavigate={onNavigate} />
           </div>
 
-          {/* Center-Left Column - Company Reports & Works In Progress */}
-          <div className="lg:col-span-3">
+          {/* Center Column */}
+          <div className="space-y-6 overflow-y-auto">
             <Card 
               className="cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => onNavigate('company-reports')}
@@ -133,9 +132,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </CardContent>
             </Card>
 
-            {/* Works In Progress Snapshot */}
             <Card 
-              className="mt-6 cursor-pointer hover:shadow-lg transition-shadow"
+              className="cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => onNavigate('project-central', 'progress')}
             >
               <CardHeader>
@@ -164,15 +162,31 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 ))}
               </CardContent>
             </Card>
+
+            <KnowledgeGalleryTile onNavigate={onNavigate} />
           </div>
 
-          {/* Center-Right Column - Knowledge Gallery & Roadmap */}
-          <div className="lg:col-span-3">
-            <KnowledgeGalleryTile onNavigate={onNavigate} />
+          {/* Right Column */}
+          <div className="space-y-6 overflow-y-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Quick Links to Popular Resources</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {quickLinksResources.map((link, index) => (
+                  <button
+                    key={index}
+                    onClick={() => onNavigate('knowledge')}
+                    className="w-full p-3 text-sm text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    {link}
+                  </button>
+                ))}
+              </CardContent>
+            </Card>
 
-            {/* Roadmap */}
             <Card 
-              className="mt-6 cursor-pointer hover:shadow-lg transition-shadow"
+              className="cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => onNavigate('project-central', 'roadmap')}
             >
               <CardHeader>
@@ -195,41 +209,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 ))}
               </CardContent>
             </Card>
-          </div>
 
-          {/* Right Column - New Tiles */}
-          <div className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Quick Links to Popular Resources</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {quickLinksResources.map((link, index) => (
-                  <button
-                    key={index}
-                    onClick={() => onNavigate('knowledge')}
-                    className="w-full p-3 text-sm text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    {link}
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Image Gallery */}
-            <div className="mt-6">
-              <ImageGalleryTile onNavigate={onNavigate} />
-            </div>
-
-            {/* Team Activity */}
-            <div className="mt-6">
-              <TeamActivityTile onNavigate={onNavigate} />
-            </div>
-
-            {/* Quick Actions */}
-            <div className="mt-6">
-              <QuickActionsTile onNavigate={onNavigate} />
-            </div>
+            <ImageGalleryTile onNavigate={onNavigate} />
+            
+            <QuickActionsTile onNavigate={onNavigate} />
           </div>
         </div>
       </div>
