@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import Navbar from '@/components/Navbar';
@@ -83,7 +82,7 @@ const Index = () => {
       case 'latest-updates':
         return (
           <div className="pt-16 pl-0 lg:pl-64">
-            <LatestUpdates isManaging={isGlobalManaging} />
+            <LatestUpdates isManaging={isGlobalManaging} onNavigate={setCurrentPage} />
           </div>
         );
       default:
