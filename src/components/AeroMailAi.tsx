@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -366,9 +367,10 @@ Be helpful, professional, and concise in your responses.`;
           )}
           <Button
             onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="flex-shrink-0"
+            className="flex-shrink-0 border-gray-300 hover:bg-gray-100 hover:border-gray-400 shadow-sm"
+            title={isHistoryCollapsed ? "Expand chat history" : "Collapse chat history"}
           >
             {isHistoryCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
@@ -406,9 +408,9 @@ Be helpful, professional, and concise in your responses.`;
           <div className="flex-1 flex flex-col items-center py-4 space-y-4">
             <Button
               onClick={createNewConversation}
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="w-8 h-8"
+              className="w-8 h-8 border-gray-300 hover:bg-gray-100"
               title="New Conversation"
             >
               <Plus className="h-4 w-4" />
@@ -416,10 +418,10 @@ Be helpful, professional, and concise in your responses.`;
             {conversations.slice(0, 3).map((conv) => (
               <Button
                 key={conv.id}
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className={`w-8 h-8 ${
-                  currentConversation?.id === conv.id ? 'bg-blue-100' : ''
+                className={`w-8 h-8 border-gray-300 hover:bg-gray-100 ${
+                  currentConversation?.id === conv.id ? 'bg-blue-100 border-blue-300' : ''
                 }`}
                 title={conv.title || 'Conversation'}
               >
