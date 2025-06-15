@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,11 @@ import { Upload, Plus, FileText, Folder } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
 
-const ContentManager: React.FC = () => {
+interface ContentManagerProps {
+  onNavigate?: (page: string, tab?: string) => void;
+}
+
+const ContentManager: React.FC<ContentManagerProps> = ({ onNavigate }) => {
   const { createArticle } = useKnowledgeBase();
   const [isUploading, setIsUploading] = useState(false);
   const [newContent, setNewContent] = useState({

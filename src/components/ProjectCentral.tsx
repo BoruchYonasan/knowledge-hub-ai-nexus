@@ -8,16 +8,17 @@ import WorksInProgress from './WorksInProgress';
 import GanttChart from './GanttChart';
 
 interface ProjectCentralProps {
+  onNavigate?: (page: string, tab?: string) => void;
   isManaging?: boolean;
-  defaultTab?: string;
+  initialTab?: string;
 }
 
-const ProjectCentral: React.FC<ProjectCentralProps> = ({ isManaging = false, defaultTab = 'overview' }) => {
-  const [activeTab, setActiveTab] = useState(defaultTab);
+const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging = false, initialTab = 'overview' }) => {
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   useEffect(() => {
-    setActiveTab(defaultTab);
-  }, [defaultTab]);
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   const roadmapItems = [
     {
@@ -253,7 +254,7 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ isManaging = false, def
         </TabsContent>
 
         <TabsContent value="progress" className="mt-6">
-          <WorksInProgress isManaging={isManaging} />
+          <WorksInProgress onNavigate={onNavigate} isManaging={isManaging} />
         </TabsContent>
 
         <TabsContent value="gantt" className="mt-6">

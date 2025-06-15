@@ -9,17 +9,21 @@ import { useGanttItems } from '@/hooks/useGanttItems';
 type GanttItem = ReturnType<typeof useGanttItems>['items'][0];
 
 interface GanttChartViewProps {
+  onNavigate?: (page: string, tab?: string) => void;
   items: GanttItem[];
   onItemEdit: (item: GanttItem) => void;
   onItemClick: (item: GanttItem) => void;
+  isManaging?: boolean;
 }
 
 type TimeScale = 'days' | 'weeks' | 'months' | 'quarters';
 
 const GanttChartView: React.FC<GanttChartViewProps> = ({
+  onNavigate,
   items,
   onItemEdit,
-  onItemClick
+  onItemClick,
+  isManaging = false
 }) => {
   const [timeScale, setTimeScale] = useState<TimeScale>('weeks');
   const [zoomLevel, setZoomLevel] = useState(1);

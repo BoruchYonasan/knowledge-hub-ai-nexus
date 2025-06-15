@@ -11,10 +11,11 @@ import MeetingPolls from './company-hub/MeetingPolls';
 import TeamCalendar from './company-hub/TeamCalendar';
 
 interface CompanyHubProps {
+  onNavigate?: (page: string, tab?: string) => void;
   isManaging?: boolean;
 }
 
-const CompanyHub: React.FC<CompanyHubProps> = ({ isManaging = false }) => {
+const CompanyHub: React.FC<CompanyHubProps> = ({ onNavigate, isManaging = false }) => {
   const { updates, loading } = useLatestUpdates();
   const [searchTerm, setSearchTerm] = useState('');
 
