@@ -516,7 +516,12 @@ Be helpful, professional, and concise in your responses.`;
             <CardTitle className="flex items-center justify-between text-lg">
               <div className="flex items-center space-x-2">
                 <Bot className="h-5 w-5 text-blue-600" />
-                <span>AeroMail Ai</span>
+                <button
+                  onClick={() => onNavigate('ai-chatbot-guide')}
+                  className="text-lg font-semibold hover:text-blue-600 transition-colors cursor-pointer"
+                >
+                  AeroMail Ai
+                </button>
                 {(isManagingUpdates || isManagingProjects || isManagingGantt || isManagingKnowledge) && (
                   <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
                     Content Manager
@@ -537,7 +542,7 @@ Be helpful, professional, and concise in your responses.`;
                   </SelectContent>
                 </Select>
                 <Button
-                  onClick={() => onNavigate('ai-chatbot-guide')}
+                  onClick={() => onNavigate('aeromail-ai')}
                   size="icon"
                   variant="ghost"
                   className="h-6 w-6"
