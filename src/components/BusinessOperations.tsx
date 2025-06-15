@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,10 +7,11 @@ import { Progress } from '@/components/ui/progress';
 import { DollarSign, TrendingUp, Users, Leaf, Plus } from 'lucide-react';
 
 interface BusinessOperationsProps {
+  onNavigate?: (page: string, tab?: string) => void;
   isManaging?: boolean;
 }
 
-const BusinessOperations: React.FC<BusinessOperationsProps> = ({ isManaging = false }) => {
+const BusinessOperations: React.FC<BusinessOperationsProps> = ({ onNavigate, isManaging = false }) => {
   const [activeTab, setActiveTab] = useState('financial');
 
   const financialOverview = [

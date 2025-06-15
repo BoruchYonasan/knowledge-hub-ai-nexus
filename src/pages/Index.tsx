@@ -10,7 +10,7 @@ import ProductDevelopment from '@/components/ProductDevelopment';
 import BusinessOperations from '@/components/BusinessOperations';
 import LatestUpdates from '@/components/LatestUpdates';
 import WorksInProgress from '@/components/WorksInProgress';
-import GanttChartView from '@/components/GanttChartView';
+import GanttChart from '@/components/GanttChart';
 import CompanyReports from '@/components/CompanyReports';
 import Search from '@/components/Search';
 import ContentManager from '@/components/ContentManager';
@@ -74,11 +74,11 @@ const Index = () => {
           />
         );
       case 'company-hub':
-        return <CompanyHub onNavigate={handleNavigate} />;
+        return <CompanyHub onNavigate={handleNavigate} isManaging={isGlobalManaging} />;
       case 'product-development':
         return <ProductDevelopment onNavigate={handleNavigate} />;
       case 'business-operations':
-        return <BusinessOperations onNavigate={handleNavigate} />;
+        return <BusinessOperations onNavigate={handleNavigate} isManaging={isGlobalManaging} />;
       case 'latest-updates':
         return (
           <LatestUpdates
@@ -87,11 +87,10 @@ const Index = () => {
           />
         );
       case 'works-in-progress':
-        return <WorksInProgress onNavigate={handleNavigate} />;
+        return <WorksInProgress onNavigate={handleNavigate} isManaging={isGlobalManaging} />;
       case 'gantt-chart':
         return (
-          <GanttChartView
-            onNavigate={handleNavigate}
+          <GanttChart
             isManaging={isGlobalManaging}
           />
         );
@@ -104,7 +103,7 @@ const Index = () => {
       case 'article-view':
         return (
           <ArticleView
-            articleId={selectedArticleId}
+            article={selectedArticleId}
             onNavigate={handleNavigate}
             onBack={() => handleNavigate('knowledge')}
           />
