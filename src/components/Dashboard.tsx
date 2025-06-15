@@ -16,30 +16,25 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     { label: 'Upcoming Milestones', value: '12', sublabel: 'Milestones' },
   ];
 
-  const companyReports = [
-    { title: 'Q4 Sales Report', date: 'Dec 15, 2024', status: 'Published' },
-    { title: 'Weekly Operations Summary', date: 'Dec 10, 2024', status: 'Draft' },
-    { title: 'Monthly Performance Review', date: 'Dec 1, 2024', status: 'Published' },
+  const newsAnnouncements = [
+    { title: 'Office reopening on May 15th', timeAgo: '3 days' },
+    { title: 'Launch of AeroMail 2.0 platform', timeAgo: '7 days' },
   ];
 
-  const worksInProgress = [
-    { title: 'Product Phoenix Development', progress: 75, team: 'Engineering' },
-    { title: 'Q1 Marketing Campaign', progress: 45, team: 'Marketing' },
-    { title: 'Customer Portal Redesign', progress: 90, team: 'UX/UI' },
-    { title: 'API Integration Project', progress: 30, team: 'Backend' },
+  const quickLinksLeft = [
+    'Popular Resources',
+    'Team Directory',
   ];
 
-  const roadmapItems = [
-    { milestone: 'Beta Release', date: 'Q1 2025', status: 'On Track' },
-    { milestone: 'Mobile App Launch', date: 'Q2 2025', status: 'Planning' },
-    { milestone: 'International Expansion', date: 'Q3 2025', status: 'Research' },
+  const quickLinksRight = [
+    'Technical Documentation',
+    'Product Roadmap',
   ];
 
-  const quickLinks = [
+  const quickLinksBottom = [
+    'Popular Resources',
     'Technical Documentation',
     'Team Directory',
-    'Product Roadmap',
-    'Popular Resources',
   ];
 
   return (
@@ -47,31 +42,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
       <div className="p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-navy-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Welcome back! Here's what's happening at AeroMail today.</p>
-        </div>
-
-        {/* Company Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {companyMetrics.map((metric, index) => (
-            <Card key={index} className="bg-gradient-to-br from-navy-50 to-blue-50 border-navy-200">
-              <CardContent className="p-6 text-center">
-                <div className="text-3xl font-bold text-navy-800 mb-1">{metric.value}</div>
-                <div className="text-sm text-navy-600">{metric.label}</div>
-                <div className="text-xs text-gray-500 mt-1">{metric.sublabel}</div>
-              </CardContent>
-            </Card>
-          ))}
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
         </div>
 
         {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column */}
-          <div className="lg:col-span-4 space-y-6">
-            {/* Latest Updates */}
-            <Card className="shadow-sm border-gray-200">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-navy-800">Latest Updates</CardTitle>
+          {/* Left Column - Latest Updates */}
+          <div className="lg:col-span-4">
+            <Card className="h-fit">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Latest Updates</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {loading ? (
@@ -82,25 +62,28 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                    <div className="flex items-start space-x-3">
                       <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                       <div>
-                        <p className="text-sm font-medium text-navy-800">Q4 Sales Report has been published</p>
-                        <p className="text-xs text-gray-500 mt-1">2 hours ago</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          Of Sales Report has been published
+                        </p>
                       </div>
                     </div>
-                    <div className="flex items-start space-x-3 p-3 bg-emerald-50 rounded-lg">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                       <div>
-                        <p className="text-sm font-medium text-navy-800">Updated project plan for Project Phoenix</p>
-                        <p className="text-xs text-gray-500 mt-1">4 hours ago</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          Updated project plan for Project Phoenix
+                        </p>
                       </div>
                     </div>
-                    <div className="flex items-start space-x-3 p-3 bg-purple-50 rounded-lg">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                       <div>
-                        <p className="text-sm font-medium text-navy-800">New employee onboarding guide</p>
-                        <p className="text-xs text-gray-500 mt-1">1 day ago</p>
+                        <p className="text-sm font-medium text-gray-900">
+                          New employee onboarding guide
+                        </p>
                       </div>
                     </div>
                   </>
@@ -108,106 +91,130 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </CardContent>
             </Card>
 
-            {/* Company Reports */}
-            <Card className="shadow-sm border-gray-200">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-navy-800">Company Reports</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {companyReports.map((report, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-                    <div>
-                      <p className="text-sm font-medium text-navy-800">{report.title}</p>
-                      <p className="text-xs text-gray-500">{report.date}</p>
-                    </div>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      report.status === 'Published' 
-                        ? 'bg-emerald-100 text-emerald-700' 
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {report.status}
-                    </span>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Center Column */}
-          <div className="lg:col-span-4 space-y-6">
-            {/* Works In Progress Snapshot */}
-            <Card className="shadow-sm border-gray-200">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-navy-800">Works In Progress Snapshot</CardTitle>
+            {/* News & Announcements */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">News & Announcements</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {worksInProgress.map((work, index) => (
-                  <div key={index} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-medium text-navy-800">{work.title}</p>
-                      <span className="text-xs text-gray-500">{work.team}</span>
-                    </div>
+                {newsAnnouncements.map((news, index) => (
+                  <div key={index} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-gradient-to-r from-blue-500 to-emerald-500 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${work.progress}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-medium text-navy-700">{work.progress}%</span>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0"></div>
+                      <p className="text-sm text-gray-900">{news.title}</p>
                     </div>
+                    <span className="text-xs text-gray-500">{news.timeAgo}</span>
                   </div>
                 ))}
               </CardContent>
             </Card>
 
-            {/* Roadmap */}
-            <Card className="shadow-sm border-gray-200">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-navy-800">Roadmap</CardTitle>
+            {/* Quick Links (Bottom) */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Quick Links</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {roadmapItems.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gradient-to-r from-navy-50 to-blue-50 rounded-lg">
-                    <div>
-                      <p className="text-sm font-medium text-navy-800">{item.milestone}</p>
-                      <p className="text-xs text-gray-600">{item.date}</p>
-                    </div>
-                    <span className={`px-3 py-1 text-xs rounded-full font-medium ${
-                      item.status === 'On Track' 
-                        ? 'bg-emerald-100 text-emerald-700' 
-                        : item.status === 'Planning'
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {item.status}
-                    </span>
-                  </div>
-                ))}
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  {quickLinksLeft.map((link, index) => (
+                    <button
+                      key={index}
+                      onClick={() => onNavigate('knowledge')}
+                      className="p-3 text-sm text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      {link}
+                    </button>
+                  ))}
+                  {quickLinksRight.map((link, index) => (
+                    <button
+                      key={index}
+                      onClick={() => onNavigate('knowledge')}
+                      className="p-3 text-sm text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      {link}
+                    </button>
+                  ))}
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Right Column */}
+          {/* Center Column - Company Metrics */}
           <div className="lg:col-span-4">
-            {/* Quick Links to Popular Resources */}
-            <Card className="shadow-sm border-gray-200">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-semibold text-navy-800">Quick Links to Popular Resources</CardTitle>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Company Metrics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-6 text-center">
+                  {companyMetrics.map((metric, index) => (
+                    <div key={index}>
+                      <div className="text-3xl font-bold text-gray-900 mb-1">{metric.value}</div>
+                      <div className="text-sm text-gray-600">{metric.sublabel}</div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Project Timeline */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Project Timeline</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between text-xs text-gray-500 mb-4">
+                    <span>March</span>
+                    <span>Apr</span>
+                    <span>Apr</span>
+                    <span>May</span>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="h-2 bg-blue-200 rounded-full">
+                      <div className="h-2 bg-blue-500 rounded-full w-3/4"></div>
+                    </div>
+                    <div className="h-2 bg-purple-200 rounded-full">
+                      <div className="h-2 bg-purple-500 rounded-full w-1/2"></div>
+                    </div>
+                    <div className="h-2 bg-yellow-200 rounded-full">
+                      <div className="h-2 bg-yellow-500 rounded-full w-1/4"></div>
+                    </div>
+                    <div className="h-2 bg-green-200 rounded-full">
+                      <div className="h-2 bg-green-500 rounded-full w-5/6"></div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - AI Assistant & Quick Links */}
+          <div className="lg:col-span-4">
+            <Card className="bg-blue-600 text-white">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">AI Assistant</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-white text-gray-900 rounded-lg p-4 mb-4">
+                  <p className="text-sm">How can I help you today?</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Links (Right) */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Quick Links</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {quickLinks.map((link, index) => (
+                {quickLinksBottom.map((link, index) => (
                   <button
                     key={index}
                     onClick={() => onNavigate('knowledge')}
-                    className="w-full p-4 text-left bg-gradient-to-r from-gray-50 to-blue-50 border border-gray-200 rounded-lg hover:from-blue-50 hover:to-emerald-50 hover:border-blue-300 transition-all duration-200 group"
+                    className="w-full p-3 text-sm text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-navy-800 group-hover:text-navy-900">{link}</span>
-                      <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    {link}
                   </button>
                 ))}
               </CardContent>
