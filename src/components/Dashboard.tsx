@@ -10,31 +10,30 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const { updates, loading } = useLatestUpdates();
 
-  const companyMetrics = [
-    { label: 'Active Projects', value: '23', sublabel: 'Projects' },
-    { label: 'Open Tasks', value: '127', sublabel: 'Tasks' },
-    { label: 'Upcoming Milestones', value: '12', sublabel: 'Milestones' },
-  ];
-
-  const newsAnnouncements = [
-    { title: 'Office reopening on May 15th', timeAgo: '3 days' },
-    { title: 'Launch of AeroMail 2.0 platform', timeAgo: '7 days' },
-  ];
-
-  const quickLinksLeft = [
+  const quickLinksResources = [
     'Popular Resources',
-    'Team Directory',
-  ];
-
-  const quickLinksRight = [
     'Technical Documentation',
+    'Team Directory',
     'Product Roadmap',
   ];
 
-  const quickLinksBottom = [
-    'Popular Resources',
-    'Technical Documentation',
-    'Team Directory',
+  const companyReports = [
+    { title: 'Weekly Sales Report - June Week 2', date: '2024-06-14' },
+    { title: 'Operations Summary - June Week 2', date: '2024-06-14' },
+    { title: 'Weekly Sales Report - June Week 1', date: '2024-06-07' },
+    { title: 'Operations Summary - June Week 1', date: '2024-06-07' },
+  ];
+
+  const worksInProgress = [
+    { project: 'AeroMail Pro v2.0', progress: 75, status: 'On Track' },
+    { project: 'Carbon Credit Platform', progress: 90, status: 'On Track' },
+    { project: 'Enterprise Dashboard v3.0', progress: 25, status: 'Planning' },
+  ];
+
+  const roadmapMilestones = [
+    { milestone: 'AeroMail Pro v2.0 Release', date: 'Aug 15, 2024', status: 'upcoming' },
+    { milestone: 'Carbon Platform Launch', date: 'Jul 1, 2024', status: 'upcoming' },
+    { milestone: 'Q3 Product Review', date: 'Sep 30, 2024', status: 'planned' },
   ];
 
   return (
@@ -66,7 +65,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                       <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">
-                          Of Sales Report has been published
+                          Q2 Sales Report has been published
                         </p>
                       </div>
                     </div>
@@ -91,124 +90,81 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </CardContent>
             </Card>
 
-            {/* News & Announcements */}
+            {/* Works In Progress Snapshot */}
             <Card className="mt-6">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">News & Announcements</CardTitle>
+                <CardTitle className="text-lg font-semibold text-gray-900">Works In Progress Snapshot</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {newsAnnouncements.map((news, index) => (
+                {worksInProgress.map((work, index) => (
                   <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0"></div>
-                      <p className="text-sm text-gray-900">{news.title}</p>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">{work.project}</p>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-500 h-2 rounded-full" 
+                            style={{ width: `${work.progress}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-xs text-gray-500">{work.progress}%</span>
+                      </div>
                     </div>
-                    <span className="text-xs text-gray-500">{news.timeAgo}</span>
+                    <span className="text-xs text-gray-600 ml-3">{work.status}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Center Column - Company Reports */}
+          <div className="lg:col-span-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Company Reports</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {companyReports.map((report, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{report.title}</p>
+                      <p className="text-xs text-gray-500">{report.date}</p>
+                    </div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                   </div>
                 ))}
               </CardContent>
             </Card>
 
-            {/* Quick Links (Bottom) */}
+            {/* Roadmap */}
             <Card className="mt-6">
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Quick Links</CardTitle>
+                <CardTitle className="text-lg font-semibold text-gray-900">Roadmap</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  {quickLinksLeft.map((link, index) => (
-                    <button
-                      key={index}
-                      onClick={() => onNavigate('knowledge')}
-                      className="p-3 text-sm text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      {link}
-                    </button>
-                  ))}
-                  {quickLinksRight.map((link, index) => (
-                    <button
-                      key={index}
-                      onClick={() => onNavigate('knowledge')}
-                      className="p-3 text-sm text-left border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      {link}
-                    </button>
-                  ))}
-                </div>
+              <CardContent className="space-y-3">
+                {roadmapMilestones.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className={`w-2 h-2 rounded-full ${item.status === 'upcoming' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{item.milestone}</p>
+                        <p className="text-xs text-gray-500">{item.date}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </div>
 
-          {/* Center Column - Company Metrics */}
+          {/* Right Column - Quick Links */}
           <div className="lg:col-span-4">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Company Metrics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-6 text-center">
-                  {companyMetrics.map((metric, index) => (
-                    <div key={index}>
-                      <div className="text-3xl font-bold text-gray-900 mb-1">{metric.value}</div>
-                      <div className="text-sm text-gray-600">{metric.sublabel}</div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Project Timeline */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Project Timeline</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between text-xs text-gray-500 mb-4">
-                    <span>March</span>
-                    <span>Apr</span>
-                    <span>Apr</span>
-                    <span>May</span>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="h-2 bg-blue-200 rounded-full">
-                      <div className="h-2 bg-blue-500 rounded-full w-3/4"></div>
-                    </div>
-                    <div className="h-2 bg-purple-200 rounded-full">
-                      <div className="h-2 bg-purple-500 rounded-full w-1/2"></div>
-                    </div>
-                    <div className="h-2 bg-yellow-200 rounded-full">
-                      <div className="h-2 bg-yellow-500 rounded-full w-1/4"></div>
-                    </div>
-                    <div className="h-2 bg-green-200 rounded-full">
-                      <div className="h-2 bg-green-500 rounded-full w-5/6"></div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column - AI Assistant & Quick Links */}
-          <div className="lg:col-span-4">
-            <Card className="bg-blue-600 text-white">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">AI Assistant</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-white text-gray-900 rounded-lg p-4 mb-4">
-                  <p className="text-sm">How can I help you today?</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Links (Right) */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Quick Links</CardTitle>
+                <CardTitle className="text-lg font-semibold text-gray-900">Quick Links to Popular Resources</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {quickLinksBottom.map((link, index) => (
+                {quickLinksResources.map((link, index) => (
                   <button
                     key={index}
                     onClick={() => onNavigate('knowledge')}

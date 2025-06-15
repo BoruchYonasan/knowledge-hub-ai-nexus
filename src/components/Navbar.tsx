@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Settings, Menu, X, HelpCircle, User } from 'lucide-react';
+import { Settings, Menu, X, HelpCircle, User, Handshake } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: string;
@@ -23,6 +23,8 @@ const Navbar: React.FC<NavbarProps> = ({
     { id: 'project-central', name: 'Project Central', icon: '📋' },
     { id: 'knowledge', name: 'Knowledge Base', icon: '📚' },
     { id: 'company-hub', name: 'Company Hub', icon: '👥' },
+    { id: 'product-development', name: 'Product Development', icon: '🚀' },
+    { id: 'business-operations', name: 'Business Operations', icon: '💼' },
   ];
 
   const knowledgeSubItems = [
@@ -30,13 +32,6 @@ const Navbar: React.FC<NavbarProps> = ({
     { id: 'product-specs', name: 'Product Specifications', parent: 'knowledge' },
     { id: 'material-props', name: 'Material Properties', parent: 'knowledge' },
     { id: 'design-files', name: 'Design Files', parent: 'knowledge' },
-  ];
-
-  const productDevItems = [
-    { id: 'product-roadmap', name: 'Product Roadmap', parent: 'product-development' },
-    { id: 'rd-docs', name: 'R&D Documentation', parent: 'product-development' },
-    { id: 'testing-results', name: 'Testing Results', parent: 'product-development' },
-    { id: 'prototype-status', name: 'Prototype Status', parent: 'product-development' },
   ];
 
   const handleLogout = () => {
@@ -125,7 +120,7 @@ const Navbar: React.FC<NavbarProps> = ({
           {/* Knowledge Base Section */}
           <div className="mt-6">
             <div className="px-4 py-2 text-xs font-semibold text-blue-200 uppercase tracking-wider">
-              CONFOUDAS BASE
+              KNOWLEDGE BASE
             </div>
             {knowledgeSubItems.map((item) => (
               <button
@@ -140,26 +135,16 @@ const Navbar: React.FC<NavbarProps> = ({
                 <span className="text-sm">{item.name}</span>
               </button>
             ))}
-          </div>
-
-          {/* Product Development Section */}
-          <div className="mt-6">
-            <div className="px-4 py-2 text-xs font-semibold text-blue-200 uppercase tracking-wider">
-              PRODUCT DEVELOPMENT
-            </div>
-            {productDevItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onNavigate('product-development');
-                  setIsMobileMenuOpen(false);
-                }}
-                className="w-full flex items-center space-x-3 px-4 py-2 text-left rounded-lg text-blue-100 hover:bg-blue-500 hover:text-white transition-colors"
-              >
-                <span className="text-sm">📋</span>
-                <span className="text-sm">{item.name}</span>
-              </button>
-            ))}
+            <button
+              onClick={() => {
+                onNavigate('knowledge');
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center space-x-3 px-4 py-2 text-left rounded-lg text-blue-100 hover:bg-blue-500 hover:text-white transition-colors"
+            >
+              <Handshake className="w-4 h-4" />
+              <span className="text-sm">Business Documentation</span>
+            </button>
           </div>
         </nav>
       </div>
