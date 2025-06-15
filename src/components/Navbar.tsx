@@ -1,13 +1,21 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Settings } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: string;
   onNavigate: (page: string) => void;
+  isGlobalManaging?: boolean;
+  onGlobalManagingChange?: (isManaging: boolean) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
+const Navbar: React.FC<NavbarProps> = ({ 
+  currentPage, 
+  onNavigate, 
+  isGlobalManaging = false, 
+  onGlobalManagingChange 
+}) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
@@ -23,6 +31,10 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
   const handleLogout = () => {
     localStorage.removeItem('kb_authenticated');
     window.location.reload();
+  };
+
+  const handleGlobalManageToggle = () => {
+    onGlobalManagingChange?.(!isGlobalManaging);
   };
 
   return (
@@ -59,6 +71,19 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
 
           <div className="flex items-center space-x-4">
             <Button
+              variant={isGlobalManaging ? 'default' : 'outline'}
+              size="sm"
+              onClick={handleGlobalManageToggle}
+              className={`flex items-center ${
+                isGlobalManaging 
+                  ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              {isGlobalManaging ? 'Exit Manage' : 'Manage'}
+            </Button>
+            <Button
               variant="outline"
               size="sm"
               onClick={handleLogout}
@@ -91,6 +116,17 @@ const Navbar: React.FC<NavbarProps> = ({ currentPage, onNavigate }) => {
                 {item.name}
               </button>
             ))}
+            <button
+              onClick={handleGlobalManageToggle}
+              className={`block px-3 py-2 text-base font-medium rounded-md transition-colors w-full text-left ${
+                isGlobalManaging 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              <Settings className="w-4 h-4 mr-2 inline" />
+              {isGlobalManaging ? 'Exit Manage' : 'Manage'}
+            </button>
             <button
               onClick={handleLogout}
               className="block px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md transition-colors w-full text-left"

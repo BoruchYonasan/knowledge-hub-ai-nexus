@@ -11,19 +11,14 @@ import ArticleView from './ArticleView';
 
 interface KnowledgeBaseProps {
   onNavigate?: (page: string) => void;
-  onManagingChange?: (isManaging: boolean) => void;
+  isManaging?: boolean;
 }
 
-const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate, onManagingChange }) => {
+const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate, isManaging = false }) => {
   const { articles, loading } = useKnowledgeBase();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [isManaging, setIsManaging] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
-
-  React.useEffect(() => {
-    onManagingChange?.(isManaging);
-  }, [isManaging, onManagingChange]);
 
   const categories = [
     { id: 'all', label: 'All Categories', icon: BookOpen },
@@ -83,18 +78,12 @@ const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate, onManagingCha
           <h1 className="text-3xl font-bold text-gray-900">Knowledge Base</h1>
           <p className="text-gray-600">Access company documentation, guides, and resources</p>
         </div>
-        <div className="flex space-x-2">
+        {isManaging && (
           <Button className="flex items-center" onClick={handleAddArticle}>
             <Plus className="w-4 h-4 mr-2" />
             Add Article
           </Button>
-          <Button
-            variant={isManaging ? 'destructive' : 'default'}
-            onClick={() => setIsManaging(!isManaging)}
-          >
-            {isManaging ? 'Exit Manage Mode' : 'Manage Mode'}
-          </Button>
-        </div>
+        )}
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center">

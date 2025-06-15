@@ -14,10 +14,7 @@ import { useContentManager } from '@/hooks/useContentManager';
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const [isManagingUpdates, setIsManagingUpdates] = useState(false);
-  const [isManagingProjects, setIsManagingProjects] = useState(false);
-  const [isManagingGantt, setIsManagingGantt] = useState(false);
-  const [isManagingKnowledge, setIsManagingKnowledge] = useState(false);
+  const [isGlobalManaging, setIsGlobalManaging] = useState(false);
   const [hasNewAIMessage, setHasNewAIMessage] = useState(false);
   
   const { 
@@ -40,13 +37,13 @@ const Index = () => {
       case 'dashboard':
         return <Dashboard onNavigate={setCurrentPage} />;
       case 'knowledge':
-        return <KnowledgeBase onNavigate={setCurrentPage} onManagingChange={setIsManagingKnowledge} />;
+        return <KnowledgeBase onNavigate={setCurrentPage} isManaging={isGlobalManaging} />;
       case 'updates':
-        return <LatestUpdates onManagingChange={setIsManagingUpdates} />;
+        return <LatestUpdates isManaging={isGlobalManaging} />;
       case 'progress':
-        return <WorksInProgress onManagingChange={setIsManagingProjects} />;
+        return <WorksInProgress isManaging={isGlobalManaging} />;
       case 'gantt':
-        return <GanttChart onManagingChange={setIsManagingGantt} />;
+        return <GanttChart isManaging={isGlobalManaging} />;
       case 'search':
         return <Search />;
       case 'content-manager':
@@ -59,20 +56,8 @@ const Index = () => {
   const getKnowledgeBaseContext = () => {
     let context = `Current page: ${currentPage}. Available sections: Dashboard, Knowledge Base, Latest Updates, Works in Progress, Gantt Chart, Search, Content Manager.`;
     
-    if (isManagingUpdates) {
-      context += " Currently in MANAGE MODE for Latest Updates - can create announcements and updates.";
-    }
-    
-    if (isManagingProjects) {
-      context += " Currently in MANAGE MODE for Works in Progress - can create new projects.";
-    }
-
-    if (isManagingGantt) {
-      context += " Currently in MANAGE MODE for Gantt Chart - can create milestones, tasks, and subtasks.";
-    }
-
-    if (isManagingKnowledge) {
-      context += " Currently in MANAGE MODE for Knowledge Base - can create articles and documentation.";
+    if (isGlobalManaging) {
+      context += " Currently in GLOBAL MANAGE MODE - can create, edit, and delete content across all sections.";
     }
     
     return context;
@@ -81,7 +66,12 @@ const Index = () => {
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
-        <Navbar currentPage={currentPage} onNavigate={setCurrentPage} />
+        <Navbar 
+          currentPage={currentPage} 
+          onNavigate={setCurrentPage}
+          isGlobalManaging={isGlobalManaging}
+          onGlobalManagingChange={setIsGlobalManaging}
+        />
         <main>
           {renderCurrentPage()}
         </main>
@@ -100,10 +90,10 @@ const Index = () => {
           onCreateArticle={createArticleFromAI}
           onEditArticle={editArticleFromAI}
           onDeleteArticle={deleteArticleFromAI}
-          isManagingUpdates={isManagingUpdates}
-          isManagingProjects={isManagingProjects}
-          isManagingGantt={isManagingGantt}
-          isManagingKnowledge={isManagingKnowledge}
+          isManagingUpdates={isGlobalManaging}
+          isManagingProjects={isGlobalManaging}
+          isManagingGantt={isGlobalManaging}
+          isManagingKnowledge={isGlobalManaging}
           onNewMessage={() => setHasNewAIMessage(true)}
           hasNewMessage={hasNewAIMessage}
           onMessageRead={() => setHasNewAIMessage(false)}
