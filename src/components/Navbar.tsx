@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Settings, Menu, X, HelpCircle, User, Handshake } from 'lucide-react';
+import { Settings, Menu, X, HelpCircle, User, BookOpen, Calendar, ExternalLink, Bot, FileText } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: string;
@@ -27,16 +27,27 @@ const Navbar: React.FC<NavbarProps> = ({
     { id: 'business-operations', name: 'Business Operations', icon: '💼' },
   ];
 
-  const knowledgeSubItems = [
-    { id: 'technical-docs', name: 'Technical Documentation', parent: 'knowledge' },
-    { id: 'product-specs', name: 'Product Specifications', parent: 'knowledge' },
-    { id: 'material-props', name: 'Material Properties', parent: 'knowledge' },
-    { id: 'design-files', name: 'Design Files', parent: 'knowledge' },
+  const navigationItems = [
+    { id: 'knowledge', name: 'Knowledge Base', icon: BookOpen, type: 'internal' },
+    { id: 'company-hub', name: 'Calendar', icon: Calendar, type: 'internal' },
+    { id: 'aeromail-website', name: 'AeroMail Website', icon: ExternalLink, type: 'external', url: 'https://am.dev.narrative.studio/' },
+    { id: 'ai-chatbot-guide', name: 'AI Chatbot Guide', icon: Bot, type: 'placeholder' },
+    { id: 'company-reports', name: 'Company Reports', icon: FileText, type: 'internal' },
   ];
 
   const handleLogout = () => {
     localStorage.removeItem('kb_authenticated');
     window.location.reload();
+  };
+
+  const handleNavigationClick = (item: typeof navigationItems[0]) => {
+    if (item.type === 'external') {
+      window.open(item.url, '_blank');
+    } else if (item.type === 'internal') {
+      onNavigate(item.id);
+    }
+    // For placeholder items, do nothing
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -127,34 +138,27 @@ const Navbar: React.FC<NavbarProps> = ({
             </button>
           ))}
 
-          {/* Knowledge Base Section */}
+          {/* Navigate Section */}
           <div className="mt-6">
             <div className="px-4 py-2 text-xs font-semibold text-blue-200 uppercase tracking-wider">
-              KNOWLEDGE BASE
+              NAVIGATE
             </div>
-            {knowledgeSubItems.map((item) => (
+            {navigationItems.map((item) => (
               <button
                 key={item.id}
-                onClick={() => {
-                  onNavigate('knowledge');
-                  setIsMobileMenuOpen(false);
-                }}
-                className="w-full flex items-center space-x-3 px-4 py-2 text-left rounded-lg text-blue-100 hover:bg-blue-500 hover:text-white transition-colors"
+                onClick={() => handleNavigationClick(item)}
+                className={`w-full flex items-center space-x-3 px-4 py-2 text-left rounded-lg transition-colors ${
+                  item.type === 'placeholder' 
+                    ? 'text-blue-300 cursor-not-allowed opacity-75' 
+                    : 'text-blue-100 hover:bg-blue-500 hover:text-white'
+                }`}
+                disabled={item.type === 'placeholder'}
               >
-                <span className="text-sm">📄</span>
+                <item.icon className="w-4 h-4" />
                 <span className="text-sm">{item.name}</span>
+                {item.type === 'external' && <ExternalLink className="w-3 h-3 ml-auto" />}
               </button>
             ))}
-            <button
-              onClick={() => {
-                onNavigate('knowledge');
-                setIsMobileMenuOpen(false);
-              }}
-              className="w-full flex items-center space-x-3 px-4 py-2 text-left rounded-lg text-blue-100 hover:bg-blue-500 hover:text-white transition-colors"
-            >
-              <Handshake className="w-4 h-4" />
-              <span className="text-sm">Business Documentation</span>
-            </button>
           </div>
         </nav>
       </div>
