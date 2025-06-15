@@ -1,9 +1,8 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bot, User, Send, Upload, FileText, Trash2, Plus, MessageSquare } from 'lucide-react';
+import { Bot, User, Send, Upload, FileText, Trash2, Plus, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAIConversations } from '@/hooks/useAIConversations';
 
@@ -60,6 +59,7 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
   const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash-exp');
   const [showSuggestedReplies, setShowSuggestedReplies] = useState(true);
   const [conversations, setConversations] = useState<any[]>([]);
+  const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -82,7 +82,6 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  // Initialize conversation
   useEffect(() => {
     const initializeConversation = async () => {
       const contextType = isManagingUpdates || isManagingProjects || isManagingGantt || isManagingKnowledge 
@@ -114,7 +113,6 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
         setShowSuggestedReplies(convertedMessages.length === 0);
       }
 
-      // Load conversation history for sidebar
       loadConversations();
     };
 
@@ -344,51 +342,92 @@ Be helpful, professional, and concise in your responses.`;
 
   if (conversationLoading) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="h-screen flex items-center justify-center ml-64">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen bg-gray-50 flex">
+    <div className="h-screen bg-gray-50 flex ml-64">
       {/* Left Sidebar - Conversation History */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
+      <div className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ${
+        isHistoryCollapsed ? 'w-12' : 'w-80'
+      }`}>
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          {!isHistoryCollapsed && (
+            <Button
+              onClick={createNewConversation}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white mr-2"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Conversation
+            </Button>
+          )}
           <Button
-            onClick={createNewConversation}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
+            variant="ghost"
+            size="icon"
+            className="flex-shrink-0"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            New Conversation
+            {isHistoryCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Recent Conversations</h3>
-          <div className="space-y-2">
-            {conversations.map((conv) => (
-              <button
-                key={conv.id}
-                className={`w-full text-left p-3 rounded-lg hover:bg-gray-100 ${
-                  currentConversation?.id === conv.id ? 'bg-blue-50 border border-blue-200' : ''
-                }`}
-              >
-                <div className="flex items-center space-x-2">
-                  <MessageSquare className="h-4 w-4 text-gray-400" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {conv.title || 'New Conversation'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(conv.updated_at).toLocaleDateString()}
-                    </p>
+        {!isHistoryCollapsed && (
+          <div className="flex-1 overflow-y-auto p-4">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">Recent Conversations</h3>
+            <div className="space-y-2">
+              {conversations.map((conv) => (
+                <button
+                  key={conv.id}
+                  className={`w-full text-left p-3 rounded-lg hover:bg-gray-100 ${
+                    currentConversation?.id === conv.id ? 'bg-blue-50 border border-blue-200' : ''
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <MessageSquare className="h-4 w-4 text-gray-400" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {conv.title || 'New Conversation'}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(conv.updated_at).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </button>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {isHistoryCollapsed && (
+          <div className="flex-1 flex flex-col items-center py-4 space-y-4">
+            <Button
+              onClick={createNewConversation}
+              variant="ghost"
+              size="icon"
+              className="w-8 h-8"
+              title="New Conversation"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+            {conversations.slice(0, 3).map((conv) => (
+              <Button
+                key={conv.id}
+                variant="ghost"
+                size="icon"
+                className={`w-8 h-8 ${
+                  currentConversation?.id === conv.id ? 'bg-blue-100' : ''
+                }`}
+                title={conv.title || 'Conversation'}
+              >
+                <MessageSquare className="h-4 w-4" />
+              </Button>
             ))}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Main Chat Area */}
