@@ -126,13 +126,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
           sender: msg.sender as 'user' | 'ai',
           timestamp: new Date(msg.created_at),
           modelUsed: msg.model_used || undefined,
-          files: msg.files_context || undefined
+          files: Array.isArray(msg.files_context) ? msg.files_context as UploadedFile[] : undefined
         }));
 
         setMessages(convertedMessages.length > 0 ? convertedMessages : [
           {
             id: '1',
-            content: "Hello! I'm your enhanced AeroMail AI assistant with persistent memory. I can remember our conversation history and handle complex tasks. I can help you navigate our knowledge base, find information about company policies, procedures, and answer questions about our organization. I can also help manage content when you're in manage mode. What would you like to know?",
+            content: "Hello! I'm your enhanced AeroMail AI assistant with persistent memory and multi-model support (Gemini, Claude, and OpenAI). I can remember our conversation history and handle complex tasks. I can help you navigate our knowledge base, find information about company policies, procedures, and answer questions about our organization. I can also help manage content when you're in manage mode. What would you like to know?",
             sender: 'ai',
             timestamp: new Date()
           }
