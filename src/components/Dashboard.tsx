@@ -105,6 +105,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <GanttOverviewTile onNavigate={onNavigate} />
             
             <TeamActivityTile onNavigate={onNavigate} />
+
+            <ImageGalleryTile onNavigate={onNavigate} />
           </div>
 
           {/* Center Column */}
@@ -209,8 +211,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 ))}
               </CardContent>
             </Card>
-
-            <ImageGalleryTile onNavigate={onNavigate} />
             
             <QuickActionsTile onNavigate={onNavigate} />
           </div>
