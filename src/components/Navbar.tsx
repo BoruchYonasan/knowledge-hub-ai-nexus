@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Settings, Menu, X, HelpCircle, User } from 'lucide-react';
+import { Settings, Menu, X, HelpCircle, User, Handshake } from 'lucide-react';
 
 interface NavbarProps {
   currentPage: string;
@@ -23,6 +23,16 @@ const Navbar: React.FC<NavbarProps> = ({
     { id: 'project-central', name: 'Project Central', icon: '📋' },
     { id: 'knowledge', name: 'Knowledge Base', icon: '📚' },
     { id: 'company-hub', name: 'Company Hub', icon: '👥' },
+    { id: 'product-development', name: 'Product Development', icon: '🔬' },
+    { id: 'business-operations', name: 'Business Operations', icon: '💼' },
+  ];
+
+  const dashboardSubItems = [
+    { id: 'latest-updates', name: 'Latest Updates', parent: 'dashboard' },
+    { id: 'works-in-progress', name: 'Works In Progress Snapshot', parent: 'dashboard' },
+    { id: 'company-reports', name: 'Company Reports', parent: 'dashboard' },
+    { id: 'quick-links', name: 'Quick Links to Popular Resources', parent: 'dashboard' },
+    { id: 'roadmap', name: 'Roadmap', parent: 'dashboard' },
   ];
 
   const knowledgeSubItems = [
@@ -30,6 +40,7 @@ const Navbar: React.FC<NavbarProps> = ({
     { id: 'product-specs', name: 'Product Specifications', parent: 'knowledge' },
     { id: 'material-props', name: 'Material Properties', parent: 'knowledge' },
     { id: 'design-files', name: 'Design Files', parent: 'knowledge' },
+    { id: 'business-docs', name: 'Business Documentation', parent: 'knowledge', icon: 'handshake' },
   ];
 
   const productDevItems = [
@@ -37,6 +48,13 @@ const Navbar: React.FC<NavbarProps> = ({
     { id: 'rd-docs', name: 'R&D Documentation', parent: 'product-development' },
     { id: 'testing-results', name: 'Testing Results', parent: 'product-development' },
     { id: 'prototype-status', name: 'Prototype Status', parent: 'product-development' },
+  ];
+
+  const businessOpsItems = [
+    { id: 'financial-overview', name: 'Financial Overview', parent: 'business-operations' },
+    { id: 'market-research', name: 'Market Research', parent: 'business-operations' },
+    { id: 'customer-pipeline', name: 'Customer Pipeline', parent: 'business-operations' },
+    { id: 'carbon-credit', name: 'Carbon Credit Platform', parent: 'business-operations' },
   ];
 
   const handleLogout = () => {
@@ -87,11 +105,11 @@ const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Left Sidebar */}
-      <div className={`fixed left-0 top-16 bottom-0 w-64 bg-blue-600 text-white z-40 transform transition-transform duration-300 ${
+      <div className={`fixed left-0 top-16 bottom-0 w-64 bg-navy-800 text-white z-40 transform transition-transform duration-300 ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`}>
         {/* Logo */}
-        <div className="p-6 border-b border-blue-500">
+        <div className="p-6 border-b border-navy-700">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-white bg-opacity-20 rounded flex items-center justify-center">
               <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -103,64 +121,105 @@ const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        <nav className="p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                onNavigate(item.id);
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full flex items-center space-x-3 px-4 py-3 text-left rounded-lg transition-colors ${
-                currentPage === item.id
-                  ? 'bg-blue-700 text-white'
-                  : 'text-blue-100 hover:bg-blue-500 hover:text-white'
-              }`}
-            >
-              <span className="text-lg">{item.icon}</span>
-              <span className="font-medium">{item.name}</span>
-            </button>
+            <div key={item.id}>
+              <button
+                onClick={() => {
+                  onNavigate(item.id);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center space-x-3 px-4 py-3 text-left rounded-lg transition-colors ${
+                  currentPage === item.id
+                    ? 'bg-navy-700 text-white'
+                    : 'text-navy-200 hover:bg-navy-700 hover:text-white'
+                }`}
+              >
+                <span className="text-lg">{item.icon}</span>
+                <span className="font-medium">{item.name}</span>
+              </button>
+
+              {/* Dashboard Sub-items */}
+              {item.id === 'dashboard' && (
+                <div className="ml-6 mt-2 space-y-1">
+                  {dashboardSubItems.map((subItem) => (
+                    <button
+                      key={subItem.id}
+                      onClick={() => {
+                        onNavigate('dashboard');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center space-x-3 px-3 py-2 text-left rounded-lg text-navy-300 hover:bg-navy-700 hover:text-white transition-colors text-sm"
+                    >
+                      <span className="text-xs">•</span>
+                      <span>{subItem.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Knowledge Base Sub-items */}
+              {item.id === 'knowledge' && (
+                <div className="ml-6 mt-2 space-y-1">
+                  {knowledgeSubItems.map((subItem) => (
+                    <button
+                      key={subItem.id}
+                      onClick={() => {
+                        onNavigate('knowledge');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center space-x-3 px-3 py-2 text-left rounded-lg text-navy-300 hover:bg-navy-700 hover:text-white transition-colors text-sm"
+                    >
+                      {subItem.icon === 'handshake' ? (
+                        <Handshake className="w-3 h-3" />
+                      ) : (
+                        <span className="text-xs">📄</span>
+                      )}
+                      <span>{subItem.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Product Development Sub-items */}
+              {item.id === 'product-development' && (
+                <div className="ml-6 mt-2 space-y-1">
+                  {productDevItems.map((subItem) => (
+                    <button
+                      key={subItem.id}
+                      onClick={() => {
+                        onNavigate('product-development');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center space-x-3 px-3 py-2 text-left rounded-lg text-navy-300 hover:bg-navy-700 hover:text-white transition-colors text-sm"
+                    >
+                      <span className="text-xs">📋</span>
+                      <span>{subItem.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Business Operations Sub-items */}
+              {item.id === 'business-operations' && (
+                <div className="ml-6 mt-2 space-y-1">
+                  {businessOpsItems.map((subItem) => (
+                    <button
+                      key={subItem.id}
+                      onClick={() => {
+                        onNavigate('business-operations');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="w-full flex items-center space-x-3 px-3 py-2 text-left rounded-lg text-navy-300 hover:bg-navy-700 hover:text-white transition-colors text-sm"
+                    >
+                      <span className="text-xs">💼</span>
+                      <span>{subItem.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
-
-          {/* Knowledge Base Section */}
-          <div className="mt-6">
-            <div className="px-4 py-2 text-xs font-semibold text-blue-200 uppercase tracking-wider">
-              CONFOUDAS BASE
-            </div>
-            {knowledgeSubItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onNavigate('knowledge');
-                  setIsMobileMenuOpen(false);
-                }}
-                className="w-full flex items-center space-x-3 px-4 py-2 text-left rounded-lg text-blue-100 hover:bg-blue-500 hover:text-white transition-colors"
-              >
-                <span className="text-sm">📄</span>
-                <span className="text-sm">{item.name}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Product Development Section */}
-          <div className="mt-6">
-            <div className="px-4 py-2 text-xs font-semibold text-blue-200 uppercase tracking-wider">
-              PRODUCT DEVELOPMENT
-            </div>
-            {productDevItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  onNavigate('product-development');
-                  setIsMobileMenuOpen(false);
-                }}
-                className="w-full flex items-center space-x-3 px-4 py-2 text-left rounded-lg text-blue-100 hover:bg-blue-500 hover:text-white transition-colors"
-              >
-                <span className="text-sm">📋</span>
-                <span className="text-sm">{item.name}</span>
-              </button>
-            ))}
-          </div>
         </nav>
       </div>
 
