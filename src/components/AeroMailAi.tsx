@@ -355,11 +355,11 @@ Be helpful, professional, and concise in your responses.`;
       <div className={`bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ${
         isHistoryCollapsed ? 'w-12' : 'w-80'
       }`}>
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between gap-2">
           {!isHistoryCollapsed && (
             <Button
               onClick={createNewConversation}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white mr-2"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Plus className="h-4 w-4 mr-2" />
               New Conversation
@@ -368,11 +368,15 @@ Be helpful, professional, and concise in your responses.`;
           <Button
             onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
             variant="outline"
-            size="icon"
-            className="flex-shrink-0 border-gray-300 hover:bg-gray-100 hover:border-gray-400 shadow-sm"
+            size="sm"
+            className="flex-shrink-0 border-2 border-gray-400 hover:bg-blue-50 hover:border-blue-500 bg-white shadow-md px-3 py-2 h-10"
             title={isHistoryCollapsed ? "Expand chat history" : "Collapse chat history"}
           >
-            {isHistoryCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            {isHistoryCollapsed ? (
+              <ChevronRight className="h-5 w-5 text-gray-700" />
+            ) : (
+              <ChevronLeft className="h-5 w-5 text-gray-700" />
+            )}
           </Button>
         </div>
         
@@ -410,22 +414,22 @@ Be helpful, professional, and concise in your responses.`;
               onClick={createNewConversation}
               variant="outline"
               size="icon"
-              className="w-8 h-8 border-gray-300 hover:bg-gray-100"
+              className="w-10 h-10 border-2 border-gray-400 hover:bg-blue-50 hover:border-blue-500 bg-white shadow-md"
               title="New Conversation"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5 text-gray-700" />
             </Button>
             {conversations.slice(0, 3).map((conv) => (
               <Button
                 key={conv.id}
                 variant="outline"
                 size="icon"
-                className={`w-8 h-8 border-gray-300 hover:bg-gray-100 ${
-                  currentConversation?.id === conv.id ? 'bg-blue-100 border-blue-300' : ''
+                className={`w-10 h-10 border-2 border-gray-400 hover:bg-blue-50 shadow-md ${
+                  currentConversation?.id === conv.id ? 'bg-blue-100 border-blue-400' : 'bg-white'
                 }`}
                 title={conv.title || 'Conversation'}
               >
-                <MessageSquare className="h-4 w-4" />
+                <MessageSquare className="h-5 w-5 text-gray-700" />
               </Button>
             ))}
           </div>
@@ -441,18 +445,24 @@ Be helpful, professional, and concise in your responses.`;
               <Bot className="h-6 w-6 text-blue-600" />
               <h1 className="text-xl font-semibold text-gray-900">AeroMail Ai</h1>
             </div>
-            <Select value={selectedModel} onValueChange={setSelectedModel}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {AI_MODELS.map((model) => (
-                  <SelectItem key={model.value} value={model.value}>
-                    {model.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="relative z-50">
+              <Select value={selectedModel} onValueChange={setSelectedModel}>
+                <SelectTrigger className="w-56 bg-white border-2 border-gray-300 hover:border-blue-500 shadow-md text-gray-900 font-medium">
+                  <SelectValue placeholder="Select AI Model" />
+                </SelectTrigger>
+                <SelectContent className="z-50 bg-white border-2 border-gray-300 shadow-lg">
+                  {AI_MODELS.map((model) => (
+                    <SelectItem 
+                      key={model.value} 
+                      value={model.value}
+                      className="hover:bg-blue-50 cursor-pointer font-medium"
+                    >
+                      {model.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
