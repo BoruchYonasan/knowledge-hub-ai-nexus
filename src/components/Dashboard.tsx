@@ -2,76 +2,60 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { useLatestUpdates } from '@/hooks/useLatestUpdates';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
-  const latestUpdates = [
-    {
-      id: 1,
-      title: 'Q4 Company All-Hands Meeting',
-      date: '2024-06-10',
-      author: 'Sarah Johnson',
-      preview: 'Join us for the quarterly all-hands meeting where we\'ll discuss...',
-    },
-    {
-      id: 2,
-      title: 'New Employee Onboarding Process',
-      date: '2024-06-08',
-      author: 'Mike Chen',
-      preview: 'We\'ve updated our onboarding process to include...',
-    },
-    {
-      id: 3,
-      title: 'Security Policy Updates',
-      date: '2024-06-05',
-      author: 'Jennifer Adams',
-      preview: 'Important changes to our security policies effective...',
-    },
+  const { updates, loading } = useLatestUpdates();
+
+  const companyMetrics = [
+    { label: 'Active Projects', value: '12', change: '+2', changeType: 'positive' },
+    { label: 'Team Members', value: '45', change: '+3', changeType: 'positive' },
+    { label: 'Completed Milestones', value: '28', change: '+5', changeType: 'positive' },
+    { label: 'Pending Tasks', value: '67', change: '-8', changeType: 'negative' },
   ];
 
-  const worksInProgress = [
+  const newsAnnouncements = [
     {
       id: 1,
-      title: 'Customer Portal Redesign',
-      lead: 'Alex Rodriguez',
-      status: 'In Progress',
-      progress: 65,
-      dueDate: '2024-07-15',
+      title: 'New Product Launch Q2 2024',
+      date: '2024-06-14',
+      priority: 'high',
+      preview: 'Exciting news about our upcoming product release...',
     },
     {
       id: 2,
-      title: 'API Documentation Update',
-      lead: 'Emily Watson',
-      status: 'Planning',
-      progress: 20,
-      dueDate: '2024-08-01',
+      title: 'Company Retreat Planning',
+      date: '2024-06-12',
+      priority: 'medium',
+      preview: 'Save the date for our annual company retreat...',
     },
     {
       id: 3,
-      title: 'Mobile App Performance Optimization',
-      lead: 'David Kim',
-      status: 'In Progress',
-      progress: 80,
-      dueDate: '2024-06-30',
+      title: 'Q2 Performance Review',
+      date: '2024-06-10',
+      priority: 'medium',
+      preview: 'Performance review cycle begins next week...',
     },
   ];
 
   const quickLinks = [
-    { title: 'Employee Handbook', icon: '📖', category: 'HR' },
-    { title: 'Technical Documentation', icon: '⚙️', category: 'Engineering' },
-    { title: 'Sales Playbook', icon: '💼', category: 'Sales' },
-    { title: 'Marketing Guidelines', icon: '📢', category: 'Marketing' },
+    { title: 'Product Specifications', icon: '📋', category: 'Technical' },
+    { title: 'Design Guidelines', icon: '🎨', category: 'Processes' },
+    { title: 'Team Directory', icon: '👥', category: 'Company Hub' },
+    { title: 'Project Roadmap', icon: '🗺️', category: 'Product Dev' },
   ];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Welcome Section */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to the Knowledge Base</h1>
-        <p className="text-gray-600">Find information, stay updated, and collaborate effectively.</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+        <p className="text-gray-600">Overview of company updates, metrics, and quick access to resources.</p>
       </div>
 
       {/* Search Bar */}
@@ -93,6 +77,30 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         </div>
       </div>
 
+      {/* Company Metrics */}
+      <div className="mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold">Company Metrics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {companyMetrics.map((metric, index) => (
+                <div key={index} className="bg-gray-50 rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
+                  <div className="text-sm text-gray-600 mb-1">{metric.label}</div>
+                  <div className={`text-xs font-medium ${
+                    metric.changeType === 'positive' ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {metric.change} this month
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Latest Updates */}
@@ -101,7 +109,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-xl font-semibold">Latest Updates</CardTitle>
               <button
-                onClick={() => onNavigate('updates')}
+                onClick={() => onNavigate('company-hub')}
                 className="text-blue-600 hover:text-blue-800 text-sm font-medium"
               >
                 View All →
@@ -109,13 +117,44 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {latestUpdates.map((update) => (
-                  <div key={update.id} className="border-l-4 border-blue-500 pl-4 py-2">
-                    <h3 className="font-semibold text-gray-900">{update.title}</h3>
-                    <p className="text-sm text-gray-600 mb-1">{update.preview}</p>
-                    <p className="text-xs text-gray-500">
-                      By {update.author} • {new Date(update.date).toLocaleDateString()}
-                    </p>
+                {loading ? (
+                  <div className="animate-pulse space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-16 bg-gray-200 rounded"></div>
+                    ))}
+                  </div>
+                ) : (
+                  updates.slice(0, 3).map((update) => (
+                    <div key={update.id} className="border-l-4 border-blue-500 pl-4 py-2">
+                      <h3 className="font-semibold text-gray-900">{update.title}</h3>
+                      <p className="text-sm text-gray-600 mb-1">{update.preview}</p>
+                      <p className="text-xs text-gray-500">
+                        By {update.author} • {new Date(update.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* News & Announcements */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold">News & Announcements</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {newsAnnouncements.map((news) => (
+                  <div key={news.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                    <Badge variant={news.priority === 'high' ? 'destructive' : 'secondary'} className="mt-1">
+                      {news.priority}
+                    </Badge>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">{news.title}</h4>
+                      <p className="text-sm text-gray-600 mb-1">{news.preview}</p>
+                      <p className="text-xs text-gray-500">{new Date(news.date).toLocaleDateString()}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -123,11 +162,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           </Card>
         </div>
 
-        {/* Quick Access */}
+        {/* Quick Links */}
         <div>
-          <Card className="mb-6">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-xl font-semibold">Quick Access</CardTitle>
+              <CardTitle className="text-xl font-semibold">Quick Links to Popular Resources</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -148,53 +187,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </CardContent>
           </Card>
         </div>
-      </div>
-
-      {/* Works in Progress */}
-      <div className="mt-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-xl font-semibold">Works in Progress</CardTitle>
-            <button
-              onClick={() => onNavigate('progress')}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-            >
-              View All →
-            </button>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {worksInProgress.map((project) => (
-                <div key={project.id} className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-gray-900">{project.title}</h3>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      project.status === 'In Progress' 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {project.status}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-3">Lead: {project.lead}</p>
-                  <div className="mb-2">
-                    <div className="flex justify-between text-sm text-gray-600 mb-1">
-                      <span>Progress</span>
-                      <span>{project.progress}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full" 
-                        style={{ width: `${project.progress}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500">Due: {new Date(project.dueDate).toLocaleDateString()}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

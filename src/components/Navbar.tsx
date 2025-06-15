@@ -20,11 +20,11 @@ const Navbar: React.FC<NavbarProps> = ({
 
   const navItems = [
     { id: 'dashboard', name: 'Dashboard', icon: '🏠' },
+    { id: 'project-central', name: 'Project Central', icon: '📊' },
     { id: 'knowledge', name: 'Knowledge Base', icon: '📚' },
-    { id: 'updates', name: 'Latest Updates', icon: '📢' },
-    { id: 'progress', name: 'Works in Progress', icon: '🚧' },
-    { id: 'gantt', name: 'Gantt Chart', icon: '📊' },
-    { id: 'content-manager', name: 'Content Manager', icon: '📝' },
+    { id: 'company-hub', name: 'Company Hub', icon: '👥' },
+    { id: 'product-development', name: 'Product Development', icon: '🔬' },
+    { id: 'business-operations', name: 'Business Operations', icon: '💼' },
     { id: 'search', name: 'Search', icon: '🔍' },
   ];
 

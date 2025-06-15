@@ -4,9 +4,10 @@ import AuthGuard from '@/components/AuthGuard';
 import Navbar from '@/components/Navbar';
 import Dashboard from '@/components/Dashboard';
 import KnowledgeBase from '@/components/KnowledgeBase';
-import LatestUpdates from '@/components/LatestUpdates';
-import WorksInProgress from '@/components/WorksInProgress';
-import GanttChart from '@/components/GanttChart';
+import ProjectCentral from '@/components/ProjectCentral';
+import CompanyHub from '@/components/CompanyHub';
+import ProductDevelopment from '@/components/ProductDevelopment';
+import BusinessOperations from '@/components/BusinessOperations';
 import Search from '@/components/Search';
 import ContentManager from '@/components/ContentManager';
 import AIAssistant from '@/components/AIAssistant';
@@ -36,14 +37,16 @@ const Index = () => {
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard onNavigate={setCurrentPage} />;
+      case 'project-central':
+        return <ProjectCentral isManaging={isGlobalManaging} />;
       case 'knowledge':
         return <KnowledgeBase onNavigate={setCurrentPage} isManaging={isGlobalManaging} />;
-      case 'updates':
-        return <LatestUpdates isManaging={isGlobalManaging} />;
-      case 'progress':
-        return <WorksInProgress isManaging={isGlobalManaging} />;
-      case 'gantt':
-        return <GanttChart isManaging={isGlobalManaging} />;
+      case 'company-hub':
+        return <CompanyHub isManaging={isGlobalManaging} />;
+      case 'product-development':
+        return <ProductDevelopment isManaging={isGlobalManaging} />;
+      case 'business-operations':
+        return <BusinessOperations isManaging={isGlobalManaging} />;
       case 'search':
         return <Search />;
       case 'content-manager':
@@ -54,7 +57,7 @@ const Index = () => {
   };
 
   const getKnowledgeBaseContext = () => {
-    let context = `Current page: ${currentPage}. Available sections: Dashboard, Knowledge Base, Latest Updates, Works in Progress, Gantt Chart, Search, Content Manager.`;
+    let context = `Current page: ${currentPage}. Available sections: Dashboard, Project Central, Knowledge Base, Company Hub, Product Development, Business Operations, Search, Content Manager.`;
     
     if (isGlobalManaging) {
       context += " Currently in GLOBAL MANAGE MODE - can create, edit, and delete content across all sections.";
