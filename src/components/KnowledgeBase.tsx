@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -55,7 +54,7 @@ const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
       filtered = filtered.filter(article =>
         article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         article.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        article.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+        (article.tags && article.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
       );
     }
     
@@ -349,7 +348,7 @@ const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({
                                 <span>{article.read_time}</span>
                               </div>
                             </div>
-                            {article.tags.length > 0 && (
+                            {article.tags && article.tags.length > 0 && (
                               <div className="flex items-center mt-3 flex-wrap gap-1">
                                 <Tag className="w-3 h-3 mr-1" />
                                 {article.tags.slice(0, 3).map((tag, index) => (
