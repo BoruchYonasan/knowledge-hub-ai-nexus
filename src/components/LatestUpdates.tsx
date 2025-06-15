@@ -87,25 +87,27 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ isManaging = false, onMan
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          {onNavigate && (
-            <Button 
-              variant="ghost" 
-              onClick={() => onNavigate('dashboard')}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Dashboard</span>
-            </Button>
-          )}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Latest Updates</h1>
-            <p className="text-gray-600">Stay informed with the latest company news and announcements</p>
+      <div className="flex items-start space-x-4">
+        {onNavigate && (
+          <Button 
+            variant="ghost" 
+            onClick={() => onNavigate('dashboard')}
+            className="flex items-center space-x-2 mt-1"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back</span>
+          </Button>
+        )}
+        <div className="flex-1">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Latest Updates</h1>
+              <p className="text-gray-600">Stay informed with the latest company news and announcements</p>
+            </div>
+            <div className="flex space-x-2">
+              <AddUpdateDialog />
+            </div>
           </div>
-        </div>
-        <div className="flex space-x-2">
-          <AddUpdateDialog />
         </div>
       </div>
 
