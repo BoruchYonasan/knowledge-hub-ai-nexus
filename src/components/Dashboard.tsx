@@ -126,9 +126,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
           {/* Center Column - Company Reports */}
           <div className="lg:col-span-4">
-            <Card>
+            <Card 
+              className="cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => onNavigate('company-reports')}
+            >
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Company Reports</CardTitle>
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center justify-between">
+                  Company Reports
+                  <span className="text-sm font-normal text-blue-600">View All →</span>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {companyReports.map((report, index) => (

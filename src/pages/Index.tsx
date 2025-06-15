@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import Navbar from '@/components/Navbar';
@@ -10,6 +11,7 @@ import BusinessOperations from '@/components/BusinessOperations';
 import Search from '@/components/Search';
 import ContentManager from '@/components/ContentManager';
 import LatestUpdates from '@/components/LatestUpdates';
+import CompanyReports from '@/components/CompanyReports';
 import AIAssistant from '@/components/AIAssistant';
 import { useContentManager } from '@/hooks/useContentManager';
 
@@ -85,13 +87,19 @@ const Index = () => {
             <LatestUpdates isManaging={isGlobalManaging} onNavigate={setCurrentPage} />
           </div>
         );
+      case 'company-reports':
+        return (
+          <div className="pt-16 pl-0 lg:pl-64">
+            <CompanyReports isManaging={isGlobalManaging} onNavigate={setCurrentPage} />
+          </div>
+        );
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }
   };
 
   const getKnowledgeBaseContext = () => {
-    let context = `Current page: ${currentPage}. Available sections: Dashboard, Project Central, Knowledge Base, Company Hub, Product Development, Business Operations, Search, Content Manager, Latest Updates.`;
+    let context = `Current page: ${currentPage}. Available sections: Dashboard, Project Central, Knowledge Base, Company Hub, Product Development, Business Operations, Search, Content Manager, Latest Updates, Company Reports.`;
     
     if (isGlobalManaging) {
       context += " Currently in GLOBAL MANAGE MODE - can create, edit, and delete content across all sections.";
