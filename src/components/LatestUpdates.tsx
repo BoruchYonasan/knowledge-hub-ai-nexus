@@ -11,20 +11,16 @@ import { useLatestUpdates } from '@/hooks/useLatestUpdates';
 import AddUpdateDialog from '@/components/AddUpdateDialog';
 
 interface LatestUpdatesProps {
+  isManaging?: boolean;
   onManagingChange?: (isManaging: boolean) => void;
 }
 
-const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onManagingChange }) => {
+const LatestUpdates: React.FC<LatestUpdatesProps> = ({ isManaging = false, onManagingChange }) => {
   const { updates, loading, createUpdate, updateUpdate, deleteUpdate } = useLatestUpdates();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState('all');
   const [filterDepartment, setFilterDepartment] = useState('all');
-  const [isManaging, setIsManaging] = useState(false);
   const { toast } = useToast();
-
-  React.useEffect(() => {
-    onManagingChange?.(isManaging);
-  }, [isManaging, onManagingChange]);
 
   const filteredUpdates = useMemo(() => {
     return updates.filter(update => {
@@ -79,12 +75,6 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onManagingChange }) => {
         </div>
         <div className="flex space-x-2">
           <AddUpdateDialog />
-          <Button
-            variant={isManaging ? 'destructive' : 'default'}
-            onClick={() => setIsManaging(!isManaging)}
-          >
-            {isManaging ? 'Exit Manage Mode' : 'Manage Mode'}
-          </Button>
         </div>
       </div>
 

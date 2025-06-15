@@ -12,15 +12,15 @@ import { useProjects } from '@/hooks/useProjects';
 import AddProjectDialog from '@/components/AddProjectDialog';
 
 interface WorksInProgressProps {
+  isManaging?: boolean;
   onManagingChange?: (isManaging: boolean) => void;
 }
 
-const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) => {
+const WorksInProgress: React.FC<WorksInProgressProps> = ({ isManaging = false, onManagingChange }) => {
   const { projects, loading, createProject, updateProject, deleteProject } = useProjects();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
-  const [isManaging, setIsManaging] = useState(false);
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -85,12 +85,6 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onManagingChange }) =
         </div>
         <div className="flex space-x-2">
           <AddProjectDialog />
-          <Button
-            variant={isManaging ? 'destructive' : 'default'}
-            onClick={() => setIsManaging(!isManaging)}
-          >
-            {isManaging ? 'Exit Manage Mode' : 'Manage Mode'}
-          </Button>
         </div>
       </div>
 

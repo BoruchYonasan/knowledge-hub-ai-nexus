@@ -29,10 +29,11 @@ interface FilterState {
 }
 
 interface GanttChartProps {
+  isManaging?: boolean;
   onManagingChange?: (isManaging: boolean) => void;
 }
 
-const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
+const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingChange }) => {
   const { 
     items, 
     loading, 
@@ -44,7 +45,6 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
     createItem
   } = useGanttItems();
   
-  const [isManaging, setIsManaging] = useState(false);
   const [viewMode, setViewMode] = useState<'table' | 'chart'>('table');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
@@ -258,12 +258,6 @@ const GanttChart: React.FC<GanttChartProps> = ({ onManagingChange }) => {
             onClick={() => setViewMode('chart')}
           >
             Chart View
-          </Button>
-          <Button
-            variant={isManaging ? 'destructive' : 'default'}
-            onClick={() => setIsManaging(!isManaging)}
-          >
-            {isManaging ? 'Exit Manage Mode' : 'Manage Mode'}
           </Button>
         </div>
       </div>
