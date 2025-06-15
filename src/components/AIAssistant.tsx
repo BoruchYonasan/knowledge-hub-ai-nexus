@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageCircle, X, Send, Bot, User, Upload, FileText, Trash2, Settings } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MessageCircle, X, Send, Bot, User, Upload, FileText, Trash2, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAIConversations } from '@/hooks/useAIConversations';
 
@@ -47,6 +48,13 @@ interface AIAssistantProps {
   onMessageRead?: () => void;
 }
 
+const AI_MODELS = [
+  { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash' },
+  { value: 'claude-sonnet-4', label: 'Claude Sonnet 4' },
+  { value: 'chatgpt-4.1', label: 'ChatGPT 4.1' },
+  { value: 'grok-3', label: 'Grok 3' }
+];
+
 const AIAssistant: React.FC<AIAssistantProps> = ({ 
   knowledgeBaseContext, 
   onNavigate, 
@@ -76,7 +84,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [hasUnreadMessage, setHasUnreadMessage] = useState(true);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [showSettings, setShowSettings] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash-exp');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -132,7 +140,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
         setMessages(convertedMessages.length > 0 ? convertedMessages : [
           {
             id: '1',
-            content: "Hello! I'm your enhanced AeroMail AI assistant with persistent memory and multi-model support (Gemini, Claude, and OpenAI). I can remember our conversation history and handle complex tasks. I can help you navigate our knowledge base, find information about company policies, procedures, and answer questions about our organization. I can also help manage content when you're in manage mode. What would you like to know?",
+            content: "Hello! I'm your enhanced AeroMail AI assistant with persistent memory and multi-model support (Gemini, Claude, OpenAI, and Grok). I can remember our conversation history and handle complex tasks. I can help you navigate our knowledge base, find information about company policies, procedures, and answer questions about our organization. I can also help manage content when you're in manage mode. What would you like to know?",
             sender: 'ai',
             timestamp: new Date()
           }
@@ -360,7 +368,7 @@ Be helpful, professional, and concise in your responses.`;
           context: generateSystemPrompt(),
           conversationId: currentConversation.id,
           conversationHistory: historyForAPI,
-          preferredModel: userPreferences?.preferred_model,
+          selectedModel: selectedModel,
           files: uploadedFiles
         }
       });
@@ -370,7 +378,7 @@ Be helpful, professional, and concise in your responses.`;
       }
 
       let aiResponse = data?.response || 'Sorry, I encountered an error. Please try again.';
-      const modelUsed = data?.modelUsed || 'unknown';
+      const modelUsed = data?.modelUsed || selectedModel;
 
       // Handle content management responses (keep existing logic)
       if (aiResponse.includes('CREATING_UPDATE:') && onCreateUpdate) {
@@ -494,20 +502,32 @@ Be helpful, professional, and concise in your responses.`;
                   </span>
                 )}
               </div>
-              <Button
-                onClick={() => setShowSettings(!showSettings)}
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6"
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </CardTitle>
-            {userPreferences && (
-              <div className="text-xs text-gray-500">
-                Model: {userPreferences.preferred_model} • Memory: {userPreferences.max_context_messages} messages
+              <div className="flex items-center space-x-2">
+                <Select value={selectedModel} onValueChange={setSelectedModel}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AI_MODELS.map((model) => (
+                      <SelectItem key={model.value} value={model.value}>
+                        {model.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  onClick={() => onNavigate('ai-chatbot-guide')}
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6"
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
               </div>
-            )}
+            </CardTitle>
+            <div className="text-xs text-gray-500">
+              Model: {AI_MODELS.find(m => m.value === selectedModel)?.label} • Memory: Persistent
+            </div>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col p-0 min-h-0">
             {/* Messages Container */}
@@ -544,7 +564,7 @@ Be helpful, professional, and concise in your responses.`;
                         }`}>
                           <span>{message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                           {message.modelUsed && (
-                            <span className="ml-2 opacity-70">{message.modelUsed}</span>
+                            <span className="ml-2 opacity-70">{AI_MODELS.find(m => m.value === message.modelUsed)?.label || message.modelUsed}</span>
                           )}
                         </div>
                       </div>

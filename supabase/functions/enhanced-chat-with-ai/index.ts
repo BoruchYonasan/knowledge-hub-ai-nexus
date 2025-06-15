@@ -16,35 +16,22 @@ interface ChatRequest {
     sender: 'user' | 'ai';
     model_used?: string;
   }>;
-  preferredModel?: string;
+  selectedModel?: string;
   files?: Array<{
     name: string;
     content: string;
   }>;
 }
 
-// Model selection logic
-const selectModel = (message: string, preferredModel?: string, isFollowUp?: boolean) => {
-  const messageLength = message.length;
-  const isComplex = messageLength > 200 || 
-                   message.includes('create') || 
-                   message.includes('implement') ||
-                   message.includes('refactor') ||
-                   isFollowUp;
-
-  // Use preferred model if specified and appropriate
-  if (preferredModel) {
-    if (preferredModel === 'claude-3-5-sonnet-20241022' && isComplex) return 'claude-3-5-sonnet-20241022';
-    if (preferredModel === 'gpt-4o' && isComplex) return 'gpt-4o';
-    if (preferredModel === 'gemini-2.0-flash-exp') return 'gemini-2.0-flash-exp';
-  }
-
-  // Auto-select based on complexity
-  if (isComplex) {
-    return 'claude-3-5-sonnet-20241022'; // Default to Claude for complex tasks
-  }
-  
-  return 'gemini-2.0-flash-exp'; // Default to Gemini for simple tasks
+// Model mapping from display names to API model names
+const getApiModelName = (selectedModel: string) => {
+  const modelMap = {
+    'gemini-2.0-flash-exp': 'gemini-2.0-flash-exp',
+    'claude-sonnet-4': 'claude-3-5-sonnet-20241022',
+    'chatgpt-4.1': 'gpt-4o',
+    'grok-3': 'grok-beta'
+  };
+  return modelMap[selectedModel] || 'gemini-2.0-flash-exp';
 };
 
 // Build conversation context
@@ -189,6 +176,51 @@ const callOpenAI = async (message: string, context: string) => {
   }
 };
 
+// Call Grok API (XAI)
+const callGrok = async (message: string, context: string) => {
+  const xaiApiKey = Deno.env.get('XAI_API_KEY');
+  if (!xaiApiKey) {
+    console.log('XAI_API_KEY not configured, falling back to Gemini');
+    return await callGemini(message, context);
+  }
+
+  try {
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${xaiApiKey}`
+      },
+      body: JSON.stringify({
+        model: 'grok-beta',
+        messages: [
+          {
+            role: 'system',
+            content: context
+          },
+          {
+            role: 'user',
+            content: message
+          }
+        ],
+        max_tokens: 2048,
+        temperature: 0.7
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Grok API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || 'Sorry, I encountered an error with Grok.';
+  } catch (error) {
+    console.error('Grok API error:', error);
+    console.log('Falling back to Gemini');
+    return await callGemini(message, context);
+  }
+};
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -200,28 +232,30 @@ const handler = async (req: Request): Promise<Response> => {
       context, 
       conversationId,
       conversationHistory = [],
-      preferredModel,
+      selectedModel = 'gemini-2.0-flash-exp',
       files = []
     }: ChatRequest = await req.json();
 
-    console.log(`Processing message with ${conversationHistory.length} history items`);
+    console.log(`Processing message with selected model: ${selectedModel}`);
     
-    // Select appropriate model
-    const isFollowUp = conversationHistory.length > 0;
-    const selectedModel = selectModel(message, preferredModel, isFollowUp);
-    console.log(`Selected model: ${selectedModel}`);
+    // Get the API model name
+    const apiModelName = getApiModelName(selectedModel);
+    console.log(`Using API model: ${apiModelName}`);
 
     // Build enhanced context with conversation history
     const enhancedContext = buildConversationContext(context, conversationHistory, files);
 
-    // Call appropriate AI model
+    // Call appropriate AI model based on user selection
     let response: string;
     switch (selectedModel) {
-      case 'claude-3-5-sonnet-20241022':
+      case 'claude-sonnet-4':
         response = await callClaude(message, enhancedContext);
         break;
-      case 'gpt-4o':
+      case 'chatgpt-4.1':
         response = await callOpenAI(message, enhancedContext);
+        break;
+      case 'grok-3':
+        response = await callGrok(message, enhancedContext);
         break;
       case 'gemini-2.0-flash-exp':
       default:
