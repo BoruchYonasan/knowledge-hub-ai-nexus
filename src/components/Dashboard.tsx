@@ -5,7 +5,7 @@ import { useLatestUpdates } from '@/hooks/useLatestUpdates';
 import { Clock } from 'lucide-react';
 
 interface DashboardProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, tab?: string) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
@@ -98,9 +98,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </Card>
 
             {/* Works In Progress Snapshot */}
-            <Card className="mt-6">
+            <Card 
+              className="mt-6 cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => onNavigate('project-central', 'progress')}
+            >
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Works In Progress Snapshot</CardTitle>
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center justify-between">
+                  Works In Progress Snapshot
+                  <span className="text-sm font-normal text-blue-600">View →</span>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {worksInProgress.map((work, index) => (
@@ -150,9 +156,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </Card>
 
             {/* Roadmap */}
-            <Card className="mt-6">
+            <Card 
+              className="mt-6 cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => onNavigate('project-central', 'roadmap')}
+            >
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Roadmap</CardTitle>
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center justify-between">
+                  Roadmap
+                  <span className="text-sm font-normal text-blue-600">View →</span>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {roadmapMilestones.map((item, index) => (

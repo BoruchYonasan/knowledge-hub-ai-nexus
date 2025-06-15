@@ -19,6 +19,7 @@ const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isGlobalManaging, setIsGlobalManaging] = useState(false);
   const [hasNewAIMessage, setHasNewAIMessage] = useState(false);
+  const [projectCentralTab, setProjectCentralTab] = useState('overview');
   
   const { 
     createUpdateFromAI, 
@@ -35,14 +36,21 @@ const Index = () => {
     deleteArticleFromAI
   } = useContentManager();
 
+  const handleNavigate = (page: string, tab?: string) => {
+    setCurrentPage(page);
+    if (page === 'project-central' && tab) {
+      setProjectCentralTab(tab);
+    }
+  };
+
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard onNavigate={setCurrentPage} />;
+        return <Dashboard onNavigate={handleNavigate} />;
       case 'project-central':
         return (
           <div className="pt-16 pl-0 lg:pl-64">
-            <ProjectCentral isManaging={isGlobalManaging} />
+            <ProjectCentral isManaging={isGlobalManaging} defaultTab={projectCentralTab} />
           </div>
         );
       case 'knowledge':
@@ -94,7 +102,7 @@ const Index = () => {
           </div>
         );
       default:
-        return <Dashboard onNavigate={setCurrentPage} />;
+        return <Dashboard onNavigate={handleNavigate} />;
     }
   };
 

@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -10,10 +9,15 @@ import GanttChart from './GanttChart';
 
 interface ProjectCentralProps {
   isManaging?: boolean;
+  defaultTab?: string;
 }
 
-const ProjectCentral: React.FC<ProjectCentralProps> = ({ isManaging = false }) => {
-  const [activeTab, setActiveTab] = useState('overview');
+const ProjectCentral: React.FC<ProjectCentralProps> = ({ isManaging = false, defaultTab = 'overview' }) => {
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
+  useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab]);
 
   const roadmapItems = [
     {
