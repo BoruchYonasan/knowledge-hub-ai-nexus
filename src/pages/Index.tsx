@@ -65,7 +65,7 @@ const Index = () => {
         return (
           <ProjectCentral
             onNavigate={handleNavigate}
-            initialTab={currentTab}
+            initialTab={currentTab || 'overview'}
             isManaging={isGlobalManaging}
           />
         );
