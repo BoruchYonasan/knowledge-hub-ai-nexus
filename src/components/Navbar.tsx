@@ -80,8 +80,7 @@ const Navbar: React.FC<NavbarProps> = ({
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              <Settings className="w-4 h-4 mr-2" />
-              {isGlobalManaging ? 'Exit Manage' : 'Manage'}
+              <Settings className="w-4 h-4" />
             </Button>
             <Button
               variant="outline"
