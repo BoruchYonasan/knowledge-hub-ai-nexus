@@ -3,6 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLatestUpdates } from '@/hooks/useLatestUpdates';
 import { Clock } from 'lucide-react';
+import GanttOverviewTile from './dashboard/GanttOverviewTile';
+import KnowledgeGalleryTile from './dashboard/KnowledgeGalleryTile';
+import ImageGalleryTile from './dashboard/ImageGalleryTile';
+import TeamActivityTile from './dashboard/TeamActivityTile';
+import QuickActionsTile from './dashboard/QuickActionsTile';
 
 interface DashboardProps {
   onNavigate: (page: string, tab?: string) => void;
@@ -48,10 +53,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
         </div>
 
-        {/* Main Grid Layout */}
+        {/* Main Grid Layout - Expanded to 4 columns for better tile distribution */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column - Latest Updates */}
-          <div className="lg:col-span-4">
+          {/* Left Column - Latest Updates & Gantt Overview */}
+          <div className="lg:col-span-3">
             <Card 
               className="h-fit cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => onNavigate('latest-updates')}
@@ -97,6 +102,37 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </CardContent>
             </Card>
 
+            {/* Gantt Chart Overview */}
+            <div className="mt-6">
+              <GanttOverviewTile onNavigate={onNavigate} />
+            </div>
+          </div>
+
+          {/* Center-Left Column - Company Reports & Works In Progress */}
+          <div className="lg:col-span-3">
+            <Card 
+              className="cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => onNavigate('company-reports')}
+            >
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center justify-between">
+                  Company Reports
+                  <span className="text-sm font-normal text-blue-600">View All →</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {companyReports.map((report, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{report.title}</p>
+                      <p className="text-xs text-gray-500">{report.date}</p>
+                    </div>
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
             {/* Works In Progress Snapshot */}
             <Card 
               className="mt-6 cursor-pointer hover:shadow-lg transition-shadow"
@@ -130,30 +166,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </Card>
           </div>
 
-          {/* Center Column - Company Reports */}
-          <div className="lg:col-span-4">
-            <Card 
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => onNavigate('company-reports')}
-            >
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center justify-between">
-                  Company Reports
-                  <span className="text-sm font-normal text-blue-600">View All →</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {companyReports.map((report, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{report.title}</p>
-                      <p className="text-xs text-gray-500">{report.date}</p>
-                    </div>
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+          {/* Center-Right Column - Knowledge Gallery & Roadmap */}
+          <div className="lg:col-span-3">
+            <KnowledgeGalleryTile onNavigate={onNavigate} />
 
             {/* Roadmap */}
             <Card 
@@ -182,8 +197,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </Card>
           </div>
 
-          {/* Right Column - Quick Links */}
-          <div className="lg:col-span-4">
+          {/* Right Column - New Tiles */}
+          <div className="lg:col-span-3">
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-gray-900">Quick Links to Popular Resources</CardTitle>
@@ -200,6 +215,21 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 ))}
               </CardContent>
             </Card>
+
+            {/* Image Gallery */}
+            <div className="mt-6">
+              <ImageGalleryTile onNavigate={onNavigate} />
+            </div>
+
+            {/* Team Activity */}
+            <div className="mt-6">
+              <TeamActivityTile onNavigate={onNavigate} />
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mt-6">
+              <QuickActionsTile onNavigate={onNavigate} />
+            </div>
           </div>
         </div>
       </div>
