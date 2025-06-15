@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Search, FileText, Plus, Settings, Users, DollarSign } from 'lucide-react';
+import { Search, FileText, Plus, Settings, Users, Handshake } from 'lucide-react';
 import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
 import ArticleView from './ArticleView';
 
@@ -33,7 +33,7 @@ const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate, isManaging = 
     },
     'business': {
       label: 'Business Documentation',
-      icon: DollarSign,
+      icon: Handshake,
       subcategories: {
         'patents-ip': 'Patents & IP',
         'contracts': 'Contracts & Agreements',
@@ -205,7 +205,7 @@ const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate, isManaging = 
             Technical
           </TabsTrigger>
           <TabsTrigger value="business">
-            <DollarSign className="w-4 h-4 mr-2" />
+            <Handshake className="w-4 h-4 mr-2" />
             Business
           </TabsTrigger>
           <TabsTrigger value="processes">
