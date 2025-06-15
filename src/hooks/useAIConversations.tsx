@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -66,16 +67,6 @@ export const useAIConversations = () => {
     try {
       const userId = getCurrentUserId();
       
-      // Set user context for RLS using the helper function
-      const { error: setConfigError } = await supabase.rpc('set_config', {
-        parameter: 'app.current_user_id',
-        value: userId
-      });
-
-      if (setConfigError) {
-        console.error('Error setting user context:', setConfigError);
-      }
-
       // Try to get active conversation
       let { data: activeConversation, error } = await supabase
         .from('ai_conversations')

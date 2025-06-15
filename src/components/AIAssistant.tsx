@@ -126,7 +126,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
           sender: msg.sender as 'user' | 'ai',
           timestamp: new Date(msg.created_at),
           modelUsed: msg.model_used || undefined,
-          files: Array.isArray(msg.files_context) ? msg.files_context as UploadedFile[] : undefined
+          files: Array.isArray(msg.files_context) ? (msg.files_context as unknown as UploadedFile[]) : undefined
         }));
 
         setMessages(convertedMessages.length > 0 ? convertedMessages : [
