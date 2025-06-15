@@ -48,8 +48,12 @@ const Index = () => {
 
   const handleNavigate = (page: string, tab?: string) => {
     setCurrentPage(page);
-    if (page === 'project-central' && tab) {
-      setCurrentTab(tab);
+    if (page === 'project-central') {
+      // If no specific tab is provided, default to 'overview'
+      setCurrentTab(tab || 'overview');
+    } else {
+      // Reset currentTab when navigating to other pages
+      setCurrentTab('');
     }
   };
 
