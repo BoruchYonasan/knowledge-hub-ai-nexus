@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -556,8 +557,8 @@ Be helpful, professional, and concise in your responses.`;
                     </Button>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
             
             <div ref={messagesEndRef} />
           </div>
