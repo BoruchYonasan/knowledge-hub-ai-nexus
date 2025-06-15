@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Search, FileText, Plus, Settings, Users, Handshake } from 'lucide-react';
+import { Search, FileText, Plus, Settings, Users, Handshake, FlaskConical, Leaf, Megaphone, Shield } from 'lucide-react';
 import { useKnowledgeBase } from '@/hooks/useKnowledgeBase';
 import ArticleView from './ArticleView';
 
@@ -48,6 +47,49 @@ const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate, isManaging = 
         'testing-protocols': 'Testing Protocols',
         'vendor-management': 'Vendor Management'
       }
+    },
+    'research-development': {
+      label: 'Research & Development',
+      icon: FlaskConical,
+      subcategories: {
+        'materials-research': 'Materials Research',
+        'competitor-analysis': 'Competitor Analysis',
+        'patent-search': 'Patent Search Reports',
+        'tech-feasibility': 'Technology Feasibility Studies'
+      }
+    },
+    'sustainability-compliance': {
+      label: 'Sustainability & Compliance',
+      icon: Leaf,
+      subcategories: {
+        'environmental-impact': 'Environmental Impact Assessments',
+        'carbon-credit': 'Carbon Credit Methodology',
+        'composting-protocols': 'Composting Protocols',
+        'food-grade-cert': 'Food-Grade Certification Requirements',
+        'regulatory-compliance': 'Regulatory Compliance'
+      }
+    },
+    'marketing-brand': {
+      label: 'Marketing & Brand',
+      icon: Megaphone,
+      subcategories: {
+        'brand-guidelines': 'Brand Guidelines',
+        'product-photography': 'Product Photography/Renders',
+        'marketing-materials': 'Marketing Materials',
+        'customer-case-studies': 'Customer Case Studies',
+        'value-proposition': 'Value Proposition Documents'
+      }
+    },
+    'quality-testing': {
+      label: 'Quality & Testing',
+      icon: Shield,
+      subcategories: {
+        'testing-standards': 'Testing Standards & Protocols',
+        'quality-control': 'Quality Control Procedures',
+        'third-party-cert': 'Third-Party Certification Results',
+        'durability-testing': 'Durability Testing Data',
+        'temperature-control': 'Temperature Control Validation'
+      }
     }
   };
 
@@ -87,6 +129,83 @@ const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate, isManaging = 
     'vendor-management': [
       { id: 'vm1', title: 'Vendor Qualification Process', category: 'vendor-management', author: 'Procurement', read_time: '10 min read', description: 'Process for qualifying and onboarding new vendors.' },
       { id: 'vm2', title: 'Supply Chain Risk Management', category: 'vendor-management', author: 'Operations', read_time: '14 min read', description: 'Strategies for managing supply chain risks and disruptions.' }
+    ],
+    'materials-research': [
+      { id: 'mr1', title: 'Mycelium Packaging Performance Study', category: 'materials-research', author: 'R&D Team', read_time: '22 min read', description: 'Comprehensive analysis of mycelium-based packaging materials performance and biodegradability.' },
+      { id: 'mr2', title: 'Aerogel Thermal Insulation Properties', category: 'materials-research', author: 'Materials Lab', read_time: '18 min read', description: 'Research findings on aerogel insulation properties for sustainable packaging applications.' },
+      { id: 'mr3', title: 'Algae-Based TPU Biodegradability Analysis', category: 'materials-research', author: 'Sustainability Team', read_time: '16 min read', description: 'Laboratory results on algae-derived TPU decomposition rates and environmental impact.' }
+    ],
+    'competitor-analysis': [
+      { id: 'ca1', title: 'Market Landscape: Sustainable Packaging Solutions', category: 'competitor-analysis', author: 'Market Research', read_time: '25 min read', description: 'Comprehensive overview of competitors in the sustainable packaging market.' },
+      { id: 'ca2', title: 'Competitor Feature Matrix', category: 'competitor-analysis', author: 'Product Strategy', read_time: '12 min read', description: 'Feature comparison matrix of major sustainable packaging competitors.' }
+    ],
+    'patent-search': [
+      { id: 'ps1', title: 'Biodegradable Material Patents Review', category: 'patent-search', author: 'IP Research', read_time: '20 min read', description: 'Analysis of existing patents in biodegradable packaging materials.' },
+      { id: 'ps2', title: 'Temperature Control Patent Landscape', category: 'patent-search', author: 'Legal Team', read_time: '15 min read', description: 'Patent search results for temperature-controlled packaging solutions.' }
+    ],
+    'tech-feasibility': [
+      { id: 'tf1', title: 'Scalable Manufacturing Feasibility Study', category: 'tech-feasibility', author: 'Engineering', read_time: '30 min read', description: 'Technical feasibility analysis for scaling production of sustainable packaging.' },
+      { id: 'tf2', title: 'Cost-Benefit Analysis: New Materials', category: 'tech-feasibility', author: 'Operations', read_time: '18 min read', description: 'Economic feasibility assessment of implementing new sustainable materials.' }
+    ],
+    'environmental-impact': [
+      { id: 'ei1', title: 'LCA Report: Cradle-to-Grave Analysis', category: 'environmental-impact', author: 'Sustainability Team', read_time: '35 min read', description: 'Complete lifecycle assessment of our packaging from production to disposal.' },
+      { id: 'ei2', title: 'Carbon Footprint Reduction Strategies', category: 'environmental-impact', author: 'Environmental Team', read_time: '20 min read', description: 'Strategic approaches to minimize carbon footprint across operations.' }
+    ],
+    'carbon-credit': [
+      { id: 'cc1', title: 'Carbon Credit Certification Methodology', category: 'carbon-credit', author: 'Compliance Team', read_time: '28 min read', description: 'Step-by-step guide to carbon credit certification and verification process.' },
+      { id: 'cc2', title: 'Offset Program Implementation', category: 'carbon-credit', author: 'Sustainability', read_time: '15 min read', description: 'Framework for implementing carbon offset programs.' }
+    ],
+    'composting-protocols': [
+      { id: 'cp1', title: 'Industrial Composting Standards', category: 'composting-protocols', author: 'Quality Team', read_time: '22 min read', description: 'Protocols for industrial composting compatibility testing.' },
+      { id: 'cp2', title: 'Home Composting Validation Tests', category: 'composting-protocols', author: 'Testing Lab', read_time: '18 min read', description: 'Home composting effectiveness and timeline validation studies.' }
+    ],
+    'food-grade-cert': [
+      { id: 'fgc1', title: 'FDA Food Contact Certification Guide', category: 'food-grade-cert', author: 'Regulatory Affairs', read_time: '25 min read', description: 'Complete guide to FDA food contact material certification requirements.' },
+      { id: 'fgc2', title: 'EU Food Safety Compliance', category: 'food-grade-cert', author: 'Compliance Team', read_time: '20 min read', description: 'European Union food safety regulations and compliance procedures.' }
+    ],
+    'regulatory-compliance': [
+      { id: 'rc1', title: 'International Shipping Regulations', category: 'regulatory-compliance', author: 'Logistics Team', read_time: '30 min read', description: 'Comprehensive guide to international shipping regulations for sustainable packaging.' },
+      { id: 'rc2', title: 'PFAS Regulations and Impact', category: 'regulatory-compliance', author: 'Legal Team', read_time: '16 min read', description: 'Analysis of PFAS regulations and their impact on packaging materials.' }
+    ],
+    'brand-guidelines': [
+      { id: 'bg1', title: 'Logo Usage and Brand Identity Standards', category: 'brand-guidelines', author: 'Brand Team', read_time: '12 min read', description: 'Official brand guidelines including logo usage, colors, and typography.' },
+      { id: 'bg2', title: 'Color Palette and Typography Guidelines', category: 'brand-guidelines', author: 'Design Team', read_time: '8 min read', description: 'Detailed specifications for brand colors, fonts, and visual elements.' }
+    ],
+    'product-photography': [
+      { id: 'pp1', title: 'Product Photography Style Guide', category: 'product-photography', author: 'Marketing Team', read_time: '14 min read', description: 'Guidelines for consistent product photography and visual representation.' },
+      { id: 'pp2', title: '3D Render Standards and Templates', category: 'product-photography', author: 'Design Team', read_time: '10 min read', description: 'Standards and templates for 3D product renders and visualization.' }
+    ],
+    'marketing-materials': [
+      { id: 'mm1', title: 'Sales Presentation Templates', category: 'marketing-materials', author: 'Sales Team', read_time: '15 min read', description: 'Standardized presentation templates for sales and marketing activities.' },
+      { id: 'mm2', title: 'Trade Show Materials Library', category: 'marketing-materials', author: 'Events Team', read_time: '12 min read', description: 'Collection of trade show materials, banners, and promotional content.' }
+    ],
+    'customer-case-studies': [
+      { id: 'ccs1', title: 'Restaurant Chain Success Story', category: 'customer-case-studies', author: 'Customer Success', read_time: '18 min read', description: 'Case study of sustainable packaging implementation in major restaurant chain.' },
+      { id: 'ccs2', title: 'E-commerce Platform Integration', category: 'customer-case-studies', author: 'Business Dev', read_time: '16 min read', description: 'Success story of packaging solution integration with e-commerce platform.' }
+    ],
+    'value-proposition': [
+      { id: 'vp1', title: 'Sustainability Value Proposition Framework', category: 'value-proposition', author: 'Strategy Team', read_time: '20 min read', description: 'Framework for communicating sustainability benefits to different customer segments.' },
+      { id: 'vp2', title: 'Cost Savings Calculator Methodology', category: 'value-proposition', author: 'Finance Team', read_time: '14 min read', description: 'Methodology for calculating customer cost savings from sustainable packaging.' }
+    ],
+    'testing-standards': [
+      { id: 'ts1', title: '300+ Cycle Durability Testing Protocol', category: 'testing-standards', author: 'Quality Lab', read_time: '25 min read', description: 'Comprehensive protocol for 300+ cycle durability testing of reusable packaging.' },
+      { id: 'ts2', title: 'ASTM Standards Compliance Checklist', category: 'testing-standards', author: 'Compliance Team', read_time: '18 min read', description: 'Checklist for ensuring compliance with relevant ASTM testing standards.' }
+    ],
+    'quality-control': [
+      { id: 'qc1', title: 'Manufacturing Quality Control Procedures', category: 'quality-control', author: 'Production Team', read_time: '22 min read', description: 'Step-by-step quality control procedures for manufacturing processes.' },
+      { id: 'qc2', title: 'Incoming Material Inspection Protocol', category: 'quality-control', author: 'QA Team', read_time: '16 min read', description: 'Protocol for inspecting and qualifying incoming raw materials.' }
+    ],
+    'third-party-cert': [
+      { id: 'tpc1', title: 'BPI Certification Results', category: 'third-party-cert', author: 'Certification Team', read_time: '20 min read', description: 'Biodegradable Products Institute certification test results and documentation.' },
+      { id: 'tpc2', title: 'USDA BioPreferred Certification', category: 'third-party-cert', author: 'Regulatory Affairs', read_time: '15 min read', description: 'USDA BioPreferred program certification process and results.' }
+    ],
+    'durability-testing': [
+      { id: 'dt1', title: 'Stress Testing Data Analysis', category: 'durability-testing', author: 'Testing Lab', read_time: '24 min read', description: 'Comprehensive analysis of stress testing data for packaging durability.' },
+      { id: 'dt2', title: 'Impact Resistance Test Results', category: 'durability-testing', author: 'Quality Team', read_time: '18 min read', description: 'Results from impact resistance testing across different temperature ranges.' }
+    ],
+    'temperature-control': [
+      { id: 'tc1', title: 'Cold Chain Validation Study', category: 'temperature-control', author: 'Logistics Team', read_time: '28 min read', description: 'Validation study of temperature control performance in cold chain applications.' },
+      { id: 'tc2', title: 'Thermal Performance Benchmarking', category: 'temperature-control', author: 'R&D Team', read_time: '22 min read', description: 'Benchmarking study comparing thermal performance against industry standards.' }
     ]
   };
 
@@ -198,21 +317,39 @@ const KnowledgeBase: React.FC<KnowledgeBaseProps> = ({ onNavigate, isManaging = 
       </div>
 
       <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all">All Categories</TabsTrigger>
-          <TabsTrigger value="technical">
-            <Settings className="w-4 h-4 mr-2" />
-            Technical
-          </TabsTrigger>
-          <TabsTrigger value="business">
-            <Handshake className="w-4 h-4 mr-2" />
-            Business
-          </TabsTrigger>
-          <TabsTrigger value="processes">
-            <FileText className="w-4 h-4 mr-2" />
-            Processes
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto">
+          <TabsList className="grid w-full grid-cols-8 min-w-fit">
+            <TabsTrigger value="all" className="whitespace-nowrap">All Categories</TabsTrigger>
+            <TabsTrigger value="technical" className="whitespace-nowrap">
+              <Settings className="w-4 h-4 mr-2" />
+              Technical
+            </TabsTrigger>
+            <TabsTrigger value="business" className="whitespace-nowrap">
+              <Handshake className="w-4 h-4 mr-2" />
+              Business
+            </TabsTrigger>
+            <TabsTrigger value="processes" className="whitespace-nowrap">
+              <FileText className="w-4 h-4 mr-2" />
+              Processes
+            </TabsTrigger>
+            <TabsTrigger value="research-development" className="whitespace-nowrap">
+              <FlaskConical className="w-4 h-4 mr-2" />
+              R&D
+            </TabsTrigger>
+            <TabsTrigger value="sustainability-compliance" className="whitespace-nowrap">
+              <Leaf className="w-4 h-4 mr-2" />
+              Sustainability
+            </TabsTrigger>
+            <TabsTrigger value="marketing-brand" className="whitespace-nowrap">
+              <Megaphone className="w-4 h-4 mr-2" />
+              Marketing
+            </TabsTrigger>
+            <TabsTrigger value="quality-testing" className="whitespace-nowrap">
+              <Shield className="w-4 h-4 mr-2" />
+              Quality
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="all" className="mt-6">
           <div className="space-y-6">

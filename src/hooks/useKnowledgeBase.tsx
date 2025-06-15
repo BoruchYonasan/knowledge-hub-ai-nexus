@@ -8,7 +8,7 @@ interface KnowledgeBaseArticle {
   title: string;
   description: string;
   content?: string;
-  category: 'all' | 'hr' | 'engineering' | 'sales' | 'finance' | 'operations';
+  category: 'all' | 'hr' | 'engineering' | 'sales' | 'finance' | 'operations' | 'research-development' | 'sustainability-compliance' | 'marketing-brand' | 'quality-testing';
   author: string;
   read_time: string;
   tags: string[];

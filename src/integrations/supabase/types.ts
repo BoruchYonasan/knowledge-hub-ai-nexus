@@ -632,6 +632,10 @@ export type Database = {
         | "sales"
         | "finance"
         | "operations"
+        | "research-development"
+        | "sustainability-compliance"
+        | "marketing-brand"
+        | "quality-testing"
       link_type: "document" | "image" | "guide" | "policy" | "other"
       meeting_type: "in-person" | "video-call" | "hybrid"
       poll_status: "active" | "closed" | "resolved"
@@ -766,6 +770,10 @@ export const Constants = {
         "sales",
         "finance",
         "operations",
+        "research-development",
+        "sustainability-compliance",
+        "marketing-brand",
+        "quality-testing",
       ],
       link_type: ["document", "image", "guide", "policy", "other"],
       meeting_type: ["in-person", "video-call", "hybrid"],
