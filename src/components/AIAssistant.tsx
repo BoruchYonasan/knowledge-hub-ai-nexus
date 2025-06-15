@@ -119,11 +119,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
       if (conversation) {
         const history = await loadConversationHistory(conversation.id);
         
-        // Convert database messages to component format
+        // Convert database messages to component format with proper type casting
         const convertedMessages: Message[] = history.map(msg => ({
           id: msg.id,
           content: msg.content,
-          sender: msg.sender,
+          sender: msg.sender as 'user' | 'ai',
           timestamp: new Date(msg.created_at),
           modelUsed: msg.model_used || undefined,
           files: msg.files_context || undefined

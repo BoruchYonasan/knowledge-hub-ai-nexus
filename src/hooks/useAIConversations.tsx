@@ -67,7 +67,7 @@ export const useAIConversations = () => {
     try {
       const userId = getCurrentUserId();
       
-      // Set user context for RLS
+      // Set user context for RLS using the helper function
       await supabase.rpc('set_config', {
         parameter: 'app.current_user_id',
         value: userId
@@ -123,8 +123,15 @@ export const useAIConversations = () => {
         .limit(limit);
 
       if (error) throw error;
-      setConversationHistory(messages || []);
-      return messages || [];
+      
+      // Type cast the messages to ensure proper typing
+      const typedMessages = (messages || []).map(msg => ({
+        ...msg,
+        sender: msg.sender as 'user' | 'ai'
+      }));
+      
+      setConversationHistory(typedMessages);
+      return typedMessages;
     } catch (error) {
       console.error('Error loading conversation history:', error);
       return [];
@@ -153,8 +160,14 @@ export const useAIConversations = () => {
 
       if (error) throw error;
       
-      setConversationHistory(prev => [...prev, message]);
-      return message;
+      // Type cast the returned message
+      const typedMessage = {
+        ...message,
+        sender: message.sender as 'user' | 'ai'
+      };
+      
+      setConversationHistory(prev => [...prev, typedMessage]);
+      return typedMessage;
     } catch (error) {
       console.error('Error saving message:', error);
       return null;

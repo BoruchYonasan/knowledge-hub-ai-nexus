@@ -34,14 +34,14 @@ const selectModel = (message: string, preferredModel?: string, isFollowUp?: bool
 
   // Use preferred model if specified and appropriate
   if (preferredModel) {
-    if (preferredModel === 'claude-sonnet-4' && isComplex) return 'claude-sonnet-4';
+    if (preferredModel === 'claude-3-5-sonnet-20241022' && isComplex) return 'claude-3-5-sonnet-20241022';
     if (preferredModel === 'gpt-4o' && isComplex) return 'gpt-4o';
     if (preferredModel === 'gemini-2.0-flash-exp') return 'gemini-2.0-flash-exp';
   }
 
   // Auto-select based on complexity
   if (isComplex) {
-    return 'claude-sonnet-4'; // Default to Claude for complex tasks
+    return 'claude-3-5-sonnet-20241022'; // Default to Claude for complex tasks
   }
   
   return 'gemini-2.0-flash-exp'; // Default to Gemini for simple tasks
@@ -103,18 +103,90 @@ const callGemini = async (message: string, context: string) => {
   return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I encountered an error.';
 };
 
-// Call Claude API (placeholder - you'd need to add Anthropic API key)
+// Call Claude API
 const callClaude = async (message: string, context: string) => {
-  // For now, fall back to Gemini since Claude API key isn't configured
-  console.log('Claude model requested but not configured, falling back to Gemini');
-  return await callGemini(message, context);
+  const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+  if (!anthropicApiKey) {
+    console.log('ANTHROPIC_API_KEY not configured, falling back to Gemini');
+    return await callGemini(message, context);
+  }
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicApiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 2048,
+        messages: [
+          {
+            role: 'user',
+            content: `${context}\n\nUser message: ${message}`
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Claude API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.content?.[0]?.text || 'Sorry, I encountered an error with Claude.';
+  } catch (error) {
+    console.error('Claude API error:', error);
+    console.log('Falling back to Gemini');
+    return await callGemini(message, context);
+  }
 };
 
-// Call OpenAI API (placeholder - you'd need to add OpenAI API key)
+// Call OpenAI API
 const callOpenAI = async (message: string, context: string) => {
-  // For now, fall back to Gemini since OpenAI API key isn't configured
-  console.log('OpenAI model requested but not configured, falling back to Gemini');
-  return await callGemini(message, context);
+  const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+  if (!openaiApiKey) {
+    console.log('OPENAI_API_KEY not configured, falling back to Gemini');
+    return await callGemini(message, context);
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${openaiApiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: context
+          },
+          {
+            role: 'user',
+            content: message
+          }
+        ],
+        max_tokens: 2048,
+        temperature: 0.7
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || 'Sorry, I encountered an error with OpenAI.';
+  } catch (error) {
+    console.error('OpenAI API error:', error);
+    console.log('Falling back to Gemini');
+    return await callGemini(message, context);
+  }
 };
 
 const handler = async (req: Request): Promise<Response> => {
@@ -145,7 +217,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Call appropriate AI model
     let response: string;
     switch (selectedModel) {
-      case 'claude-sonnet-4':
+      case 'claude-3-5-sonnet-20241022':
         response = await callClaude(message, enhancedContext);
         break;
       case 'gpt-4o':
