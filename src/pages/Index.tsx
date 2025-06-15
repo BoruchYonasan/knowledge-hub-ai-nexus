@@ -1,26 +1,32 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import AuthGuard from '@/components/AuthGuard';
 import Navbar from '@/components/Navbar';
 import Dashboard from '@/components/Dashboard';
-import KnowledgeBase from '@/components/KnowledgeBase';
 import ProjectCentral from '@/components/ProjectCentral';
+import KnowledgeBase from '@/components/KnowledgeBase';
 import CompanyHub from '@/components/CompanyHub';
 import ProductDevelopment from '@/components/ProductDevelopment';
 import BusinessOperations from '@/components/BusinessOperations';
+import LatestUpdates from '@/components/LatestUpdates';
+import WorksInProgress from '@/components/WorksInProgress';
+import GanttChartView from '@/components/GanttChartView';
+import CompanyReports from '@/components/CompanyReports';
 import Search from '@/components/Search';
 import ContentManager from '@/components/ContentManager';
-import LatestUpdates from '@/components/LatestUpdates';
-import CompanyReports from '@/components/CompanyReports';
+import ArticleView from '@/components/ArticleView';
+import AIChatbotGuide from '@/components/AIChatbotGuide';
 import AIAssistant from '@/components/AIAssistant';
 import { useContentManager } from '@/hooks/useContentManager';
 
 const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [currentTab, setCurrentTab] = useState('');
+  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
   const [isGlobalManaging, setIsGlobalManaging] = useState(false);
-  const [hasNewAIMessage, setHasNewAIMessage] = useState(false);
-  const [projectCentralTab, setProjectCentralTab] = useState('overview');
-  
+  const [hasNewMessage, setHasNewMessage] = useState(false);
+  const { toast } = useToast();
+
   const { 
     createUpdateFromAI, 
     editUpdateFromAI, 
@@ -36,10 +42,14 @@ const Index = () => {
     deleteArticleFromAI
   } = useContentManager();
 
+  useEffect(() => {
+    // Add any necessary side effects here
+  }, []);
+
   const handleNavigate = (page: string, tab?: string) => {
     setCurrentPage(page);
     if (page === 'project-central' && tab) {
-      setProjectCentralTab(tab);
+      setCurrentTab(tab);
     }
   };
 
@@ -49,58 +59,58 @@ const Index = () => {
         return <Dashboard onNavigate={handleNavigate} />;
       case 'project-central':
         return (
-          <div className="pt-16 pl-0 lg:pl-64">
-            <ProjectCentral isManaging={isGlobalManaging} defaultTab={projectCentralTab} />
-          </div>
+          <ProjectCentral
+            onNavigate={handleNavigate}
+            initialTab={currentTab}
+            isManaging={isGlobalManaging}
+          />
         );
       case 'knowledge':
         return (
-          <div className="pt-16 pl-0 lg:pl-64">
-            <KnowledgeBase onNavigate={setCurrentPage} isManaging={isGlobalManaging} />
-          </div>
+          <KnowledgeBase
+            onNavigate={handleNavigate}
+            onSelectArticle={setSelectedArticleId}
+            isManaging={isGlobalManaging}
+          />
         );
       case 'company-hub':
-        return (
-          <div className="pt-16 pl-0 lg:pl-64">
-            <CompanyHub isManaging={isGlobalManaging} />
-          </div>
-        );
+        return <CompanyHub onNavigate={handleNavigate} />;
       case 'product-development':
-        return (
-          <div className="pt-16 pl-0 lg:pl-64">
-            <ProductDevelopment isManaging={isGlobalManaging} />
-          </div>
-        );
+        return <ProductDevelopment onNavigate={handleNavigate} />;
       case 'business-operations':
-        return (
-          <div className="pt-16 pl-0 lg:pl-64">
-            <BusinessOperations isManaging={isGlobalManaging} />
-          </div>
-        );
-      case 'search':
-        return (
-          <div className="pt-16 pl-0 lg:pl-64">
-            <Search />
-          </div>
-        );
-      case 'content-manager':
-        return (
-          <div className="pt-16 pl-0 lg:pl-64">
-            <ContentManager />
-          </div>
-        );
+        return <BusinessOperations onNavigate={handleNavigate} />;
       case 'latest-updates':
         return (
-          <div className="pt-16 pl-0 lg:pl-64">
-            <LatestUpdates isManaging={isGlobalManaging} onNavigate={setCurrentPage} />
-          </div>
+          <LatestUpdates
+            onNavigate={handleNavigate}
+            isManaging={isGlobalManaging}
+          />
+        );
+      case 'works-in-progress':
+        return <WorksInProgress onNavigate={handleNavigate} />;
+      case 'gantt-chart':
+        return (
+          <GanttChartView
+            onNavigate={handleNavigate}
+            isManaging={isGlobalManaging}
+          />
         );
       case 'company-reports':
+        return <CompanyReports onNavigate={handleNavigate} />;
+      case 'search':
+        return <Search onNavigate={handleNavigate} />;
+      case 'content-manager':
+        return <ContentManager onNavigate={handleNavigate} />;
+      case 'article-view':
         return (
-          <div className="pt-16 pl-0 lg:pl-64">
-            <CompanyReports isManaging={isGlobalManaging} onNavigate={setCurrentPage} />
-          </div>
+          <ArticleView
+            articleId={selectedArticleId}
+            onNavigate={handleNavigate}
+            onBack={() => handleNavigate('knowledge')}
+          />
         );
+      case 'ai-chatbot-guide':
+        return <AIChatbotGuide onNavigate={handleNavigate} />;
       default:
         return <Dashboard onNavigate={handleNavigate} />;
     }
@@ -147,9 +157,9 @@ const Index = () => {
           isManagingProjects={isGlobalManaging}
           isManagingGantt={isGlobalManaging}
           isManagingKnowledge={isGlobalManaging}
-          onNewMessage={() => setHasNewAIMessage(true)}
-          hasNewMessage={hasNewAIMessage}
-          onMessageRead={() => setHasNewAIMessage(false)}
+          onNewMessage={() => setHasNewMessage(true)}
+          hasNewMessage={hasNewMessage}
+          onMessageRead={() => setHasNewMessage(false)}
         />
       </div>
     </AuthGuard>
