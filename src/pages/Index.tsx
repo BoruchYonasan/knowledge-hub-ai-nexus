@@ -38,19 +38,47 @@ const Index = () => {
       case 'dashboard':
         return <Dashboard onNavigate={setCurrentPage} />;
       case 'project-central':
-        return <ProjectCentral isManaging={isGlobalManaging} />;
+        return (
+          <div className="pt-16 pl-0 lg:pl-64">
+            <ProjectCentral isManaging={isGlobalManaging} />
+          </div>
+        );
       case 'knowledge':
-        return <KnowledgeBase onNavigate={setCurrentPage} isManaging={isGlobalManaging} />;
+        return (
+          <div className="pt-16 pl-0 lg:pl-64">
+            <KnowledgeBase onNavigate={setCurrentPage} isManaging={isGlobalManaging} />
+          </div>
+        );
       case 'company-hub':
-        return <CompanyHub isManaging={isGlobalManaging} />;
+        return (
+          <div className="pt-16 pl-0 lg:pl-64">
+            <CompanyHub isManaging={isGlobalManaging} />
+          </div>
+        );
       case 'product-development':
-        return <ProductDevelopment isManaging={isGlobalManaging} />;
+        return (
+          <div className="pt-16 pl-0 lg:pl-64">
+            <ProductDevelopment isManaging={isGlobalManaging} />
+          </div>
+        );
       case 'business-operations':
-        return <BusinessOperations isManaging={isGlobalManaging} />;
+        return (
+          <div className="pt-16 pl-0 lg:pl-64">
+            <BusinessOperations isManaging={isGlobalManaging} />
+          </div>
+        );
       case 'search':
-        return <Search />;
+        return (
+          <div className="pt-16 pl-0 lg:pl-64">
+            <Search />
+          </div>
+        );
       case 'content-manager':
-        return <ContentManager />;
+        return (
+          <div className="pt-16 pl-0 lg:pl-64">
+            <ContentManager />
+          </div>
+        );
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }
