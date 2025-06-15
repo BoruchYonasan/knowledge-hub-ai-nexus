@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import AuthGuard from '@/components/AuthGuard';
@@ -16,6 +17,7 @@ import Search from '@/components/Search';
 import ContentManager from '@/components/ContentManager';
 import ArticleView from '@/components/ArticleView';
 import AIChatbotGuide from '@/components/AIChatbotGuide';
+import AeroMailAi from '@/components/AeroMailAi';
 import AIAssistant from '@/components/AIAssistant';
 import { useContentManager } from '@/hooks/useContentManager';
 
@@ -114,6 +116,16 @@ const Index = () => {
         );
       case 'ai-chatbot-guide':
         return <AIChatbotGuide onNavigate={handleNavigate} />;
+      case 'aeromail-ai':
+        return (
+          <AeroMailAi
+            onNavigate={handleNavigate}
+            isManagingUpdates={isGlobalManaging}
+            isManagingProjects={isGlobalManaging}
+            isManagingGantt={isGlobalManaging}
+            isManagingKnowledge={isGlobalManaging}
+          />
+        );
       default:
         return <Dashboard onNavigate={handleNavigate} />;
     }
@@ -129,6 +141,9 @@ const Index = () => {
     return context;
   };
 
+  // Don't show AIAssistant on the aeromail-ai page
+  const showAIAssistant = currentPage !== 'aeromail-ai';
+
   return (
     <AuthGuard>
       <div className="min-h-screen bg-gray-50">
@@ -141,29 +156,31 @@ const Index = () => {
         <main>
           {renderCurrentPage()}
         </main>
-        <AIAssistant 
-          knowledgeBaseContext={getKnowledgeBaseContext()}
-          onNavigate={setCurrentPage}
-          onCreateUpdate={createUpdateFromAI}
-          onEditUpdate={editUpdateFromAI}
-          onDeleteUpdate={deleteUpdateFromAI}
-          onCreateProject={createProjectFromAI}
-          onEditProject={editProjectFromAI}
-          onDeleteProject={deleteProjectFromAI}
-          onCreateGanttItem={createGanttItemFromAI}
-          onEditGanttItem={editGanttItemFromAI}
-          onDeleteGanttItem={deleteGanttItemFromAI}
-          onCreateArticle={createArticleFromAI}
-          onEditArticle={editArticleFromAI}
-          onDeleteArticle={deleteArticleFromAI}
-          isManagingUpdates={isGlobalManaging}
-          isManagingProjects={isGlobalManaging}
-          isManagingGantt={isGlobalManaging}
-          isManagingKnowledge={isGlobalManaging}
-          onNewMessage={() => setHasNewMessage(true)}
-          hasNewMessage={hasNewMessage}
-          onMessageRead={() => setHasNewMessage(false)}
-        />
+        {showAIAssistant && (
+          <AIAssistant 
+            knowledgeBaseContext={getKnowledgeBaseContext()}
+            onNavigate={setCurrentPage}
+            onCreateUpdate={createUpdateFromAI}
+            onEditUpdate={editUpdateFromAI}
+            onDeleteUpdate={deleteUpdateFromAI}
+            onCreateProject={createProjectFromAI}
+            onEditProject={editProjectFromAI}
+            onDeleteProject={deleteProjectFromAI}
+            onCreateGanttItem={createGanttItemFromAI}
+            onEditGanttItem={editGanttItemFromAI}
+            onDeleteGanttItem={deleteGanttItemFromAI}
+            onCreateArticle={createArticleFromAI}
+            onEditArticle={editArticleFromAI}
+            onDeleteArticle={deleteArticleFromAI}
+            isManagingUpdates={isGlobalManaging}
+            isManagingProjects={isGlobalManaging}
+            isManagingGantt={isGlobalManaging}
+            isManagingKnowledge={isGlobalManaging}
+            onNewMessage={() => setHasNewMessage(true)}
+            hasNewMessage={hasNewMessage}
+            onMessageRead={() => setHasNewMessage(false)}
+          />
+        )}
       </div>
     </AuthGuard>
   );

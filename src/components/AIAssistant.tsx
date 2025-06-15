@@ -55,6 +55,13 @@ const AI_MODELS = [
   { value: 'grok-3', label: 'Grok 3' }
 ];
 
+const SUGGESTED_REPLIES = [
+  "What is AeroMail?",
+  "Summarize the Technology knowledge base",
+  "What are the latest updates?",
+  "How can I use this website?"
+];
+
 const AIAssistant: React.FC<AIAssistantProps> = ({ 
   knowledgeBaseContext, 
   onNavigate, 
@@ -85,6 +92,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   const [hasUnreadMessage, setHasUnreadMessage] = useState(true);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash-exp');
+  const [showSuggestedReplies, setShowSuggestedReplies] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -140,11 +148,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
         setMessages(convertedMessages.length > 0 ? convertedMessages : [
           {
             id: '1',
-            content: "Hello! I'm your enhanced AeroMail AI assistant with persistent memory and multi-model support (Gemini, Claude, OpenAI, and Grok). I can remember our conversation history and handle complex tasks. I can help you navigate our knowledge base, find information about company policies, procedures, and answer questions about our organization. I can also help manage content when you're in manage mode. What would you like to know?",
+            content: "Hello! I'm your AeroMail AI assistant with persistent memory and multi-model support (Gemini, Claude, OpenAI, and Grok). I can remember our conversation history and handle complex tasks. I can help you navigate our knowledge base, find information about company policies, procedures, and answer questions about our organization. I can also help manage content when you're in manage mode. What would you like to know?",
             sender: 'ai',
             timestamp: new Date()
           }
         ]);
+
+        setShowSuggestedReplies(convertedMessages.length === 0);
       }
     };
 
@@ -323,26 +333,37 @@ Be helpful, professional, and concise in your responses.`;
     return basePrompt;
   };
 
-  const sendMessage = async () => {
-    if (!inputMessage.trim() || isLoading || !currentConversation) return;
+  const handleSuggestedReply = (reply: string) => {
+    setInputMessage(reply);
+    setShowSuggestedReplies(false);
+    // Auto-send the suggested reply
+    setTimeout(() => {
+      sendMessage(reply);
+    }, 100);
+  };
+
+  const sendMessage = async (messageText?: string) => {
+    const textToSend = messageText || inputMessage;
+    if (!textToSend.trim() || isLoading || !currentConversation) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: inputMessage,
+      content: textToSend,
       sender: 'user',
       timestamp: new Date(),
       files: uploadedFiles.length > 0 ? [...uploadedFiles] : undefined
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInputMessage('');
+    if (!messageText) setInputMessage('');
     setIsLoading(true);
+    setShowSuggestedReplies(false);
 
     try {
       // Save user message to database
       await saveMessage(
         currentConversation.id, 
-        inputMessage, 
+        textToSend, 
         'user', 
         undefined,
         uploadedFiles.length > 0 ? uploadedFiles : undefined
@@ -357,14 +378,14 @@ Be helpful, professional, and concise in your responses.`;
 
       // Add current user message to history
       historyForAPI.push({
-        content: inputMessage,
+        content: textToSend,
         sender: 'user' as const,
         model_used: undefined
       });
 
       const { data, error } = await supabase.functions.invoke('enhanced-chat-with-ai', {
         body: {
-          message: inputMessage,
+          message: textToSend,
           context: generateSystemPrompt(),
           conversationId: currentConversation.id,
           conversationHistory: historyForAPI,
@@ -418,9 +439,9 @@ Be helpful, professional, and concise in your responses.`;
       
       // Update conversation title if this is the first exchange
       if (conversationHistory.length === 0) {
-        const title = inputMessage.length > 50 
-          ? inputMessage.substring(0, 47) + '...' 
-          : inputMessage;
+        const title = textToSend.length > 50 
+          ? textToSend.substring(0, 47) + '...' 
+          : textToSend;
         await updateConversationTitle(currentConversation.id, title);
       }
       
@@ -495,7 +516,7 @@ Be helpful, professional, and concise in your responses.`;
             <CardTitle className="flex items-center justify-between text-lg">
               <div className="flex items-center space-x-2">
                 <Bot className="h-5 w-5 text-blue-600" />
-                <span>Enhanced AI Assistant</span>
+                <span>AeroMail Ai</span>
                 {(isManagingUpdates || isManagingProjects || isManagingGantt || isManagingKnowledge) && (
                   <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
                     Content Manager
@@ -589,6 +610,25 @@ Be helpful, professional, and concise in your responses.`;
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Suggested Replies */}
+            {showSuggestedReplies && !isLoading && (
+              <div className="p-4 border-t border-gray-200 flex-shrink-0">
+                <div className="grid grid-cols-1 gap-2">
+                  {SUGGESTED_REPLIES.map((reply, index) => (
+                    <Button
+                      key={index}
+                      onClick={() => handleSuggestedReply(reply)}
+                      variant="outline"
+                      size="sm"
+                      className="text-left justify-start h-auto py-2 px-3 text-xs"
+                    >
+                      {reply}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* File Upload Area */}
             {uploadedFiles.length > 0 && (
               <div className="border-t p-2 flex-shrink-0 max-h-32 overflow-y-auto">
@@ -649,7 +689,7 @@ Be helpful, professional, and concise in your responses.`;
                   className="flex-1"
                 />
                 <Button
-                  onClick={sendMessage}
+                  onClick={() => sendMessage()}
                   disabled={!inputMessage.trim() || isLoading || !currentConversation}
                   size="icon"
                   className="bg-blue-600 hover:bg-blue-700"

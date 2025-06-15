@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Settings, Menu, X, HelpCircle, User, BookOpen, Calendar, ExternalLink, Bot, FileText } from 'lucide-react';
@@ -30,6 +31,7 @@ const Navbar: React.FC<NavbarProps> = ({
     { id: 'knowledge', name: 'Knowledge Base', icon: BookOpen, type: 'internal' },
     { id: 'company-hub', name: 'Calendar', icon: Calendar, type: 'internal' },
     { id: 'aeromail-website', name: 'AeroMail Website', icon: ExternalLink, type: 'external', url: 'https://am.dev.narrative.studio/' },
+    { id: 'aeromail-ai', name: 'AeroMail Ai', icon: Bot, type: 'internal' },
     { id: 'ai-chatbot-guide', name: 'AI Chatbot Guide', icon: Bot, type: 'internal' },
     { id: 'company-reports', name: 'Company Reports', icon: FileText, type: 'internal' },
   ];
