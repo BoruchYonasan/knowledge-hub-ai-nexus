@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Professional Design System - Blue theme */
+/* Professional Design System - Enhanced color palette and typography */
 
 @layer base {
   :root {
@@ -37,7 +37,7 @@
 
     --radius: 0.75rem;
 
-    /* Blue theme color system */
+    /* Professional color system */
     --navy-50: 248 250 252;
     --navy-100: 241 245 249;
     --navy-200: 226 232 240;
@@ -60,16 +60,16 @@
     --blue-800: 30 64 175;
     --blue-900: 30 58 138;
 
-    --emerald-50: 240 253 244;
-    --emerald-100: 220 252 231;
-    --emerald-200: 187 247 208;
-    --emerald-300: 134 239 172;
-    --emerald-400: 74 222 128;
-    --emerald-500: 34 197 94;
-    --emerald-600: 22 163 74;
-    --emerald-700: 21 128 61;
-    --emerald-800: 22 101 52;
-    --emerald-900: 20 83 45;
+    --emerald-50: 236 253 245;
+    --emerald-100: 209 250 229;
+    --emerald-200: 167 243 208;
+    --emerald-300: 110 231 183;
+    --emerald-400: 52 211 153;
+    --emerald-500: 16 185 129;
+    --emerald-600: 5 150 105;
+    --emerald-700: 4 120 87;
+    --emerald-800: 6 95 70;
+    --emerald-900: 6 78 59;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
