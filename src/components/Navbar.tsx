@@ -70,8 +70,18 @@ const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Right side - Help and User */}
+        {/* Right side - Settings, Help and User */}
         <div className="flex items-center space-x-4">
+          <button 
+            onClick={() => onGlobalManagingChange?.(!isGlobalManaging)}
+            className={`p-2 rounded-lg ${
+              isGlobalManaging 
+                ? 'text-blue-600 bg-blue-100 hover:bg-blue-200' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <Settings className="w-5 h-5" />
+          </button>
           <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
             <HelpCircle className="w-5 h-5" />
           </button>
