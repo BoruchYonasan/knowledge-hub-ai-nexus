@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageCircle, X, Send, Bot, User, Upload, FileText, Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   id: string;
@@ -305,36 +306,18 @@ Be helpful, professional, and concise in your responses.`;
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDoWesZjkIrFmzfBaWs-vHk7FOJyjDaG5M', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `${buildContextWithFiles()}\n\nUser: ${inputMessage}`
-                }
-              ]
-            }
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 8192,
-          }
-        })
+      const { data, error } = await supabase.functions.invoke('chat-with-ai', {
+        body: {
+          message: inputMessage,
+          context: buildContextWithFiles()
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get AI response');
+      if (error) {
+        throw error;
       }
 
-      const data = await response.json();
-      let aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Sorry, I encountered an error. Please try again.';
+      let aiResponse = data?.response || 'Sorry, I encountered an error. Please try again.';
 
       // Handle content management responses
       if (aiResponse.includes('CREATING_UPDATE:') && onCreateUpdate) {
@@ -492,7 +475,7 @@ Be helpful, professional, and concise in your responses.`;
         }
       }
     } catch (error) {
-      console.error('Error calling Gemini API:', error);
+      console.error('Error calling AI assistant:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: 'Sorry, I\'m having trouble connecting right now. Please try again later.',
