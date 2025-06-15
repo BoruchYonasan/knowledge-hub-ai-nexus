@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLatestUpdates } from '@/hooks/useLatestUpdates';
+import { Clock } from 'lucide-react';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
@@ -36,6 +37,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
     { milestone: 'Q3 Product Review', date: 'Sep 30, 2024', status: 'planned' },
   ];
 
+  // Get the latest 3 updates for the dashboard preview
+  const recentUpdates = updates.slice(0, 3);
+
   return (
     <div className="min-h-screen bg-gray-50 pt-16 pl-0 lg:pl-64">
       <div className="p-8">
@@ -48,9 +52,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column - Latest Updates */}
           <div className="lg:col-span-4">
-            <Card className="h-fit">
+            <Card 
+              className="h-fit cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => onNavigate('latest-updates')}
+            >
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Latest Updates</CardTitle>
+                <CardTitle className="text-lg font-semibold text-gray-900 flex items-center justify-between">
+                  Latest Updates
+                  <span className="text-sm font-normal text-blue-600">View All →</span>
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {loading ? (
@@ -59,33 +69,30 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                       <div key={i} className="h-16 bg-gray-200 rounded"></div>
                     ))}
                   </div>
+                ) : recentUpdates.length > 0 ? (
+                  recentUpdates.map((update) => (
+                    <div key={update.id} className="flex items-start space-x-3 p-2 rounded hover:bg-gray-50 transition-colors">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900 line-clamp-2">
+                          {update.title}
+                        </p>
+                        <div className="flex items-center text-xs text-gray-500 mt-1">
+                          <Clock className="w-3 h-3 mr-1" />
+                          {new Date(update.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  ))
                 ) : (
-                  <>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          Q2 Sales Report has been published
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          Updated project plan for Project Phoenix
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          New employee onboarding guide
-                        </p>
-                      </div>
-                    </div>
-                  </>
+                  <div className="text-center py-4 text-gray-500">
+                    <p className="text-sm">No updates available</p>
+                  </div>
                 )}
               </CardContent>
             </Card>

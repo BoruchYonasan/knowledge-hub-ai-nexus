@@ -10,6 +10,7 @@ import ProductDevelopment from '@/components/ProductDevelopment';
 import BusinessOperations from '@/components/BusinessOperations';
 import Search from '@/components/Search';
 import ContentManager from '@/components/ContentManager';
+import LatestUpdates from '@/components/LatestUpdates';
 import AIAssistant from '@/components/AIAssistant';
 import { useContentManager } from '@/hooks/useContentManager';
 
@@ -79,13 +80,19 @@ const Index = () => {
             <ContentManager />
           </div>
         );
+      case 'latest-updates':
+        return (
+          <div className="pt-16 pl-0 lg:pl-64">
+            <LatestUpdates isManaging={isGlobalManaging} />
+          </div>
+        );
       default:
         return <Dashboard onNavigate={setCurrentPage} />;
     }
   };
 
   const getKnowledgeBaseContext = () => {
-    let context = `Current page: ${currentPage}. Available sections: Dashboard, Project Central, Knowledge Base, Company Hub, Product Development, Business Operations, Search, Content Manager.`;
+    let context = `Current page: ${currentPage}. Available sections: Dashboard, Project Central, Knowledge Base, Company Hub, Product Development, Business Operations, Search, Content Manager, Latest Updates.`;
     
     if (isGlobalManaging) {
       context += " Currently in GLOBAL MANAGE MODE - can create, edit, and delete content across all sections.";

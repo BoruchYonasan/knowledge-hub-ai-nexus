@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, User, Filter, Search, Plus, Edit, Trash2 } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Clock, User, Filter, Search, Plus, Edit, Trash2, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLatestUpdates } from '@/hooks/useLatestUpdates';
 import AddUpdateDialog from '@/components/AddUpdateDialog';
@@ -13,9 +15,10 @@ import AddUpdateDialog from '@/components/AddUpdateDialog';
 interface LatestUpdatesProps {
   isManaging?: boolean;
   onManagingChange?: (isManaging: boolean) => void;
+  onNavigate?: (page: string) => void;
 }
 
-const LatestUpdates: React.FC<LatestUpdatesProps> = ({ isManaging = false, onManagingChange }) => {
+const LatestUpdates: React.FC<LatestUpdatesProps> = ({ isManaging = false, onManagingChange, onNavigate }) => {
   const { updates, loading, createUpdate, updateUpdate, deleteUpdate } = useLatestUpdates();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPriority, setFilterPriority] = useState('all');
@@ -54,6 +57,22 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ isManaging = false, onMan
     }
   };
 
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return {
+      date: date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+      time: date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      })
+    };
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto p-6">
@@ -69,9 +88,21 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ isManaging = false, onMan
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Latest Updates</h1>
-          <p className="text-gray-600">Stay informed with the latest company news and announcements</p>
+        <div className="flex items-center space-x-4">
+          {onNavigate && (
+            <Button 
+              variant="ghost" 
+              onClick={() => onNavigate('dashboard')}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Dashboard</span>
+            </Button>
+          )}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Latest Updates</h1>
+            <p className="text-gray-600">Stay informed with the latest company news and announcements</p>
+          </div>
         </div>
         <div className="flex space-x-2">
           <AddUpdateDialog />
@@ -119,160 +150,171 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ isManaging = false, onMan
           <TabsTrigger value="recent">Recent (24h) ({filteredUpdates.filter(u => new Date(u.created_at) > new Date(Date.now() - 24*60*60*1000)).length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="space-y-4">
-          {filteredUpdates.map((update) => (
-            <Card key={update.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CardTitle className="text-lg">{update.title}</CardTitle>
-                      <Badge className={getPriorityColor(update.priority)}>
-                        {update.priority}
-                      </Badge>
-                      {update.department && (
-                        <Badge variant="outline">{update.department}</Badge>
+        <ScrollArea className="h-[calc(100vh-400px)]">
+          <TabsContent value="all" className="space-y-4">
+            {filteredUpdates.map((update) => {
+              const { date, time } = formatDateTime(update.created_at);
+              return (
+                <Card key={update.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CardTitle className="text-lg">{update.title}</CardTitle>
+                          <Badge className={getPriorityColor(update.priority)}>
+                            {update.priority}
+                          </Badge>
+                          {update.department && (
+                            <Badge variant="outline">{update.department}</Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500 space-x-4">
+                          <div className="flex items-center">
+                            <User className="w-4 h-4 mr-1" />
+                            {update.author}
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {date} at {time}
+                          </div>
+                        </div>
+                      </div>
+                      {isManaging && (
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDelete(update.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       )}
                     </div>
-                    <div className="flex items-center text-sm text-gray-500 space-x-4">
-                      <div className="flex items-center">
-                        <User className="w-4 h-4 mr-1" />
-                        {update.author}
-                      </div>
-                      <div className="flex items-center">
-                        <Clock className="w-4 h-4 mr-1" />
-                        {new Date(update.created_at).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                  {isManaging && (
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleDelete(update.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 mb-3">{update.preview}</p>
-                <Button variant="outline" size="sm">
-                  Read More
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700 mb-3">{update.preview}</p>
+                    <Button variant="outline" size="sm">
+                      Read More
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </TabsContent>
 
-        <TabsContent value="high" className="space-y-4">
-          {filteredUpdates.filter(u => u.priority === 'high').map((update) => (
-            <Card key={update.id} className="hover:shadow-md transition-shadow border-red-200">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CardTitle className="text-lg">{update.title}</CardTitle>
-                      <Badge className="bg-red-100 text-red-800">HIGH</Badge>
-                      {update.department && (
-                        <Badge variant="outline">{update.department}</Badge>
+          <TabsContent value="high" className="space-y-4">
+            {filteredUpdates.filter(u => u.priority === 'high').map((update) => {
+              const { date, time } = formatDateTime(update.created_at);
+              return (
+                <Card key={update.id} className="hover:shadow-md transition-shadow border-red-200">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CardTitle className="text-lg">{update.title}</CardTitle>
+                          <Badge className="bg-red-100 text-red-800">HIGH</Badge>
+                          {update.department && (
+                            <Badge variant="outline">{update.department}</Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500 space-x-4">
+                          <div className="flex items-center">
+                            <User className="w-4 h-4 mr-1" />
+                            {update.author}
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {date} at {time}
+                          </div>
+                        </div>
+                      </div>
+                      {isManaging && (
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDelete(update.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       )}
                     </div>
-                    <div className="flex items-center text-sm text-gray-500 space-x-4">
-                      <div className="flex items-center">
-                        <User className="w-4 h-4 mr-1" />
-                        {update.author}
-                      </div>
-                      <div className="flex items-center">
-                        <Clock className="w-4 h-4 mr-1" />
-                        {new Date(update.created_at).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                  {isManaging && (
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleDelete(update.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 mb-3">{update.preview}</p>
-                <Button variant="outline" size="sm">
-                  Read More
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700 mb-3">{update.preview}</p>
+                    <Button variant="outline" size="sm">
+                      Read More
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </TabsContent>
 
-        <TabsContent value="recent" className="space-y-4">
-          {filteredUpdates.filter(u => new Date(u.created_at) > new Date(Date.now() - 24*60*60*1000)).map((update) => (
-            <Card key={update.id} className="hover:shadow-md transition-shadow border-blue-200">
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CardTitle className="text-lg">{update.title}</CardTitle>
-                      <Badge className={getPriorityColor(update.priority)}>
-                        {update.priority}
-                      </Badge>
-                      <Badge className="bg-blue-100 text-blue-800">NEW</Badge>
-                      {update.department && (
-                        <Badge variant="outline">{update.department}</Badge>
+          <TabsContent value="recent" className="space-y-4">
+            {filteredUpdates.filter(u => new Date(u.created_at) > new Date(Date.now() - 24*60*60*1000)).map((update) => {
+              const { date, time } = formatDateTime(update.created_at);
+              return (
+                <Card key={update.id} className="hover:shadow-md transition-shadow border-blue-200">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CardTitle className="text-lg">{update.title}</CardTitle>
+                          <Badge className={getPriorityColor(update.priority)}>
+                            {update.priority}
+                          </Badge>
+                          <Badge className="bg-blue-100 text-blue-800">NEW</Badge>
+                          {update.department && (
+                            <Badge variant="outline">{update.department}</Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500 space-x-4">
+                          <div className="flex items-center">
+                            <User className="w-4 h-4 mr-1" />
+                            {update.author}
+                          </div>
+                          <div className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {date} at {time}
+                          </div>
+                        </div>
+                      </div>
+                      {isManaging && (
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDelete(update.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       )}
                     </div>
-                    <div className="flex items-center text-sm text-gray-500 space-x-4">
-                      <div className="flex items-center">
-                        <User className="w-4 h-4 mr-1" />
-                        {update.author}
-                      </div>
-                      <div className="flex items-center">
-                        <Clock className="w-4 h-4 mr-1" />
-                        {new Date(update.created_at).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                  {isManaging && (
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleDelete(update.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 mb-3">{update.preview}</p>
-                <Button variant="outline" size="sm">
-                  Read More
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-700 mb-3">{update.preview}</p>
+                    <Button variant="outline" size="sm">
+                      Read More
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </TabsContent>
+        </ScrollArea>
       </Tabs>
     </div>
   );
