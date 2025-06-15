@@ -305,7 +305,7 @@ Be helpful, professional, and concise in your responses.`;
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-0605:generateContent?key=AIzaSyDoWesZjkIrFmzfBaWs-vHk7FOJyjDaG5M', {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDoWesZjkIrFmzfBaWs-vHk7FOJyjDaG5M', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
