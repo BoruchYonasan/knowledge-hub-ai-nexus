@@ -356,32 +356,34 @@ Be helpful, professional, and concise in your responses.`;
       }`}>
         <div className="p-4 border-b border-gray-200 flex items-center justify-between gap-2">
           {!isHistoryCollapsed && (
-            <Button
-              onClick={createNewConversation}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Conversation
-            </Button>
+            <>
+              <Button
+                onClick={createNewConversation}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Conversation
+              </Button>
+              <h3 className="text-sm font-semibold text-gray-700 mx-2">Recent Conversations</h3>
+            </>
           )}
           <Button
             onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
             variant="outline"
             size="sm"
-            className="flex-shrink-0 border-2 border-gray-500 hover:bg-blue-50 hover:border-blue-600 bg-white shadow-lg px-3 py-2 h-10 font-medium"
+            className="flex-shrink-0 border-2 border-blue-500 hover:bg-blue-50 hover:border-blue-600 bg-blue-50 shadow-lg px-3 py-2 h-10 font-medium"
             title={isHistoryCollapsed ? "Expand chat history" : "Collapse chat history"}
           >
             {isHistoryCollapsed ? (
-              <ChevronRight className="h-5 w-5 text-gray-800" />
+              <ChevronRight className="h-5 w-5 text-blue-600" />
             ) : (
-              <ChevronLeft className="h-5 w-5 text-gray-800" />
+              <ChevronLeft className="h-5 w-5 text-blue-600" />
             )}
           </Button>
         </div>
         
         {!isHistoryCollapsed && (
           <div className="flex-1 overflow-y-auto p-4">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Recent Conversations</h3>
             <div className="space-y-2">
               {conversations.map((conv) => (
                 <button
@@ -437,26 +439,26 @@ Be helpful, professional, and concise in your responses.`;
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col relative">
-        {/* Floating Model Selector */}
-        <div className="absolute top-4 left-4 z-40">
-          <div className="relative">
-            <Select value={selectedModel} onValueChange={setSelectedModel}>
-              <SelectTrigger className="w-48 bg-white border border-gray-300 hover:border-gray-400 shadow-lg text-gray-700 text-sm h-9 backdrop-blur-sm">
-                <SelectValue placeholder="Select model" />
-              </SelectTrigger>
-              <SelectContent className="z-50 bg-white border border-gray-300 shadow-xl">
-                {AI_MODELS.map((model) => (
-                  <SelectItem 
-                    key={model.value} 
-                    value={model.value}
-                    className="hover:bg-gray-50 cursor-pointer text-sm"
-                  >
-                    {model.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Fixed Floating Model Selector */}
+        <div className={`fixed top-4 z-50 transition-all duration-300 ${
+          isHistoryCollapsed ? 'left-80' : 'left-96'
+        }`}>
+          <Select value={selectedModel} onValueChange={setSelectedModel}>
+            <SelectTrigger className="w-48 bg-white border-2 border-blue-300 hover:border-blue-400 shadow-xl text-gray-700 text-sm h-10 backdrop-blur-sm">
+              <SelectValue placeholder="Select model" />
+            </SelectTrigger>
+            <SelectContent className="z-50 bg-white border border-gray-300 shadow-xl">
+              {AI_MODELS.map((model) => (
+                <SelectItem 
+                  key={model.value} 
+                  value={model.value}
+                  className="hover:bg-gray-50 cursor-pointer text-sm"
+                >
+                  {model.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Header */}
@@ -470,7 +472,7 @@ Be helpful, professional, and concise in your responses.`;
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-6 pt-16">
+        <div className="flex-1 overflow-y-auto p-6 pt-20">
           <div className="max-w-4xl mx-auto space-y-6">
             {messages.map((message) => (
               <div
@@ -554,8 +556,8 @@ Be helpful, professional, and concise in your responses.`;
                     </Button>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
             
             <div ref={messagesEndRef} />
           </div>
