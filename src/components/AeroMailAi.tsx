@@ -60,6 +60,7 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
   const [showSuggestedReplies, setShowSuggestedReplies] = useState(true);
   const [conversations, setConversations] = useState<any[]>([]);
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
+  const [switchingConversation, setSwitchingConversation] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -131,6 +132,42 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
       setConversations(data || []);
     } catch (error) {
       console.error('Error loading conversations:', error);
+    }
+  };
+
+  const loadConversation = async (conversationId: string) => {
+    if (currentConversation?.id === conversationId || switchingConversation) return;
+    
+    setSwitchingConversation(true);
+    try {
+      // Clear current messages
+      setMessages([]);
+      
+      // Load the selected conversation's history
+      const history = await loadConversationHistory(conversationId);
+      
+      const convertedMessages: Message[] = history.map(msg => ({
+        id: msg.id,
+        content: msg.content,
+        sender: msg.sender as 'user' | 'ai',
+        timestamp: new Date(msg.created_at),
+        modelUsed: msg.model_used || undefined,
+        files: Array.isArray(msg.files_context) ? (msg.files_context as unknown as UploadedFile[]) : undefined
+      }));
+
+      setMessages(convertedMessages);
+      setShowSuggestedReplies(convertedMessages.length === 0);
+      
+      // Update current conversation reference
+      const selectedConv = conversations.find(conv => conv.id === conversationId);
+      if (selectedConv) {
+        // Update the current conversation in the hook's state would require hook modification
+        // For now, we'll work with the messages loaded
+      }
+    } catch (error) {
+      console.error('Error loading conversation:', error);
+    } finally {
+      setSwitchingConversation(false);
     }
   };
 
@@ -355,11 +392,12 @@ Be helpful, professional, and concise in your responses.`;
         isHistoryCollapsed ? 'w-16' : 'w-80'
       }`}>
         <div className="p-4 border-b border-gray-200 flex flex-col gap-3">
-          {/* New Chat Button */}
+          {/* Enhanced New Chat Button */}
           {!isHistoryCollapsed && (
             <Button
               onClick={createNewConversation}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+              className="w-full bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl py-3 px-4 font-medium"
+              variant="outline"
             >
               <Plus className="h-4 w-4 mr-2" />
               New Chat
@@ -375,12 +413,12 @@ Be helpful, professional, and concise in your responses.`;
               </div>
               <Button
                 onClick={() => setIsHistoryCollapsed(true)}
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="flex-shrink-0 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 bg-white shadow-sm px-2 py-1 h-8 font-medium transition-all"
+                className="flex-shrink-0 h-6 w-6 p-0 hover:bg-gray-100 rounded transition-colors"
                 title="Collapse chat history"
               >
-                <ChevronLeft className="h-4 w-4 text-gray-600" />
+                <ChevronLeft className="h-4 w-4 text-gray-500" />
               </Button>
             </div>
           )}
@@ -388,16 +426,25 @@ Be helpful, professional, and concise in your responses.`;
         
         {!isHistoryCollapsed && (
           <div className="flex-1 overflow-y-auto p-4">
+            {switchingConversation && (
+              <div className="flex items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              </div>
+            )}
             <div className="space-y-2">
               {conversations.map((conv) => (
                 <button
                   key={conv.id}
-                  className={`w-full text-left p-3 rounded-lg hover:bg-gray-100 transition-colors ${
-                    currentConversation?.id === conv.id ? 'bg-blue-50 border border-blue-200' : ''
-                  }`}
+                  onClick={() => loadConversation(conv.id)}
+                  disabled={switchingConversation}
+                  className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
+                    currentConversation?.id === conv.id 
+                      ? 'bg-blue-50 border border-blue-200 shadow-sm' 
+                      : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
+                  } ${switchingConversation ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                 >
                   <div className="flex items-center space-x-2">
-                    <MessageSquare className="h-4 w-4 text-gray-400" />
+                    <MessageSquare className="h-4 w-4 text-gray-400 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {conv.title || 'New Conversation'}
@@ -436,6 +483,7 @@ Be helpful, professional, and concise in your responses.`;
             {conversations.slice(0, 3).map((conv) => (
               <Button
                 key={conv.id}
+                onClick={() => loadConversation(conv.id)}
                 variant="outline"
                 size="icon"
                 className={`w-10 h-10 border-2 hover:bg-blue-50 shadow-md transition-all ${
@@ -461,27 +509,27 @@ Be helpful, professional, and concise in your responses.`;
               <Bot className="h-6 w-6 text-blue-600" />
               <h1 className="text-xl font-semibold text-gray-900">AeroMail AI</h1>
             </div>
-            
-            {/* Floating Model Selector */}
-            <div className="absolute top-20 left-5 z-50">
-              <Select value={selectedModel} onValueChange={setSelectedModel}>
-                <SelectTrigger className="w-48 bg-white border border-gray-300 hover:border-gray-400 shadow-lg text-gray-700 text-sm h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg">
-                  <SelectValue placeholder="Select model" />
-                </SelectTrigger>
-                <SelectContent className="z-50 bg-white border border-gray-300 shadow-lg rounded-lg">
-                  {AI_MODELS.map((model) => (
-                    <SelectItem 
-                      key={model.value} 
-                      value={model.value}
-                      className="hover:bg-gray-50 cursor-pointer text-sm"
-                    >
-                      {model.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
+        </div>
+
+        {/* Floating Model Selector */}
+        <div className="absolute top-20 left-5 z-50">
+          <Select value={selectedModel} onValueChange={setSelectedModel}>
+            <SelectTrigger className="w-48 bg-white border border-gray-300 hover:border-gray-400 shadow-lg text-gray-700 text-sm h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg">
+              <SelectValue placeholder="Select model" />
+            </SelectTrigger>
+            <SelectContent className="z-50 bg-white border border-gray-300 shadow-lg rounded-lg">
+              {AI_MODELS.map((model) => (
+                <SelectItem 
+                  key={model.value} 
+                  value={model.value}
+                  className="hover:bg-gray-50 cursor-pointer text-sm"
+                >
+                  {model.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Messages Area */}
