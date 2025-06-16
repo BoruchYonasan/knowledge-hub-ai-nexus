@@ -20,18 +20,30 @@ interface CompletedTasksSectionProps {
   isManaging: boolean;
   onEditClick: (task: CompletedTask) => void;
   onDeleteClick: (id: string) => void;
+  onNavigate?: (page: string, tab?: string, data?: any) => void;
 }
 
 const CompletedTasksSection: React.FC<CompletedTasksSectionProps> = ({
   completedTasks,
   isManaging,
   onEditClick,
-  onDeleteClick
+  onDeleteClick,
+  onNavigate
 }) => {
+  const handleTaskClick = (task: CompletedTask) => {
+    if (onNavigate && !isManaging) {
+      onNavigate('task-detail', undefined, task);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {completedTasks.map((task) => (
-        <Card key={task.id} className="cursor-pointer hover:shadow-md transition-shadow">
+        <Card 
+          key={task.id} 
+          className={`${!isManaging ? 'cursor-pointer' : ''} hover:shadow-md transition-shadow`}
+          onClick={() => handleTaskClick(task)}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3 flex-1">
@@ -55,7 +67,7 @@ const CompletedTasksSection: React.FC<CompletedTasksSectionProps> = ({
                   <div className="text-sm text-gray-600">{new Date(task.due_date).toLocaleDateString()}</div>
                 </div>
                 {isManaging && (
-                  <div className="flex space-x-1">
+                  <div className="flex space-x-1" onClick={(e) => e.stopPropagation()}>
                     <Button 
                       variant="outline" 
                       size="sm"

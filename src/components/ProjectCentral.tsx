@@ -23,7 +23,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useToast } from '@/hooks/use-toast';
 
 interface ProjectCentralProps {
-  onNavigate?: (page: string, tab?: string) => void;
+  onNavigate?: (page: string, tab?: string, data?: any) => void;
   isManaging?: boolean;
   initialTab?: string;
 }
@@ -260,6 +260,7 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
                 onAddClick={() => setAddTaskOpen(true)}
                 onEditClick={handleEditTask}
                 onDeleteClick={handleDeleteTask}
+                onNavigate={onNavigate}
               />
             </CardContent>
           </Card>
@@ -276,6 +277,7 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
                 isManaging={isManaging}
                 onEditClick={handleEditTask}
                 onDeleteClick={handleDeleteTask}
+                onNavigate={onNavigate}
               />
             </CardContent>
           </Card>
