@@ -4,15 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2 } from 'lucide-react';
-
-interface RoadmapItem {
-  id: string;
-  title: string;
-  description: string;
-  quarter: string;
-  completion: number;
-  status: string;
-}
+import type { RoadmapItem } from '@/hooks/useRoadmapItems';
 
 interface RoadmapSectionProps {
   roadmapItems: RoadmapItem[];
@@ -48,7 +40,9 @@ const RoadmapSection: React.FC<RoadmapSectionProps> = ({
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1">
                 <h3 className="font-semibold text-lg">{item.title}</h3>
-                <p className="text-gray-600 text-sm">{item.description}</p>
+                {item.description && (
+                  <p className="text-gray-600 text-sm">{item.description}</p>
+                )}
               </div>
               <div className="flex items-center space-x-2">
                 <Badge variant={item.status === 'in-progress' ? 'default' : 'secondary'}>
