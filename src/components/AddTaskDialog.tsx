@@ -1,0 +1,130 @@
+
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+interface AddTaskDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onAdd: (data: {
+    task: string;
+    project: string;
+    assignee: string;
+    priority: string;
+    due_date: string;
+    description: string;
+    status: string;
+    completed: boolean;
+  }) => void;
+}
+
+const AddTaskDialog: React.FC<AddTaskDialogProps> = ({ open, onOpenChange, onAdd }) => {
+  const [formData, setFormData] = useState({
+    task: '',
+    project: '',
+    assignee: '',
+    priority: 'medium',
+    due_date: '',
+    description: '',
+    status: 'pending',
+    completed: false
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onAdd(formData);
+    setFormData({
+      task: '',
+      project: '',
+      assignee: '',
+      priority: 'medium',
+      due_date: '',
+      description: '',
+      status: 'pending',
+      completed: false
+    });
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Add Task Assignment</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="task">Task</Label>
+            <Input
+              id="task"
+              value={formData.task}
+              onChange={(e) => setFormData({...formData, task: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="project">Project</Label>
+            <Input
+              id="project"
+              value={formData.project}
+              onChange={(e) => setFormData({...formData, project: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="assignee">Assignee</Label>
+            <Input
+              id="assignee"
+              value={formData.assignee}
+              onChange={(e) => setFormData({...formData, assignee: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="priority">Priority</Label>
+            <Select value={formData.priority} onValueChange={(value) => setFormData({...formData, priority: value})}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="due_date">Due Date</Label>
+            <Input
+              id="due_date"
+              type="date"
+              value={formData.due_date}
+              onChange={(e) => setFormData({...formData, due_date: e.target.value})}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+            />
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit">Add Task</Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default AddTaskDialog;
