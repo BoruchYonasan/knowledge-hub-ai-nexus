@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -194,46 +195,171 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
     return filteredAndSortedItems.filter(item => item.type === type);
   };
 
-  const getSubItems = (parentId: string) => {
-    return items.filter(item => item.parent_id === parentId);
+  const getChildrenByParentId = (parentId: string) => {
+    return filteredAndSortedItems.filter(item => item.parent_id === parentId);
+  };
+
+  const getMilestones = () => {
+    return filteredAndSortedItems.filter(item => item.type === 'milestone');
+  };
+
+  const getTasksByMilestone = (milestoneId: string) => {
+    return filteredAndSortedItems.filter(item => item.type === 'task' && item.parent_id === milestoneId);
+  };
+
+  const getSubtasksByTask = (taskId: string) => {
+    return filteredAndSortedItems.filter(item => item.type === 'subtask' && item.parent_id === taskId);
   };
 
   const renderHierarchicalTable = () => {
-    const renderItems = (parentId?: string, level = 0): JSX.Element[] => {
-      const itemsAtLevel = filteredAndSortedItems.filter(item => item.parent_id === parentId);
-      const elements: JSX.Element[] = [];
+    const elements: JSX.Element[] = [];
+    const milestones = getMilestones();
 
-      itemsAtLevel.forEach(item => {
-        const subItems = getSubItems(item.id);
-        const hasSubItems = subItems.length > 0;
-        const isExpanded = expandedItems.includes(item.id);
+    // Add milestones with their children
+    milestones.forEach(milestone => {
+      const isMilestoneExpanded = expandedItems.includes(milestone.id);
+      const milestoneTasks = getTasksByMilestone(milestone.id);
 
-        elements.push(
-          <GanttTableRow
-            key={item.id}
-            item={item}
-            isSelected={selectedItems.includes(item.id)}
-            onSelect={handleSelectItem}
-            onEdit={handleEditItem}
-            onDelete={handleDeleteItem}
-            isManaging={isManaging}
-            assignees={assignees}
-            hasSubItems={hasSubItems}
-            isExpanded={isExpanded}
-            onToggleExpand={toggleExpanded}
-            level={level}
-          />
-        );
+      // Add milestone row
+      elements.push(
+        <GanttTableRow
+          key={milestone.id}
+          item={milestone}
+          isSelected={selectedItems.includes(milestone.id)}
+          onSelect={handleSelectItem}
+          onEdit={handleEditItem}
+          onDelete={handleDeleteItem}
+          isManaging={isManaging}
+          assignees={assignees}
+          hasSubItems={milestoneTasks.length > 0}
+          isExpanded={isMilestoneExpanded}
+          onToggleExpand={toggleExpanded}
+          level={0}
+        />
+      );
 
-        if (hasSubItems && isExpanded) {
-          elements.push(...renderItems(item.id, level + 1));
-        }
-      });
+      // Add tasks under milestone if expanded
+      if (isMilestoneExpanded) {
+        milestoneTasks.forEach(task => {
+          const isTaskExpanded = expandedItems.includes(task.id);
+          const taskSubtasks = getSubtasksByTask(task.id);
 
-      return elements;
-    };
+          // Add task row
+          elements.push(
+            <GanttTableRow
+              key={task.id}
+              item={task}
+              isSelected={selectedItems.includes(task.id)}
+              onSelect={handleSelectItem}
+              onEdit={handleEditItem}
+              onDelete={handleDeleteItem}
+              isManaging={isManaging}
+              assignees={assignees}
+              hasSubItems={taskSubtasks.length > 0}
+              isExpanded={isTaskExpanded}
+              onToggleExpand={toggleExpanded}
+              level={1}
+            />
+          );
 
-    return renderItems();
+          // Add subtasks under task if expanded
+          if (isTaskExpanded) {
+            taskSubtasks.forEach(subtask => {
+              elements.push(
+                <GanttTableRow
+                  key={subtask.id}
+                  item={subtask}
+                  isSelected={selectedItems.includes(subtask.id)}
+                  onSelect={handleSelectItem}
+                  onEdit={handleEditItem}
+                  onDelete={handleDeleteItem}
+                  isManaging={isManaging}
+                  assignees={assignees}
+                  hasSubItems={false}
+                  isExpanded={false}
+                  onToggleExpand={toggleExpanded}
+                  level={2}
+                />
+              );
+            });
+          }
+        });
+      }
+    });
+
+    // Add orphaned tasks (tasks without milestone parents)
+    const orphanedTasks = filteredAndSortedItems.filter(item => 
+      item.type === 'task' && (!item.parent_id || !milestones.find(m => m.id === item.parent_id))
+    );
+
+    orphanedTasks.forEach(task => {
+      const isTaskExpanded = expandedItems.includes(task.id);
+      const taskSubtasks = getSubtasksByTask(task.id);
+
+      elements.push(
+        <GanttTableRow
+          key={task.id}
+          item={task}
+          isSelected={selectedItems.includes(task.id)}
+          onSelect={handleSelectItem}
+          onEdit={handleEditItem}
+          onDelete={handleDeleteItem}
+          isManaging={isManaging}
+          assignees={assignees}
+          hasSubItems={taskSubtasks.length > 0}
+          isExpanded={isTaskExpanded}
+          onToggleExpand={toggleExpanded}
+          level={0}
+        />
+      );
+
+      if (isTaskExpanded) {
+        taskSubtasks.forEach(subtask => {
+          elements.push(
+            <GanttTableRow
+              key={subtask.id}
+              item={subtask}
+              isSelected={selectedItems.includes(subtask.id)}
+              onSelect={handleSelectItem}
+              onEdit={handleEditItem}
+              onDelete={handleDeleteItem}
+              isManaging={isManaging}
+              assignees={assignees}
+              hasSubItems={false}
+              isExpanded={false}
+              onToggleExpand={toggleExpanded}
+              level={1}
+            />
+          );
+        });
+      }
+    });
+
+    // Add orphaned subtasks (subtasks without task parents)
+    const orphanedSubtasks = filteredAndSortedItems.filter(item => 
+      item.type === 'subtask' && (!item.parent_id || !filteredAndSortedItems.find(t => t.id === item.parent_id && t.type === 'task'))
+    );
+
+    orphanedSubtasks.forEach(subtask => {
+      elements.push(
+        <GanttTableRow
+          key={subtask.id}
+          item={subtask}
+          isSelected={selectedItems.includes(subtask.id)}
+          onSelect={handleSelectItem}
+          onEdit={handleEditItem}
+          onDelete={handleDeleteItem}
+          isManaging={isManaging}
+          assignees={assignees}
+          hasSubItems={false}
+          isExpanded={false}
+          onToggleExpand={toggleExpanded}
+          level={0}
+        />
+      );
+    });
+
+    return elements;
   };
 
   const handleItemClick = (item: GanttItemType) => {
@@ -392,7 +518,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
           <TabsContent value="all">
             <Card>
               <CardHeader>
-                <CardTitle>Project Timeline Overview</CardTitle>
+                <CardTitle>Project Timeline Overview (Hierarchical View)</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -413,22 +539,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
                     </TableHeader>
                     <TableBody>
                       {filteredAndSortedItems.length > 0 ? (
-                        filteredAndSortedItems.map(item => (
-                          <GanttTableRow
-                            key={item.id}
-                            item={item}
-                            isSelected={selectedItems.includes(item.id)}
-                            onSelect={handleSelectItem}
-                            onEdit={handleEditItem}
-                            onDelete={handleDeleteItem}
-                            isManaging={isManaging}
-                            assignees={assignees}
-                            hasSubItems={false}
-                            isExpanded={false}
-                            onToggleExpand={() => {}}
-                            level={0}
-                          />
-                        ))
+                        renderHierarchicalTable()
                       ) : (
                         <TableRow>
                           <TableCell colSpan={isManaging ? 9 : 8} className="text-center py-8 text-gray-500">
