@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -63,6 +62,40 @@ export const useAIConversations = () => {
     return userId;
   };
 
+  const setActiveConversation = async (conversation: AIConversation) => {
+    try {
+      const userId = getCurrentUserId();
+      
+      // First, deactivate all other conversations for this user and context type
+      await supabase
+        .from('ai_conversations')
+        .update({ is_active: false })
+        .eq('user_id', userId)
+        .eq('context_type', conversation.context_type);
+
+      // Then, activate the selected conversation
+      const { error } = await supabase
+        .from('ai_conversations')
+        .update({ is_active: true })
+        .eq('id', conversation.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setCurrentConversation({ ...conversation, is_active: true });
+      
+      return true;
+    } catch (error) {
+      console.error('Error setting active conversation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to set active conversation",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   const createOrGetActiveConversation = async (contextType: string = 'general') => {
     try {
       const userId = getCurrentUserId();
@@ -80,12 +113,20 @@ export const useAIConversations = () => {
 
       // Create new conversation if none exists
       if (!activeConversation) {
+        // First deactivate any existing conversations for this context
+        await supabase
+          .from('ai_conversations')
+          .update({ is_active: false })
+          .eq('user_id', userId)
+          .eq('context_type', contextType);
+
         const { data: newConversation, error: createError } = await supabase
           .from('ai_conversations')
           .insert([{
             user_id: userId,
             context_type: contextType,
-            title: `${contextType} conversation`
+            title: `${contextType} conversation`,
+            is_active: true
           }])
           .select()
           .single();
@@ -283,6 +324,7 @@ export const useAIConversations = () => {
     getUserPreferences,
     updateConversationTitle,
     createTask,
-    updateTaskStatus
+    updateTaskStatus,
+    setActiveConversation
   };
 };

@@ -72,7 +72,8 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
     createOrGetActiveConversation,
     loadConversationHistory,
     saveMessage,
-    updateConversationTitle
+    updateConversationTitle,
+    setActiveConversation
   } = useAIConversations();
 
   const scrollToBottom = () => {
@@ -140,7 +141,21 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
     
     setSwitchingConversation(true);
     try {
-      // Clear current messages
+      // Find the conversation to switch to
+      const selectedConv = conversations.find(conv => conv.id === conversationId);
+      if (!selectedConv) {
+        console.error('Conversation not found');
+        return;
+      }
+
+      // Set this as the active conversation (updates database and state)
+      const success = await setActiveConversation(selectedConv);
+      if (!success) {
+        console.error('Failed to set active conversation');
+        return;
+      }
+
+      // Clear current messages first
       setMessages([]);
       
       // Load the selected conversation's history
@@ -158,12 +173,6 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
       setMessages(convertedMessages);
       setShowSuggestedReplies(convertedMessages.length === 0);
       
-      // Update current conversation reference
-      const selectedConv = conversations.find(conv => conv.id === conversationId);
-      if (selectedConv) {
-        // Update the current conversation in the hook's state would require hook modification
-        // For now, we'll work with the messages loaded
-      }
     } catch (error) {
       console.error('Error loading conversation:', error);
     } finally {
