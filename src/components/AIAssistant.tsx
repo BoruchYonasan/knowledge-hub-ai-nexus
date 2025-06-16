@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -238,7 +239,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({
   };
 
   const generateSystemPrompt = () => {
+    const modelDisplayName = AI_MODELS.find(m => m.value === selectedModel)?.label || selectedModel;
+    
     let basePrompt = `You are a helpful AI assistant for AeroMail's company knowledge base website. Your role is to help employees navigate the knowledge base and find information.
+
+IMPORTANT: You are currently running on ${modelDisplayName}. When users ask about which AI model you are using, you should tell them you are ${modelDisplayName}.
 
 Current context: ${knowledgeBaseContext}
 

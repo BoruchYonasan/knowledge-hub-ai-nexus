@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -242,7 +243,11 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
   };
 
   const generateSystemPrompt = () => {
+    const modelDisplayName = AI_MODELS.find(m => m.value === selectedModel)?.label || selectedModel;
+    
     return `You are a helpful AI assistant for AeroMail's company knowledge base website. Your role is to help employees navigate the knowledge base and find information.
+
+IMPORTANT: You are currently running on ${modelDisplayName}. When users ask about which AI model you are using, you should tell them you are ${modelDisplayName}.
 
 Available pages and features:
 - Dashboard: Overview of recent updates and quick access to all sections
