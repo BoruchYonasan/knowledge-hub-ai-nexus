@@ -28,13 +28,23 @@ interface EditProjectDialogProps {
 }
 
 const EditProjectDialog: React.FC<EditProjectDialogProps> = ({ open, onOpenChange, onEdit, project }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    description: string;
+    lead: string;
+    team: string;
+    status: 'Planning' | 'In Progress' | 'Completed';
+    priority: 'High' | 'Medium' | 'Low';
+    progress: number;
+    start_date: string;
+    due_date: string;
+  }>({
     title: '',
     description: '',
     lead: '',
     team: '',
-    status: 'Planning' as const,
-    priority: 'Medium' as const,
+    status: 'Planning',
+    priority: 'Medium',
     progress: 0,
     start_date: '',
     due_date: ''
