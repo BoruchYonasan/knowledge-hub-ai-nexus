@@ -1,18 +1,26 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
-import { useLatestUpdates } from '@/hooks/useLatestUpdates';
 import { useToast } from '@/hooks/use-toast';
 
-const AddUpdateDialog: React.FC = () => {
-  const { createUpdate } = useLatestUpdates();
+interface AddUpdateDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onAddUpdate: (updateData: {
+    title: string;
+    content: string;
+    priority: 'high' | 'medium' | 'low';
+    department: string;
+    author: string;
+  }) => Promise<void>;
+}
+
+const AddUpdateDialog: React.FC<AddUpdateDialogProps> = ({ open, onOpenChange, onAddUpdate }) => {
   const { toast } = useToast();
-  const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -34,14 +42,12 @@ const AddUpdateDialog: React.FC = () => {
     }
 
     try {
-      await createUpdate({
+      await onAddUpdate({
         title: formData.title,
-        preview: formData.content.substring(0, 150) + (formData.content.length > 150 ? '...' : ''),
         content: formData.content,
         author: formData.author,
-        department: formData.department || undefined,
-        priority: formData.priority,
-        attachments: []
+        department: formData.department,
+        priority: formData.priority
       });
 
       setFormData({
@@ -51,20 +57,13 @@ const AddUpdateDialog: React.FC = () => {
         department: '',
         priority: 'medium'
       });
-      setOpen(false);
     } catch (error) {
-      // Error is handled by the hook
+      // Error is handled by the parent component
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="flex items-center">
-          <Plus className="w-4 h-4 mr-2" />
-          New Update
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>Create New Update</DialogTitle>
@@ -126,7 +125,7 @@ const AddUpdateDialog: React.FC = () => {
           </div>
 
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit">
