@@ -41,17 +41,21 @@ const MilestoneDetail: React.FC<MilestoneDetailProps> = ({ milestone, onBack }) 
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center space-x-4">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onBack}
-          className="flex items-center"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Milestones
-        </Button>
-        <div>
+      {/* Fixed Header Layout */}
+      <div className="space-y-4">
+        <div className="flex justify-start">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onBack}
+            className="flex items-center"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Milestones
+          </Button>
+        </div>
+        
+        <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">{milestone.title}</h1>
           <p className="text-gray-600">Milestone Details</p>
         </div>
