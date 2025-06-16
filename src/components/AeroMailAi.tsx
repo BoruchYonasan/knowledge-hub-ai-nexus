@@ -355,37 +355,33 @@ Be helpful, professional, and concise in your responses.`;
         isHistoryCollapsed ? 'w-16' : 'w-80'
       }`}>
         <div className="p-4 border-b border-gray-200 flex flex-col gap-3">
-          {/* Header Row with New Chat and Collapse Button */}
-          <div className="flex items-center justify-between gap-2">
-            {!isHistoryCollapsed && (
-              <Button
-                onClick={createNewConversation}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                New Chat
-              </Button>
-            )}
-            <Button
-              onClick={() => setIsHistoryCollapsed(!isHistoryCollapsed)}
-              variant="outline"
-              size="sm"
-              className="flex-shrink-0 border-2 border-blue-500 hover:bg-blue-50 hover:border-blue-600 bg-blue-50 shadow-md px-3 py-2 h-10 font-medium transition-all"
-              title={isHistoryCollapsed ? "Expand chat history" : "Collapse chat history"}
-            >
-              {isHistoryCollapsed ? (
-                <ChevronRight className="h-5 w-5 text-blue-600" />
-              ) : (
-                <ChevronLeft className="h-5 w-5 text-blue-600" />
-              )}
-            </Button>
-          </div>
-          
-          {/* Recent Conversations Heading */}
+          {/* New Chat Button */}
           {!isHistoryCollapsed && (
-            <div className="flex items-center space-x-2">
-              <MessageSquare className="h-4 w-4 text-gray-500" />
-              <h3 className="text-sm font-semibold text-gray-700">Recent Conversations</h3>
+            <Button
+              onClick={createNewConversation}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Chat
+            </Button>
+          )}
+          
+          {/* Recent Conversations Heading with Collapse Button */}
+          {!isHistoryCollapsed && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <MessageSquare className="h-4 w-4 text-gray-500" />
+                <h3 className="text-sm font-semibold text-gray-700">Recent Conversations</h3>
+              </div>
+              <Button
+                onClick={() => setIsHistoryCollapsed(true)}
+                variant="outline"
+                size="sm"
+                className="flex-shrink-0 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 bg-white shadow-sm px-2 py-1 h-8 font-medium transition-all"
+                title="Collapse chat history"
+              >
+                <ChevronLeft className="h-4 w-4 text-gray-600" />
+              </Button>
             </div>
           )}
         </div>
@@ -428,6 +424,15 @@ Be helpful, professional, and concise in your responses.`;
             >
               <Plus className="h-5 w-5 text-blue-600" />
             </Button>
+            <Button
+              onClick={() => setIsHistoryCollapsed(false)}
+              variant="outline"
+              size="icon"
+              className="w-10 h-10 border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 bg-white shadow-md transition-all"
+              title="Expand chat history"
+            >
+              <ChevronRight className="h-5 w-5 text-gray-600" />
+            </Button>
             {conversations.slice(0, 3).map((conv) => (
               <Button
                 key={conv.id}
@@ -457,13 +462,13 @@ Be helpful, professional, and concise in your responses.`;
               <h1 className="text-xl font-semibold text-gray-900">AeroMail AI</h1>
             </div>
             
-            {/* Repositioned Model Selector - ChatGPT style */}
-            <div className="absolute top-1/2 left-8 transform -translate-y-1/2">
+            {/* Floating Model Selector */}
+            <div className="absolute top-20 left-5 z-50">
               <Select value={selectedModel} onValueChange={setSelectedModel}>
-                <SelectTrigger className="w-44 bg-white border border-gray-300 hover:border-gray-400 shadow-sm text-gray-700 text-sm h-9 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <SelectTrigger className="w-48 bg-white border border-gray-300 hover:border-gray-400 shadow-lg text-gray-700 text-sm h-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg">
                   <SelectValue placeholder="Select model" />
                 </SelectTrigger>
-                <SelectContent className="z-50 bg-white border border-gray-300 shadow-lg">
+                <SelectContent className="z-50 bg-white border border-gray-300 shadow-lg rounded-lg">
                   {AI_MODELS.map((model) => (
                     <SelectItem 
                       key={model.value} 
@@ -480,7 +485,7 @@ Be helpful, professional, and concise in your responses.`;
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6 pt-20">
           <div className="max-w-4xl mx-auto space-y-6">
             {messages.map((message) => (
               <div
