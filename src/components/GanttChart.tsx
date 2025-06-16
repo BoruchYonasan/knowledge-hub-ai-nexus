@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,9 +31,10 @@ interface FilterState {
 interface GanttChartProps {
   isManaging?: boolean;
   onManagingChange?: (isManaging: boolean) => void;
+  onNavigate?: (page: string, tab?: string, data?: any) => void;
 }
 
-const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingChange }) => {
+const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingChange, onNavigate }) => {
   const { 
     items, 
     loading, 
@@ -235,6 +235,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
           isExpanded={isMilestoneExpanded}
           onToggleExpand={toggleExpanded}
           level={0}
+          onNavigate={onNavigate}
         />
       );
 
@@ -259,6 +260,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
               isExpanded={isTaskExpanded}
               onToggleExpand={toggleExpanded}
               level={1}
+              onNavigate={onNavigate}
             />
           );
 
@@ -279,6 +281,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
                   isExpanded={false}
                   onToggleExpand={toggleExpanded}
                   level={2}
+                  onNavigate={onNavigate}
                 />
               );
             });
@@ -310,6 +313,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
           isExpanded={isTaskExpanded}
           onToggleExpand={toggleExpanded}
           level={0}
+          onNavigate={onNavigate}
         />
       );
 
@@ -329,6 +333,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
               isExpanded={false}
               onToggleExpand={toggleExpanded}
               level={1}
+              onNavigate={onNavigate}
             />
           );
         });
@@ -355,6 +360,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
           isExpanded={false}
           onToggleExpand={toggleExpanded}
           level={0}
+          onNavigate={onNavigate}
         />
       );
     });
@@ -434,6 +440,7 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
                 isExpanded={false}
                 onToggleExpand={() => {}}
                 level={0}
+                onNavigate={onNavigate}
               />
             ))}
           </TableBody>

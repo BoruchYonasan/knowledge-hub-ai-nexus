@@ -8,7 +8,7 @@ import { useProjects } from '@/hooks/useProjects';
 import AddProjectDialog from './AddProjectDialog';
 
 interface WorksInProgressProps {
-  onNavigate?: (page: string, tab?: string) => void;
+  onNavigate?: (page: string, tab?: string, data?: any) => void;
   isManaging?: boolean;
 }
 
