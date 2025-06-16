@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,32 +7,52 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
-interface AddReportDialogProps {
+interface EditUpdateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddReport: (reportData: {
+  update: {
+    id: string;
     title: string;
-    description: string;
     content: string;
+    priority: 'high' | 'medium' | 'low';
+    department?: string;
     author: string;
-    report_type: string;
+  } | null;
+  onEditUpdate: (id: string, updateData: {
+    title: string;
+    content: string;
+    priority: 'high' | 'medium' | 'low';
+    department: string;
+    author: string;
   }) => Promise<void>;
 }
 
-const AddReportDialog: React.FC<AddReportDialogProps> = ({ open, onOpenChange, onAddReport }) => {
+const EditUpdateDialog: React.FC<EditUpdateDialogProps> = ({ open, onOpenChange, update, onEditUpdate }) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     title: '',
-    description: '',
     content: '',
     author: '',
-    report_type: 'general'
+    department: '',
+    priority: 'medium' as 'high' | 'medium' | 'low'
   });
+
+  useEffect(() => {
+    if (update) {
+      setFormData({
+        title: update.title,
+        content: update.content,
+        author: update.author,
+        department: update.department || '',
+        priority: update.priority
+      });
+    }
+  }, [update]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.content || !formData.author) {
+    if (!formData.title || !formData.content || !formData.author || !update) {
       toast({
         title: "Missing required fields",
         description: "Please fill in title, content, and author",
@@ -42,20 +62,12 @@ const AddReportDialog: React.FC<AddReportDialogProps> = ({ open, onOpenChange, o
     }
 
     try {
-      await onAddReport({
+      await onEditUpdate(update.id, {
         title: formData.title,
-        description: formData.description,
         content: formData.content,
         author: formData.author,
-        report_type: formData.report_type
-      });
-
-      setFormData({
-        title: '',
-        description: '',
-        content: '',
-        author: '',
-        report_type: 'general'
+        department: formData.department,
+        priority: formData.priority
       });
     } catch (error) {
       // Error is handled by the parent component
@@ -66,7 +78,7 @@ const AddReportDialog: React.FC<AddReportDialogProps> = ({ open, onOpenChange, o
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>Create New Report</DialogTitle>
+          <DialogTitle>Edit Update</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -74,7 +86,7 @@ const AddReportDialog: React.FC<AddReportDialogProps> = ({ open, onOpenChange, o
             <Input
               value={formData.title}
               onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="Report title..."
+              placeholder="Update title..."
               required
             />
           </div>
@@ -90,29 +102,27 @@ const AddReportDialog: React.FC<AddReportDialogProps> = ({ open, onOpenChange, o
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Report Type</label>
-              <Select value={formData.report_type} onValueChange={(value: string) => setFormData(prev => ({ ...prev, report_type: value }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="general">General</SelectItem>
-                  <SelectItem value="sales">Sales</SelectItem>
-                  <SelectItem value="operations">Operations</SelectItem>
-                  <SelectItem value="finance">Finance</SelectItem>
-                </SelectContent>
-              </Select>
+              <label className="block text-sm font-medium mb-2">Department</label>
+              <Input
+                value={formData.department}
+                onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+                placeholder="Department..."
+              />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Description</label>
-            <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Brief description..."
-              className="min-h-[80px]"
-            />
+            <label className="block text-sm font-medium mb-2">Priority</label>
+            <Select value={formData.priority} onValueChange={(value: 'high' | 'medium' | 'low') => setFormData(prev => ({ ...prev, priority: value }))}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
@@ -120,7 +130,7 @@ const AddReportDialog: React.FC<AddReportDialogProps> = ({ open, onOpenChange, o
             <Textarea
               value={formData.content}
               onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-              placeholder="Report content..."
+              placeholder="Update content..."
               className="min-h-[120px]"
               required
             />
@@ -131,7 +141,7 @@ const AddReportDialog: React.FC<AddReportDialogProps> = ({ open, onOpenChange, o
               Cancel
             </Button>
             <Button type="submit">
-              Create Report
+              Save Changes
             </Button>
           </div>
         </form>
@@ -140,4 +150,4 @@ const AddReportDialog: React.FC<AddReportDialogProps> = ({ open, onOpenChange, o
   );
 };
 
-export default AddReportDialog;
+export default EditUpdateDialog;

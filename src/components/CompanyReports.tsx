@@ -5,14 +5,50 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Plus, Edit, Trash2, FileText, Calendar, User } from 'lucide-react';
 import { useCompanyReports } from '@/hooks/useCompanyReports';
+import AddReportDialog from './AddReportDialog';
 
 interface CompanyReportsProps {
-  onNavigate?: (page: string, tab?: string) => void;
+  onNavigate?: (page: string, tab?: string, data?: any) => void;
   isManaging?: boolean;
 }
 
 const CompanyReports: React.FC<CompanyReportsProps> = ({ onNavigate, isManaging = false }) => {
-  const { reports, loading } = useCompanyReports();
+  const { reports, loading, createReport, updateReport, deleteReport } = useCompanyReports();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const handleAddReport = async (reportData: {
+    title: string;
+    description: string;
+    content: string;
+    author: string;
+    report_type: string;
+  }) => {
+    try {
+      await createReport(reportData);
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      // Error is handled by the hook
+    }
+  };
+
+  const handleEditReport = async (reportId: string) => {
+    // This would open an edit dialog - placeholder for now
+    console.log('Edit report:', reportId);
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    if (window.confirm('Are you sure you want to delete this report?')) {
+      try {
+        await deleteReport(reportId);
+      } catch (error) {
+        // Error is handled by the hook
+      }
+    }
+  };
+
+  const handleReportClick = (report: any) => {
+    onNavigate?.('report-detail', '', report);
+  };
 
   const getReportTypeColor = (type: string) => {
     const colors = {
@@ -43,7 +79,7 @@ const CompanyReports: React.FC<CompanyReportsProps> = ({ onNavigate, isManaging 
           </div>
         </div>
         {isManaging && (
-          <Button className="flex items-center">
+          <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center">
             <Plus className="w-4 h-4 mr-2" />
             Add Report
           </Button>
@@ -69,25 +105,42 @@ const CompanyReports: React.FC<CompanyReportsProps> = ({ onNavigate, isManaging 
               <Card key={report.id} className="cursor-pointer hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-2">{report.title}</h3>
+                    <div className="flex-1" onClick={() => handleReportClick(report)}>
+                      <h3 className="font-semibold text-lg mb-2 hover:text-blue-600 transition-colors">{report.title}</h3>
                       {report.description && (
                         <p className="text-gray-600 text-sm mb-3">{report.description}</p>
                       )}
                     </div>
                     {isManaging && (
                       <div className="flex space-x-1 ml-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditReport(report.id);
+                          }}
+                        >
                           <Edit className="w-3 h-3" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteReport(report.id);
+                          }}
+                        >
                           <Trash2 className="w-3 h-3" />
                         </Button>
                       </div>
                     )}
                   </div>
                   
-                  <div className="space-y-2">
+                  <div 
+                    className="space-y-2 cursor-pointer"
+                    onClick={() => handleReportClick(report)}
+                  >
                     <div className="flex items-center text-sm text-gray-600">
                       <User className="w-4 h-4 mr-2" />
                       {report.author}
@@ -123,7 +176,7 @@ const CompanyReports: React.FC<CompanyReportsProps> = ({ onNavigate, isManaging 
                 }
               </p>
               {isManaging && (
-                <Button className="flex items-center mx-auto">
+                <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center mx-auto">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Report
                 </Button>
@@ -132,6 +185,12 @@ const CompanyReports: React.FC<CompanyReportsProps> = ({ onNavigate, isManaging 
           </Card>
         )}
       </div>
+
+      <AddReportDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onAddReport={handleAddReport}
+      />
     </div>
   );
 };

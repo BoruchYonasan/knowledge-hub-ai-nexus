@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import AuthGuard from '@/components/AuthGuard';
@@ -25,6 +24,7 @@ const Index = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [currentTab, setCurrentTab] = useState('');
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
+  const [selectedDetailData, setSelectedDetailData] = useState<any>(null);
   const [isGlobalManaging, setIsGlobalManaging] = useState(false);
   const [hasNewMessage, setHasNewMessage] = useState(false);
   const { toast } = useToast();
@@ -48,7 +48,7 @@ const Index = () => {
     // Add any necessary side effects here
   }, []);
 
-  const handleNavigate = (page: string, tab?: string) => {
+  const handleNavigate = (page: string, tab?: string, data?: any) => {
     setCurrentPage(page);
     if (page === 'project-central') {
       // If no specific tab is provided, default to 'overview'
@@ -56,6 +56,11 @@ const Index = () => {
     } else {
       // Reset currentTab when navigating to other pages
       setCurrentTab('');
+    }
+    
+    // Store detail data for detail pages
+    if (data) {
+      setSelectedDetailData(data);
     }
   };
 
@@ -92,6 +97,13 @@ const Index = () => {
             isManaging={isGlobalManaging}
           />
         );
+      case 'update-detail':
+        return (
+          <UpdateDetail
+            update={selectedDetailData}
+            onBack={() => handleNavigate('latest-updates')}
+          />
+        );
       case 'works-in-progress':
         return <WorksInProgress onNavigate={handleNavigate} isManaging={isGlobalManaging} />;
       case 'gantt-chart':
@@ -101,7 +113,14 @@ const Index = () => {
           />
         );
       case 'company-reports':
-        return <CompanyReports onNavigate={handleNavigate} />;
+        return <CompanyReports onNavigate={handleNavigate} isManaging={isGlobalManaging} />;
+      case 'report-detail':
+        return (
+          <ReportDetail
+            report={selectedDetailData}
+            onBack={() => handleNavigate('company-reports')}
+          />
+        );
       case 'search':
         return <Search onNavigate={handleNavigate} />;
       case 'content-manager':

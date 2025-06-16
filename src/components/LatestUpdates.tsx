@@ -6,19 +6,22 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useLatestUpdates } from '@/hooks/useLatestUpdates';
 import { formatDistanceToNow } from 'date-fns';
-import { ArrowLeft, Plus, Search, Filter, Clock, User, Building } from 'lucide-react';
+import { ArrowLeft, Plus, Search, Filter, Clock, User, Building, Edit, Trash2 } from 'lucide-react';
 import AddUpdateDialog from './AddUpdateDialog';
+import EditUpdateDialog from './EditUpdateDialog';
 
 interface LatestUpdatesProps {
-  onNavigate?: (page: string, tab?: string) => void;
+  onNavigate?: (page: string, tab?: string, data?: any) => void;
   isManaging?: boolean;
 }
 
 const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onNavigate, isManaging = false }) => {
-  const { updates, loading, createUpdate } = useLatestUpdates();
+  const { updates, loading, createUpdate, updateUpdate, deleteUpdate } = useLatestUpdates();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedUpdate, setSelectedUpdate] = useState<any>(null);
 
   const departments = ['All', 'Engineering', 'Sales', 'Marketing', 'HR', 'Finance', 'Operations'];
   
@@ -47,6 +50,44 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onNavigate, isManaging = 
     } catch (error) {
       // Error is handled by the hook
     }
+  };
+
+  const handleEditUpdate = async (id: string, updateData: {
+    title: string;
+    content: string;
+    priority: 'high' | 'medium' | 'low';
+    department: string;
+    author: string;
+  }) => {
+    try {
+      await updateUpdate(id, {
+        ...updateData,
+        preview: updateData.content.substring(0, 100) + '...',
+      });
+      setIsEditDialogOpen(false);
+      setSelectedUpdate(null);
+    } catch (error) {
+      // Error is handled by the hook
+    }
+  };
+
+  const handleDeleteUpdate = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this update?')) {
+      try {
+        await deleteUpdate(id);
+      } catch (error) {
+        // Error is handled by the hook
+      }
+    }
+  };
+
+  const handleUpdateClick = (update: any) => {
+    onNavigate?.('update-detail', '', update);
+  };
+
+  const handleEditClick = (update: any) => {
+    setSelectedUpdate(update);
+    setIsEditDialogOpen(true);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -140,8 +181,8 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onNavigate, isManaging = 
             <Card key={update.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <CardTitle className="text-xl">{update.title}</CardTitle>
+                  <div className="flex-1 cursor-pointer" onClick={() => handleUpdateClick(update)}>
+                    <CardTitle className="text-xl hover:text-blue-600 transition-colors">{update.title}</CardTitle>
                     <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
                       <div className="flex items-center">
                         <User className="w-4 h-4 mr-1" />
@@ -159,31 +200,62 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onNavigate, isManaging = 
                       </div>
                     </div>
                   </div>
-                  <Badge variant={getPriorityColor(update.priority || 'medium')}>
-                    {update.priority}
-                  </Badge>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant={getPriorityColor(update.priority || 'medium')}>
+                      {update.priority}
+                    </Badge>
+                    {isManaging && (
+                      <div className="flex space-x-1">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditClick(update);
+                          }}
+                        >
+                          <Edit className="w-3 h-3" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteUpdate(update.id);
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 leading-relaxed">{update.content}</p>
-                {update.attachments && update.attachments.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium text-gray-900 mb-2">Attachments:</p>
-                    <div className="space-y-1">
-                      {update.attachments.map((attachment, index) => (
-                        <a
-                          key={index}
-                          href={attachment}
-                          className="text-blue-600 hover:text-blue-800 text-sm block"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          📎 {attachment}
-                        </a>
-                      ))}
+                <div 
+                  className="cursor-pointer"
+                  onClick={() => handleUpdateClick(update)}
+                >
+                  <p className="text-gray-700 leading-relaxed">{update.content}</p>
+                  {update.attachments && update.attachments.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium text-gray-900 mb-2">Attachments:</p>
+                      <div className="space-y-1">
+                        {update.attachments.map((attachment, index) => (
+                          <a
+                            key={index}
+                            href={attachment}
+                            className="text-blue-600 hover:text-blue-800 text-sm block"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            📎 {attachment}
+                          </a>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))
@@ -209,6 +281,13 @@ const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onNavigate, isManaging = 
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
         onAddUpdate={handleAddUpdate}
+      />
+
+      <EditUpdateDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        update={selectedUpdate}
+        onEditUpdate={handleEditUpdate}
       />
     </div>
   );
