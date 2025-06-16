@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import AuthGuard from '@/components/AuthGuard';
@@ -18,6 +19,8 @@ import ArticleView from '@/components/ArticleView';
 import AIChatbotGuide from '@/components/AIChatbotGuide';
 import AeroMailAi from '@/components/AeroMailAi';
 import AIAssistant from '@/components/AIAssistant';
+import UpdateDetail from '@/components/UpdateDetail';
+import ReportDetail from '@/components/ReportDetail';
 import { useContentManager } from '@/hooks/useContentManager';
 
 const Index = () => {
