@@ -21,6 +21,10 @@ import AeroMailAi from '@/components/AeroMailAi';
 import AIAssistant from '@/components/AIAssistant';
 import UpdateDetail from '@/components/UpdateDetail';
 import ReportDetail from '@/components/ReportDetail';
+import RoadmapDetail from '@/components/RoadmapDetail';
+import MilestoneDetail from '@/components/MilestoneDetail';
+import TaskDetail from '@/components/TaskDetail';
+import ProjectDetail from '@/components/ProjectDetail';
 import { useContentManager } from '@/hooks/useContentManager';
 
 const Index = () => {
@@ -122,6 +126,34 @@ const Index = () => {
           <ReportDetail
             report={selectedDetailData}
             onBack={() => handleNavigate('company-reports')}
+          />
+        );
+      case 'roadmap-detail':
+        return (
+          <RoadmapDetail
+            roadmapItem={selectedDetailData}
+            onBack={() => handleNavigate('project-central', 'roadmap')}
+          />
+        );
+      case 'milestone-detail':
+        return (
+          <MilestoneDetail
+            milestone={selectedDetailData}
+            onBack={() => handleNavigate('project-central', 'milestones')}
+          />
+        );
+      case 'task-detail':
+        return (
+          <TaskDetail
+            task={selectedDetailData}
+            onBack={() => handleNavigate('project-central', 'gantt')}
+          />
+        );
+      case 'project-detail':
+        return (
+          <ProjectDetail
+            project={selectedDetailData}
+            onBack={() => handleNavigate('project-central', 'progress')}
           />
         );
       case 'search':

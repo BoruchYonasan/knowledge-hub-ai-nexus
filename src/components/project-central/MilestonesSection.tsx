@@ -20,6 +20,7 @@ interface MilestonesSectionProps {
   onAddClick: () => void;
   onEditClick: (milestone: Milestone) => void;
   onDeleteClick: (id: string) => void;
+  onNavigate?: (page: string, tab?: string, data?: any) => void;
 }
 
 const MilestonesSection: React.FC<MilestonesSectionProps> = ({
@@ -27,8 +28,15 @@ const MilestonesSection: React.FC<MilestonesSectionProps> = ({
   isManaging,
   onAddClick,
   onEditClick,
-  onDeleteClick
+  onDeleteClick,
+  onNavigate
 }) => {
+  const handleMilestoneClick = (milestone: Milestone) => {
+    if (onNavigate) {
+      onNavigate('milestone-detail', undefined, milestone);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {isManaging && (
@@ -43,7 +51,11 @@ const MilestonesSection: React.FC<MilestonesSectionProps> = ({
         </div>
       )}
       {milestones.map((milestone) => (
-        <Card key={milestone.id} className="cursor-pointer hover:shadow-md transition-shadow">
+        <Card 
+          key={milestone.id} 
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleMilestoneClick(milestone)}
+        >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3 flex-1">
@@ -70,7 +82,7 @@ const MilestonesSection: React.FC<MilestonesSectionProps> = ({
                   </Badge>
                 </div>
                 {isManaging && (
-                  <div className="flex space-x-1">
+                  <div className="flex space-x-1" onClick={(e) => e.stopPropagation()}>
                     <Button 
                       variant="outline" 
                       size="sm"

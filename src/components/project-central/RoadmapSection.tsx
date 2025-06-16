@@ -12,6 +12,7 @@ interface RoadmapSectionProps {
   onAddClick: () => void;
   onEditClick: (item: RoadmapItem) => void;
   onDeleteClick: (id: string) => void;
+  onNavigate?: (page: string, tab?: string, data?: any) => void;
 }
 
 const RoadmapSection: React.FC<RoadmapSectionProps> = ({
@@ -19,8 +20,15 @@ const RoadmapSection: React.FC<RoadmapSectionProps> = ({
   isManaging,
   onAddClick,
   onEditClick,
-  onDeleteClick
+  onDeleteClick,
+  onNavigate
 }) => {
+  const handleItemClick = (item: RoadmapItem) => {
+    if (onNavigate) {
+      onNavigate('roadmap-detail', undefined, item);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {isManaging && (
@@ -35,7 +43,11 @@ const RoadmapSection: React.FC<RoadmapSectionProps> = ({
         </div>
       )}
       {roadmapItems.map((item) => (
-        <Card key={item.id} className="cursor-pointer hover:shadow-md transition-shadow">
+        <Card 
+          key={item.id} 
+          className="cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleItemClick(item)}
+        >
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1">
@@ -49,7 +61,7 @@ const RoadmapSection: React.FC<RoadmapSectionProps> = ({
                   {item.quarter}
                 </Badge>
                 {isManaging && (
-                  <div className="flex space-x-1">
+                  <div className="flex space-x-1" onClick={(e) => e.stopPropagation()}>
                     <Button 
                       variant="outline" 
                       size="sm"

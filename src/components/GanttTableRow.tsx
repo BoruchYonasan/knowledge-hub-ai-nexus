@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -39,6 +38,7 @@ interface GanttTableRowProps {
   isExpanded?: boolean;
   onToggleExpand?: (id: string) => void;
   level?: number;
+  onNavigate?: (page: string, tab?: string, data?: any) => void;
 }
 
 const GanttTableRow: React.FC<GanttTableRowProps> = ({
@@ -52,7 +52,8 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
   hasSubItems = false,
   isExpanded = false,
   onToggleExpand,
-  level = 0
+  level = 0,
+  onNavigate
 }) => {
   const [editingField, setEditingField] = useState<string | null>(null);
 
@@ -89,6 +90,12 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
     setEditingField(null);
   };
 
+  const handleRowClick = () => {
+    if (onNavigate && !isManaging) {
+      onNavigate('task-detail', undefined, item);
+    }
+  };
+
   // Calculate indentation - 32px per level for better visibility
   const indentationPixels = level * 32;
   
@@ -103,9 +110,12 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
   };
 
   return (
-    <TableRow className={getRowBackgroundClass()}>
+    <TableRow 
+      className={`${getRowBackgroundClass()} ${!isManaging ? 'cursor-pointer hover:bg-gray-100' : ''}`}
+      onClick={handleRowClick}
+    >
       {isManaging && (
-        <TableCell className="w-8">
+        <TableCell className="w-8" onClick={(e) => e.stopPropagation()}>
           <Checkbox
             checked={isSelected}
             onCheckedChange={(checked) => onSelect(item.id, !!checked)}
@@ -113,7 +123,7 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
         </TableCell>
       )}
       
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center space-x-2 relative">
           {/* Simple indentation with left border for child items */}
           <div 
@@ -142,28 +152,28 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
         </div>
       </TableCell>
 
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Badge variant="outline" className="capitalize">
           {item.type}
         </Badge>
       </TableCell>
 
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         {format(new Date(item.startDate), 'MMM dd, yyyy')}
       </TableCell>
 
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         {format(new Date(item.endDate), 'MMM dd, yyyy')}
       </TableCell>
 
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center space-x-2">
           <Progress value={item.progress} className="w-16" />
           <span className="text-sm text-gray-600">{item.progress}%</span>
         </div>
       </TableCell>
 
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         {isManaging && editingField === 'assignee' ? (
           <Select value={item.assignee} onValueChange={(value) => handleFieldUpdate('assignee', value)}>
             <SelectTrigger className="w-32">
@@ -185,13 +195,13 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
         )}
       </TableCell>
 
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         <Badge className={getPriorityColor(item.priority)}>
           {item.priority}
         </Badge>
       </TableCell>
 
-      <TableCell>
+      <TableCell onClick={(e) => e.stopPropagation()}>
         {isManaging && editingField === 'status' ? (
           <Select value={item.status} onValueChange={(value) => handleFieldUpdate('status', value)}>
             <SelectTrigger className="w-32">
@@ -216,7 +226,7 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
       </TableCell>
 
       {isManaging && (
-        <TableCell>
+        <TableCell onClick={(e) => e.stopPropagation()}>
           <div className="flex space-x-1">
             <Button
               variant="ghost"

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,9 +51,10 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onNavigate, isManagin
     }
   };
 
-  const handleProjectClick = (projectId: string) => {
-    // Navigate to project detail view - placeholder for now
-    console.log('Navigate to project detail:', projectId);
+  const handleProjectClick = (project: any) => {
+    if (onNavigate) {
+      onNavigate('project-detail', undefined, project);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -103,7 +103,7 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onNavigate, isManagin
           <Card 
             key={project.id} 
             className="hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() => handleProjectClick(project.id)}
+            onClick={() => handleProjectClick(project)}
           >
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">

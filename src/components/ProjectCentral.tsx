@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -210,7 +209,7 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
         </TabsContent>
 
         <TabsContent value="gantt" className="mt-6">
-          <GanttChart isManaging={isManaging} />
+          <GanttChart isManaging={isManaging} onNavigate={onNavigate} />
         </TabsContent>
 
         <TabsContent value="roadmap" className="mt-6">
@@ -225,6 +224,7 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
                 onAddClick={() => setAddRoadmapOpen(true)}
                 onEditClick={handleEditRoadmapItem}
                 onDeleteClick={handleDeleteRoadmapItem}
+                onNavigate={onNavigate}
               />
             </CardContent>
           </Card>
@@ -242,6 +242,7 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
                 onAddClick={() => setAddMilestoneOpen(true)}
                 onEditClick={handleEditMilestone}
                 onDeleteClick={handleDeleteMilestone}
+                onNavigate={onNavigate}
               />
             </CardContent>
           </Card>
