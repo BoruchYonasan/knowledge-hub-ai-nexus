@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,10 +6,17 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, HardHat, Users, Clock, ChevronRight, ArrowLeft, Plus, Edit, Trash2, CheckCircle } from 'lucide-react';
 import WorksInProgress from './WorksInProgress';
 import GanttChart from './GanttChart';
+import AddRoadmapDialog from './AddRoadmapDialog';
+import EditRoadmapDialog from './EditRoadmapDialog';
+import AddMilestoneDialog from './AddMilestoneDialog';
+import EditMilestoneDialog from './EditMilestoneDialog';
+import AddTaskDialog from './AddTaskDialog';
+import EditTaskDialog from './EditTaskDialog';
 import { useRoadmapItems } from '@/hooks/useRoadmapItems';
 import { useMilestones } from '@/hooks/useMilestones';
 import { useTaskAssignments } from '@/hooks/useTaskAssignments';
 import { useProjects } from '@/hooks/useProjects';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProjectCentralProps {
   onNavigate?: (page: string, tab?: string) => void;
@@ -20,14 +26,138 @@ interface ProjectCentralProps {
 
 const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging = false, initialTab = 'overview' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
-  const { items: roadmapItems, loading: roadmapLoading } = useRoadmapItems();
-  const { milestones, loading: milestonesLoading } = useMilestones();
-  const { tasks, completedTasks, loading: tasksLoading } = useTaskAssignments();
+  const { toast } = useToast();
+  
+  // Dialog states
+  const [addRoadmapOpen, setAddRoadmapOpen] = useState(false);
+  const [editRoadmapOpen, setEditRoadmapOpen] = useState(false);
+  const [selectedRoadmapItem, setSelectedRoadmapItem] = useState(null);
+  
+  const [addMilestoneOpen, setAddMilestoneOpen] = useState(false);
+  const [editMilestoneOpen, setEditMilestoneOpen] = useState(false);
+  const [selectedMilestone, setSelectedMilestone] = useState(null);
+  
+  const [addTaskOpen, setAddTaskOpen] = useState(false);
+  const [editTaskOpen, setEditTaskOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+
+  // Hooks
+  const { items: roadmapItems, loading: roadmapLoading, createItem, updateItem, deleteItem } = useRoadmapItems();
+  const { milestones, loading: milestonesLoading, createMilestone, updateMilestone, deleteMilestone } = useMilestones();
+  const { tasks, completedTasks, loading: tasksLoading, createTask, updateTask, deleteTask } = useTaskAssignments();
   const { projects } = useProjects();
 
   useEffect(() => {
     setActiveTab(initialTab);
   }, [initialTab]);
+
+  // Roadmap handlers
+  const handleAddRoadmapItem = async (data: any) => {
+    try {
+      await createItem(data);
+    } catch (error) {
+      console.error('Error creating roadmap item:', error);
+    }
+  };
+
+  const handleEditRoadmapItem = (item: any) => {
+    setSelectedRoadmapItem(item);
+    setEditRoadmapOpen(true);
+  };
+
+  const handleUpdateRoadmapItem = async (id: string, data: any) => {
+    try {
+      await updateItem(id, data);
+    } catch (error) {
+      console.error('Error updating roadmap item:', error);
+    }
+  };
+
+  const handleDeleteRoadmapItem = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this roadmap item?')) {
+      try {
+        await deleteItem(id);
+        toast({
+          title: 'Success',
+          description: 'Roadmap item deleted successfully',
+        });
+      } catch (error) {
+        console.error('Error deleting roadmap item:', error);
+      }
+    }
+  };
+
+  // Milestone handlers
+  const handleAddMilestone = async (data: any) => {
+    try {
+      await createMilestone(data);
+    } catch (error) {
+      console.error('Error creating milestone:', error);
+    }
+  };
+
+  const handleEditMilestone = (milestone: any) => {
+    setSelectedMilestone(milestone);
+    setEditMilestoneOpen(true);
+  };
+
+  const handleUpdateMilestone = async (id: string, data: any) => {
+    try {
+      await updateMilestone(id, data);
+    } catch (error) {
+      console.error('Error updating milestone:', error);
+    }
+  };
+
+  const handleDeleteMilestone = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this milestone?')) {
+      try {
+        await deleteMilestone(id);
+        toast({
+          title: 'Success',
+          description: 'Milestone deleted successfully',
+        });
+      } catch (error) {
+        console.error('Error deleting milestone:', error);
+      }
+    }
+  };
+
+  // Task handlers
+  const handleAddTask = async (data: any) => {
+    try {
+      await createTask(data);
+    } catch (error) {
+      console.error('Error creating task:', error);
+    }
+  };
+
+  const handleEditTask = (task: any) => {
+    setSelectedTask(task);
+    setEditTaskOpen(true);
+  };
+
+  const handleUpdateTask = async (id: string, data: any) => {
+    try {
+      await updateTask(id, data);
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    if (window.confirm('Are you sure you want to delete this task?')) {
+      try {
+        await deleteTask(id);
+        toast({
+          title: 'Success',
+          description: 'Task deleted successfully',
+        });
+      } catch (error) {
+        console.error('Error deleting task:', error);
+      }
+    }
+  };
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -141,7 +271,10 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
     <div className="space-y-4">
       {isManaging && (
         <div className="flex justify-end">
-          <Button className="flex items-center">
+          <Button 
+            className="flex items-center"
+            onClick={() => setAddRoadmapOpen(true)}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Roadmap Item
           </Button>
@@ -161,10 +294,18 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
                 </Badge>
                 {isManaging && (
                   <div className="flex space-x-1">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleEditRoadmapItem(item)}
+                    >
                       <Edit className="w-3 h-3" />
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDeleteRoadmapItem(item.id)}
+                    >
                       <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
@@ -201,7 +342,10 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
     <div className="space-y-4">
       {isManaging && (
         <div className="flex justify-end">
-          <Button className="flex items-center">
+          <Button 
+            className="flex items-center"
+            onClick={() => setAddMilestoneOpen(true)}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Milestone
           </Button>
@@ -236,10 +380,18 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
                 </div>
                 {isManaging && (
                   <div className="flex space-x-1">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleEditMilestone(milestone)}
+                    >
                       <Edit className="w-3 h-3" />
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDeleteMilestone(milestone.id)}
+                    >
                       <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
@@ -256,7 +408,10 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
     <div className="space-y-4">
       {isManaging && (
         <div className="flex justify-end">
-          <Button className="flex items-center">
+          <Button 
+            className="flex items-center"
+            onClick={() => setAddTaskOpen(true)}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Add Task Assignment
           </Button>
@@ -282,10 +437,18 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
                 </div>
                 {isManaging && (
                   <div className="flex space-x-1">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleEditTask(task)}
+                    >
                       <Edit className="w-3 h-3" />
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDeleteTask(task.id)}
+                    >
                       <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
@@ -300,14 +463,6 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
 
   const renderCompletedTasks = () => (
     <div className="space-y-4">
-      {isManaging && (
-        <div className="flex justify-end">
-          <Button className="flex items-center">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Completed Task
-          </Button>
-        </div>
-      )}
       {completedTasks.map((task) => (
         <Card key={task.id} className="cursor-pointer hover:shadow-md transition-shadow">
           <CardContent className="p-4">
@@ -334,10 +489,18 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
                 </div>
                 {isManaging && (
                   <div className="flex space-x-1">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleEditTask(task)}
+                    >
                       <Edit className="w-3 h-3" />
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleDeleteTask(task.id)}
+                    >
                       <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
@@ -437,6 +600,46 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* All Dialog Components */}
+      <AddRoadmapDialog
+        open={addRoadmapOpen}
+        onOpenChange={setAddRoadmapOpen}
+        onAdd={handleAddRoadmapItem}
+      />
+
+      <EditRoadmapDialog
+        open={editRoadmapOpen}
+        onOpenChange={setEditRoadmapOpen}
+        onEdit={handleUpdateRoadmapItem}
+        item={selectedRoadmapItem}
+      />
+
+      <AddMilestoneDialog
+        open={addMilestoneOpen}
+        onOpenChange={setAddMilestoneOpen}
+        onAdd={handleAddMilestone}
+      />
+
+      <EditMilestoneDialog
+        open={editMilestoneOpen}
+        onOpenChange={setEditMilestoneOpen}
+        onEdit={handleUpdateMilestone}
+        milestone={selectedMilestone}
+      />
+
+      <AddTaskDialog
+        open={addTaskOpen}
+        onOpenChange={setAddTaskOpen}
+        onAdd={handleAddTask}
+      />
+
+      <EditTaskDialog
+        open={editTaskOpen}
+        onOpenChange={setEditTaskOpen}
+        onEdit={handleUpdateTask}
+        task={selectedTask}
+      />
     </div>
   );
 };
