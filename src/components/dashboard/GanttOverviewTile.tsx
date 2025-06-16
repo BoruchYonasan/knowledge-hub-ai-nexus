@@ -32,7 +32,7 @@ const GanttOverviewTile: React.FC<GanttOverviewTileProps> = ({ onNavigate }) => 
   return (
     <Card 
       className="cursor-pointer hover:shadow-lg transition-shadow"
-      onClick={() => onNavigate('project-central', 'gantt')}
+      onClick={() => onNavigate('gantt-chart')}
     >
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-gray-900 flex items-center justify-between">

@@ -48,6 +48,8 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
   const [viewMode, setViewMode] = useState<'table' | 'chart'>('table');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [selectedItem, setSelectedItem] = useState<GanttItemType | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     type: '',
@@ -66,8 +68,14 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
     onManagingChange?.(isManaging);
   }, [isManaging, onManagingChange]);
 
+  // Extract unique assignees from items with fallback default assignees
   const assignees = useMemo(() => {
-    return Array.from(new Set(items.map(item => item.assignee)));
+    const itemAssignees = Array.from(new Set(items.map(item => item.assignee).filter(Boolean)));
+    const defaultAssignees = ['John Smith', 'Sarah Johnson', 'Mike Davis', 'Lisa Chen', 'David Wilson'];
+    
+    // Combine and deduplicate
+    const allAssignees = Array.from(new Set([...itemAssignees, ...defaultAssignees]));
+    return allAssignees;
   }, [items]);
 
   const filteredAndSortedItems = useMemo(() => {
@@ -128,12 +136,38 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
   };
 
   const handleEditItem = async (updatedItem: GanttItemType) => {
-    await updateItem(updatedItem.id, updatedItem);
+    try {
+      await updateItem(updatedItem.id, updatedItem);
+      toast({
+        title: "Success",
+        description: "Gantt item updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating gantt item:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update gantt item",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleDeleteItem = async (id: string) => {
-    await deleteItem(id);
-    setSelectedItems(prev => prev.filter(itemId => itemId !== id));
+    try {
+      await deleteItem(id);
+      setSelectedItems(prev => prev.filter(itemId => itemId !== id));
+      toast({
+        title: "Success",
+        description: "Gantt item deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting gantt item:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete gantt item",
+        variant: "destructive"
+      });
+    }
   };
 
   const clearFilters = () => {
@@ -202,9 +236,6 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
     return renderItems();
   };
 
-  const [selectedItem, setSelectedItem] = useState<GanttItemType | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
   const handleItemClick = (item: GanttItemType) => {
     setSelectedItem(item);
     setIsDialogOpen(true);
@@ -215,11 +246,32 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
     setIsDialogOpen(true);
   };
 
-  const handleSaveItem = async (item: Omit<GanttItemType, 'id' | 'created_at' | 'updated_at'>) => {
-    if (selectedItem) {
-      await updateItem(selectedItem.id, item);
-    } else {
-      await createItem(item);
+  const handleSaveItem = async (itemData: Omit<GanttItemType, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      if (selectedItem) {
+        // Update existing item
+        await updateItem(selectedItem.id, itemData);
+        toast({
+          title: "Success",
+          description: "Gantt item updated successfully",
+        });
+      } else {
+        // Create new item
+        await createItem(itemData);
+        toast({
+          title: "Success",
+          description: "Gantt item created successfully",
+        });
+      }
+      setIsDialogOpen(false);
+      setSelectedItem(null);
+    } catch (error) {
+      console.error('Error saving gantt item:', error);
+      toast({
+        title: "Error",
+        description: selectedItem ? "Failed to update gantt item" : "Failed to create gantt item",
+        variant: "destructive"
+      });
     }
   };
 
@@ -345,7 +397,10 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
       <GanttItemDialog
         item={selectedItem}
         isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
+        onClose={() => {
+          setIsDialogOpen(false);
+          setSelectedItem(null);
+        }}
         onSave={handleSaveItem}
         allItems={items}
         assignees={assignees}
