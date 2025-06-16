@@ -89,12 +89,21 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
     setEditingField(null);
   };
 
-  // Enhanced indentation calculation
-  const paddingLeft = level * 24; // Increased from 20 to 24 for better visibility
-  const showIndentationLine = level > 0;
+  // Calculate indentation - 32px per level for better visibility
+  const indentationPixels = level * 32;
+  
+  // Get background color for visual debugging of hierarchy levels
+  const getRowBackgroundClass = () => {
+    if (isSelected) return 'bg-blue-50';
+    switch (level) {
+      case 1: return 'bg-gray-25'; // Very light gray for tasks
+      case 2: return 'bg-gray-50'; // Slightly darker for subtasks
+      default: return ''; // No background for milestones (level 0)
+    }
+  };
 
   return (
-    <TableRow className={isSelected ? 'bg-blue-50' : ''}>
+    <TableRow className={getRowBackgroundClass()}>
       {isManaging && (
         <TableCell className="w-8">
           <Checkbox
@@ -105,38 +114,31 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
       )}
       
       <TableCell>
-        <div 
-          className="flex items-center space-x-2 relative"
-          style={{ paddingLeft: `${paddingLeft}px` }}
-        >
-          {/* Indentation visual indicators */}
-          {showIndentationLine && (
-            <>
-              {/* Vertical line */}
-              <div 
-                className="absolute left-3 top-0 bottom-0 w-px bg-gray-300"
-                style={{ left: `${(level - 1) * 24 + 12}px` }}
-              />
-              {/* Horizontal connector */}
-              <div 
-                className="absolute top-6 w-3 h-px bg-gray-300"
-                style={{ left: `${(level - 1) * 24 + 12}px` }}
-              />
-            </>
-          )}
-          
-          {hasSubItems && onToggleExpand && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onToggleExpand(item.id)}
-              className="p-1 h-6 w-6 relative z-10"
-            >
-              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-            </Button>
-          )}
-          <span className="mr-2">{getTypeIcon(item.type)}</span>
-          <span className="font-medium">{item.title}</span>
+        <div className="flex items-center space-x-2 relative">
+          {/* Simple indentation with left border for child items */}
+          <div 
+            className="flex items-center space-x-2"
+            style={{ 
+              paddingLeft: `${indentationPixels}px`,
+              borderLeft: level > 0 ? '2px solid #e5e7eb' : 'none',
+              marginLeft: level > 0 ? '8px' : '0'
+            }}
+          >
+            {hasSubItems && onToggleExpand && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onToggleExpand(item.id)}
+                className="p-1 h-6 w-6 flex-shrink-0"
+              >
+                {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              </Button>
+            )}
+            <span className="mr-2 flex-shrink-0">{getTypeIcon(item.type)}</span>
+            <span className="font-medium">{item.title}</span>
+            {/* Visual level indicator for debugging */}
+            <span className="text-xs text-gray-400 ml-2">L{level}</span>
+          </div>
         </div>
       </TableCell>
 

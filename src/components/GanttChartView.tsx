@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -209,49 +210,58 @@ const GanttChartView: React.FC<GanttChartViewProps> = ({
   const renderChartRow = (item: GanttItem, level: number, hasSubItems: boolean, isExpanded: boolean) => {
     const { startOffset, width } = getItemPosition(item);
     const isSelected = selectedItem === item.id;
-    const paddingLeft = level * 24; // Increased for better visibility
-    const showIndentationLine = level > 0;
+    
+    // Calculate indentation - 32px per level for better visibility
+    const indentationPixels = level * 32;
+    
+    // Get background color for visual debugging of hierarchy levels
+    const getRowBackgroundClass = () => {
+      switch (level) {
+        case 1: return 'bg-gray-25 hover:bg-gray-50'; // Very light gray for tasks
+        case 2: return 'bg-gray-50 hover:bg-gray-100'; // Slightly darker for subtasks
+        default: return 'hover:bg-gray-50'; // No background for milestones (level 0)
+      }
+    };
 
     return (
-      <div key={item.id} className="flex items-center border-b hover:bg-gray-50 relative">
+      <div key={item.id} className={`flex items-center border-b relative ${getRowBackgroundClass()}`}>
         {/* Task Info */}
         <div className="w-80 p-3 border-r relative">
-          <div 
-            className="flex items-center space-x-2 relative"
-            style={{ paddingLeft: `${paddingLeft}px` }}
-          >
-            {/* Indentation visual indicators */}
-            {showIndentationLine && (
-              <>
-                {/* Vertical line */}
-                <div 
-                  className="absolute top-0 bottom-0 w-px bg-gray-300"
-                  style={{ left: `${(level - 1) * 24 + 12}px` }}
-                />
-                {/* Horizontal connector */}
-                <div 
-                  className="absolute top-6 w-3 h-px bg-gray-300"
-                  style={{ left: `${(level - 1) * 24 + 12}px` }}
-                />
-              </>
-            )}
-            
-            {hasSubItems && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleExpanded(item.id)}
-                className="p-1 h-6 w-6 relative z-10"
-              >
-                {isExpanded ? '▼' : '▶'}
-              </Button>
-            )}
-            {item.type === 'milestone' && <Diamond className="w-4 h-4 text-purple-500" />}
-            {item.type === 'task' && <Calendar className="w-4 h-4 text-blue-500" />}
-            {item.type === 'subtask' && <Clock className="w-4 h-4 text-green-500" />}
-            <span className="text-sm font-medium truncate">{item.title}</span>
+          <div className="flex items-center space-x-2 relative">
+            {/* Simple indentation with left border for child items */}
+            <div 
+              className="flex items-center space-x-2"
+              style={{ 
+                paddingLeft: `${indentationPixels}px`,
+                borderLeft: level > 0 ? '2px solid #e5e7eb' : 'none',
+                marginLeft: level > 0 ? '8px' : '0'
+              }}
+            >
+              {hasSubItems && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleExpanded(item.id)}
+                  className="p-1 h-6 w-6 flex-shrink-0"
+                >
+                  {isExpanded ? '▼' : '▶'}
+                </Button>
+              )}
+              {item.type === 'milestone' && <Diamond className="w-4 h-4 text-purple-500 flex-shrink-0" />}
+              {item.type === 'task' && <Calendar className="w-4 h-4 text-blue-500 flex-shrink-0" />}
+              {item.type === 'subtask' && <Clock className="w-4 h-4 text-green-500 flex-shrink-0" />}
+              <span className="text-sm font-medium truncate">{item.title}</span>
+              {/* Visual level indicator for debugging */}
+              <span className="text-xs text-gray-400 ml-2 flex-shrink-0">L{level}</span>
+            </div>
           </div>
-          <div className="text-xs text-gray-500 mt-1" style={{ paddingLeft: `${paddingLeft}px` }}>
+          <div 
+            className="text-xs text-gray-500 mt-1" 
+            style={{ 
+              paddingLeft: `${indentationPixels + (level > 0 ? 8 : 0)}px`,
+              marginLeft: level > 0 ? '8px' : '0'
+            }}
+          >
             {item.assignee} • {item.status}
           </div>
         </div>
@@ -440,7 +450,7 @@ const GanttChartView: React.FC<GanttChartViewProps> = ({
             {/* Timeline Header */}
             <div className="flex border-b bg-gray-50">
               <div className="w-80 p-3 border-r font-medium text-gray-900">
-                {showResourceView ? 'Resources' : 'Tasks (Hierarchical)'}
+                {showResourceView ? 'Resources' : 'Tasks (Hierarchical) - Debug Mode'}
               </div>
               <div className="flex-1 grid border-r" style={{ gridTemplateColumns: `repeat(${timelineHeaders.length}, 1fr)` }}>
                 {timelineHeaders.map((header, index) => (
@@ -506,6 +516,10 @@ const GanttChartView: React.FC<GanttChartViewProps> = ({
         <div className="flex items-center space-x-2">
           <div className="w-4 h-0.5 bg-gray-400" />
           <span className="text-sm">Dependencies</span>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs bg-gray-200 px-2 py-1 rounded">L0/L1/L2</span>
+          <span className="text-sm">Hierarchy Levels (Debug)</span>
         </div>
       </div>
     </div>
