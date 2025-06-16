@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -61,9 +60,18 @@ export const useGanttItems = () => {
     try {
       // Transform component format to database format
       const dbItem = {
-        ...item,
+        title: item.title,
+        type: item.type,
+        parent_id: item.parent_id,
+        assignee: item.assignee,
+        priority: item.priority,
+        status: item.status,
         start_date: item.startDate,
-        end_date: item.endDate
+        end_date: item.endDate,
+        progress: item.progress,
+        resources: item.resources,
+        dependencies: item.dependencies,
+        description: item.description
       };
       
       const { data, error } = await supabase
@@ -103,11 +111,15 @@ export const useGanttItems = () => {
   const updateItem = async (id: string, updates: Partial<GanttItem>) => {
     try {
       // Transform component format to database format
-      const dbUpdates = {
-        ...updates,
-        ...(updates.startDate && { start_date: updates.startDate }),
-        ...(updates.endDate && { end_date: updates.endDate })
-      };
+      const dbUpdates: any = { ...updates };
+      if (updates.startDate) {
+        dbUpdates.start_date = updates.startDate;
+        delete dbUpdates.startDate;
+      }
+      if (updates.endDate) {
+        dbUpdates.end_date = updates.endDate;
+        delete dbUpdates.endDate;
+      }
       
       const { data, error } = await supabase
         .from('gantt_items')
