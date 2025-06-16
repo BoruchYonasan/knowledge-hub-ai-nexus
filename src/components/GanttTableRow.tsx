@@ -89,7 +89,9 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
     setEditingField(null);
   };
 
-  const paddingLeft = level * 20;
+  // Enhanced indentation calculation
+  const paddingLeft = level * 24; // Increased from 20 to 24 for better visibility
+  const showIndentationLine = level > 0;
 
   return (
     <TableRow className={isSelected ? 'bg-blue-50' : ''}>
@@ -102,14 +104,33 @@ const GanttTableRow: React.FC<GanttTableRowProps> = ({
         </TableCell>
       )}
       
-      <TableCell style={{ paddingLeft: `${paddingLeft + 16}px` }}>
-        <div className="flex items-center space-x-2">
+      <TableCell>
+        <div 
+          className="flex items-center space-x-2 relative"
+          style={{ paddingLeft: `${paddingLeft}px` }}
+        >
+          {/* Indentation visual indicators */}
+          {showIndentationLine && (
+            <>
+              {/* Vertical line */}
+              <div 
+                className="absolute left-3 top-0 bottom-0 w-px bg-gray-300"
+                style={{ left: `${(level - 1) * 24 + 12}px` }}
+              />
+              {/* Horizontal connector */}
+              <div 
+                className="absolute top-6 w-3 h-px bg-gray-300"
+                style={{ left: `${(level - 1) * 24 + 12}px` }}
+              />
+            </>
+          )}
+          
           {hasSubItems && onToggleExpand && (
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onToggleExpand(item.id)}
-              className="p-1 h-6 w-6"
+              className="p-1 h-6 w-6 relative z-10"
             >
               {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </Button>
