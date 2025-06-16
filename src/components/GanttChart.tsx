@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -413,7 +412,30 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {renderHierarchicalTable()}
+                      {filteredAndSortedItems.length > 0 ? (
+                        filteredAndSortedItems.map(item => (
+                          <GanttTableRow
+                            key={item.id}
+                            item={item}
+                            isSelected={selectedItems.includes(item.id)}
+                            onSelect={handleSelectItem}
+                            onEdit={handleEditItem}
+                            onDelete={handleDeleteItem}
+                            isManaging={isManaging}
+                            assignees={assignees}
+                            hasSubItems={false}
+                            isExpanded={false}
+                            onToggleExpand={() => {}}
+                            level={0}
+                          />
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={isManaging ? 9 : 8} className="text-center py-8 text-gray-500">
+                            No items found. Click "Add Item" to create your first gantt item.
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </div>
@@ -427,7 +449,13 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
                 <CardTitle>Milestones</CardTitle>
               </CardHeader>
               <CardContent>
-                {renderItemsByType('milestone')}
+                {getItemsByType('milestone').length > 0 ? (
+                  renderItemsByType('milestone')
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No milestones found. Click "Add Item" to create your first milestone.
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -438,7 +466,13 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
                 <CardTitle>Tasks</CardTitle>
               </CardHeader>
               <CardContent>
-                {renderItemsByType('task')}
+                {getItemsByType('task').length > 0 ? (
+                  renderItemsByType('task')
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No tasks found. Click "Add Item" to create your first task.
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -449,7 +483,13 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
                 <CardTitle>Subtasks</CardTitle>
               </CardHeader>
               <CardContent>
-                {renderItemsByType('subtask')}
+                {getItemsByType('subtask').length > 0 ? (
+                  renderItemsByType('subtask')
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No subtasks found. Click "Add Item" to create your first subtask.
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
