@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -267,68 +266,62 @@ You can help users by:
     if (isManagingUpdates || isManagingProjects || isManagingGantt || isManagingKnowledge) {
       basePrompt += `
 
-CONTENT MANAGEMENT MODE ACTIVE:
-You can now help create, edit, and delete content directly! When the user asks you to manage content:
+🔧 CONTENT MANAGEMENT MODE ACTIVE:
+You now have REAL capabilities to create, edit, and delete content directly! When users ask you to manage content, you can execute these actions immediately.
 
 ${isManagingUpdates ? `
-FOR LATEST UPDATES:
-- CREATE: Listen for requests to create company updates/announcements
+FOR LATEST UPDATES - YOU CAN ACTUALLY:
+- CREATE: When users request new company updates/announcements
   - Ask for: title, content, department, priority (high/medium/low), and author if not provided
-  - When you have enough information, respond with: "CREATING_UPDATE:" followed by a JSON object
-  - JSON format: {"title": "...", "content": "...", "department": "...", "priority": "...", "author": "...", "preview": "first 100 chars of content"}
+  - When ready, respond with: "CREATING_UPDATE:" followed by JSON: {"title": "...", "content": "...", "department": "...", "priority": "...", "author": "...", "preview": "first 100 chars"}
 
-- EDIT: Listen for requests to edit existing updates
-  - When you have the information, respond with: "EDITING_UPDATE:" followed by a JSON object
+- EDIT: When users want to modify existing updates
+  - Get the update details and respond with: "EDITING_UPDATE:" followed by JSON with id and updated fields
 
-- DELETE: Listen for requests to delete updates
-  - When confirmed, respond with: "DELETING_UPDATE:" followed by a JSON object
+- DELETE: When users want to remove updates
+  - Confirm and respond with: "DELETING_UPDATE:" followed by JSON: {"id": "update_id", "title": "title for confirmation"}
 ` : ''}
 
 ${isManagingProjects ? `
-FOR WORKS IN PROGRESS:
-- CREATE: Listen for requests to create new projects
-  - Ask for: title, description, lead, team, priority (High/Medium/Low), start date, due date if not provided
-  - When you have enough information, respond with: "CREATING_PROJECT:" followed by a JSON object
+FOR WORKS IN PROGRESS - YOU CAN ACTUALLY:
+- CREATE: When users request new projects
+  - Ask for: title, description, lead, team, priority (High/Medium/Low), start date, due date if needed
+  - When ready, respond with: "CREATING_PROJECT:" followed by JSON
 
-- EDIT: Listen for requests to edit existing projects
-  - When you have the information, respond with: "EDITING_PROJECT:" followed by a JSON object
+- EDIT: When users want to modify existing projects
+  - Get project details and respond with: "EDITING_PROJECT:" followed by JSON with id and updated fields
 
-- DELETE: Listen for requests to delete projects
-  - When confirmed, respond with: "DELETING_PROJECT:" followed by a JSON object
+- DELETE: When users want to remove projects
+  - Confirm and respond with: "DELETING_PROJECT:" followed by JSON: {"id": "project_id", "title": "title"}
 ` : ''}
 
 ${isManagingGantt ? `
-FOR GANTT CHART:
-- CREATE: Listen for requests to create milestones, tasks, or subtasks
-  - Ask for: title, type (milestone/task/subtask), startDate, endDate, assignee, priority (High/Medium/Low), description if not provided
-  - When you have enough information, respond with: "CREATING_GANTT_ITEM:" followed by a JSON object
-  - JSON format: {"title": "...", "type": "milestone/task/subtask", "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "assignee": "...", "priority": "...", "description": "...", "parentId": number (optional for subtasks)}
+FOR GANTT CHART - YOU CAN ACTUALLY:
+- CREATE: When users request new milestones, tasks, or subtasks
+  - Ask for: title, type (milestone/task/subtask), startDate, endDate, assignee, priority, description
+  - When ready, respond with: "CREATING_GANTT_ITEM:" followed by JSON: {"title": "...", "type": "milestone/task/subtask", "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "assignee": "...", "priority": "...", "description": "...", "parentId": number (optional)}
 
-- EDIT: Listen for requests to edit existing gantt items
-  - When you have the information, respond with: "EDITING_GANTT_ITEM:" followed by a JSON object
-  - JSON format: {"id": itemId, "title": "...", "startDate": "...", "endDate": "...", "progress": number, "status": "Not Started/In Progress/Completed/On Hold", etc.}
+- EDIT: When users want to modify gantt items
+  - Get details and respond with: "EDITING_GANTT_ITEM:" followed by JSON with id and updated fields
 
-- DELETE: Listen for requests to delete gantt items
-  - When confirmed, respond with: "DELETING_GANTT_ITEM:" followed by a JSON object
-  - JSON format: {"id": itemId, "title": "title for confirmation"}
+- DELETE: When users want to remove gantt items
+  - Confirm and respond with: "DELETING_GANTT_ITEM:" followed by JSON: {"id": "item_id", "title": "title"}
 ` : ''}
 
 ${isManagingKnowledge ? `
-FOR KNOWLEDGE BASE:
-- CREATE: Listen for requests to create new articles or documentation
-  - Ask for: title, content, category (all/hr/engineering/sales/finance/operations), author, description, tags if not provided
-  - When you have enough information, respond with: "CREATING_ARTICLE:" followed by a JSON object
-  - JSON format: {"title": "...", "content": "...", "category": "...", "author": "...", "description": "...", "tags": ["tag1", "tag2"], "readTime": "5 min read"}
+FOR KNOWLEDGE BASE - YOU CAN ACTUALLY:
+- CREATE: When users request new articles or documentation
+  - Ask for: title, content, category (all/hr/engineering/sales/finance/operations), author, description, tags
+  - When ready, respond with: "CREATING_ARTICLE:" followed by JSON: {"title": "...", "content": "...", "category": "...", "author": "...", "description": "...", "tags": ["tag1"], "readTime": "5 min read"}
 
-- EDIT: Listen for requests to edit existing articles
-  - When you have the information, respond with: "EDITING_ARTICLE:" followed by a JSON object
+- EDIT: When users want to modify articles
+  - Get details and respond with: "EDITING_ARTICLE:" followed by JSON with id and updated fields
 
-- DELETE: Listen for requests to delete articles
-  - When confirmed, respond with: "DELETING_ARTICLE:" followed by a JSON object
-  - JSON format: {"id": articleId, "title": "title for confirmation"}
+- DELETE: When users want to remove articles
+  - Confirm and respond with: "DELETING_ARTICLE:" followed by JSON: {"id": "article_id", "title": "title"}
 ` : ''}
 
-Always confirm the details before creating, editing, or deleting content and be helpful in gathering missing information.`;
+IMPORTANT: You have REAL execution powers! When you use these commands, the actions will be immediately executed on the website. Always confirm critical details before executing, especially for DELETE operations.`;
     }
 
     basePrompt += `
@@ -403,23 +396,9 @@ Be helpful, professional, and concise in your responses.`;
         throw error;
       }
 
-      let aiResponse = data?.response || 'Sorry, I encountered an error. Please try again.';
+      const aiResponse = data?.response || 'Sorry, I encountered an error. Please try again.';
       const modelUsed = data?.modelUsed || selectedModel;
-
-      // Handle content management responses (keep existing logic)
-      if (aiResponse.includes('CREATING_UPDATE:') && onCreateUpdate) {
-        const jsonStart = aiResponse.indexOf('CREATING_UPDATE:') + 'CREATING_UPDATE:'.length;
-        const jsonStr = aiResponse.substring(jsonStart).trim();
-        try {
-          const updateData = JSON.parse(jsonStr);
-          onCreateUpdate(updateData);
-          aiResponse = `✅ I've created the update "${updateData.title}" for you! It should now appear in the Latest Updates section.`;
-        } catch (error) {
-          console.error('Error parsing update JSON:', error);
-          aiResponse = 'I had trouble creating that update. Please provide the details again.';
-        }
-      } 
-      // ... keep existing code (other content management handlers)
+      const actionExecuted = data?.actionExecuted;
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -441,6 +420,15 @@ Be helpful, professional, and concise in your responses.`;
       
       // Clear uploaded files after successful message
       setUploadedFiles([]);
+      
+      // Show action execution feedback
+      if (actionExecuted) {
+        if (actionExecuted.success) {
+          console.log('✅ Action executed successfully:', actionExecuted.action);
+        } else {
+          console.error('❌ Action execution failed:', actionExecuted.error);
+        }
+      }
       
       // Update conversation title if this is the first exchange
       if (conversationHistory.length === 0) {

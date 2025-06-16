@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -245,7 +244,7 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
   const generateSystemPrompt = () => {
     const modelDisplayName = AI_MODELS.find(m => m.value === selectedModel)?.label || selectedModel;
     
-    return `You are a helpful AI assistant for AeroMail's company knowledge base website. Your role is to help employees navigate the knowledge base and find information.
+    let basePrompt = `You are a helpful AI assistant for AeroMail's company knowledge base website. Your role is to help employees navigate the knowledge base and find information.
 
 IMPORTANT: You are currently running on ${modelDisplayName}. When users ask about which AI model you are using, you should tell them you are ${modelDisplayName}.
 
@@ -263,9 +262,75 @@ You can help users by:
 2. Suggesting which page they should visit for specific needs
 3. Providing guidance on company policies and procedures
 4. Helping new employees understand the knowledge base structure
-5. Answering questions about company information
+5. Answering questions about company information`;
+
+    // Add content management capabilities when in manage mode
+    if (isManagingUpdates || isManagingProjects || isManagingGantt || isManagingKnowledge) {
+      basePrompt += `
+
+🔧 CONTENT MANAGEMENT MODE ACTIVE:
+You now have REAL capabilities to create, edit, and delete content directly! When users ask you to manage content, you can execute these actions immediately.
+
+${isManagingUpdates ? `
+FOR LATEST UPDATES - YOU CAN ACTUALLY:
+- CREATE: When users request new company updates/announcements
+  - Ask for: title, content, department, priority (high/medium/low), and author if not provided
+  - When ready, respond with: "CREATING_UPDATE:" followed by JSON: {"title": "...", "content": "...", "department": "...", "priority": "...", "author": "...", "preview": "first 100 chars"}
+
+- EDIT: When users want to modify existing updates
+  - Get the update details and respond with: "EDITING_UPDATE:" followed by JSON with id and updated fields
+
+- DELETE: When users want to remove updates
+  - Confirm and respond with: "DELETING_UPDATE:" followed by JSON: {"id": "update_id", "title": "title for confirmation"}
+` : ''}
+
+${isManagingProjects ? `
+FOR WORKS IN PROGRESS - YOU CAN ACTUALLY:
+- CREATE: When users request new projects
+  - Ask for: title, description, lead, team, priority (High/Medium/Low), start date, due date if needed
+  - When ready, respond with: "CREATING_PROJECT:" followed by JSON
+
+- EDIT: When users want to modify existing projects
+  - Get project details and respond with: "EDITING_PROJECT:" followed by JSON with id and updated fields
+
+- DELETE: When users want to remove projects
+  - Confirm and respond with: "DELETING_PROJECT:" followed by JSON: {"id": "project_id", "title": "title"}
+` : ''}
+
+${isManagingGantt ? `
+FOR GANTT CHART - YOU CAN ACTUALLY:
+- CREATE: When users request new milestones, tasks, or subtasks
+  - Ask for: title, type (milestone/task/subtask), startDate, endDate, assignee, priority, description
+  - When ready, respond with: "CREATING_GANTT_ITEM:" followed by JSON: {"title": "...", "type": "milestone/task/subtask", "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "assignee": "...", "priority": "...", "description": "...", "parentId": number (optional)}
+
+- EDIT: When users want to modify gantt items
+  - Get details and respond with: "EDITING_GANTT_ITEM:" followed by JSON with id and updated fields
+
+- DELETE: When users want to remove gantt items
+  - Confirm and respond with: "DELETING_GANTT_ITEM:" followed by JSON: {"id": "item_id", "title": "title"}
+` : ''}
+
+${isManagingKnowledge ? `
+FOR KNOWLEDGE BASE - YOU CAN ACTUALLY:
+- CREATE: When users request new articles or documentation
+  - Ask for: title, content, category (all/hr/engineering/sales/finance/operations), author, description, tags
+  - When ready, respond with: "CREATING_ARTICLE:" followed by JSON: {"title": "...", "content": "...", "category": "...", "author": "...", "description": "...", "tags": ["tag1"], "readTime": "5 min read"}
+
+- EDIT: When users want to modify articles
+  - Get details and respond with: "EDITING_ARTICLE:" followed by JSON with id and updated fields
+
+- DELETE: When users want to remove articles
+  - Confirm and respond with: "DELETING_ARTICLE:" followed by JSON: {"id": "article_id", "title": "title"}
+` : ''}
+
+IMPORTANT: You have REAL execution powers! When you use these commands, the actions will be immediately executed on the website. Always confirm critical details before executing, especially for DELETE operations.`;
+    }
+
+    basePrompt += `
 
 Be helpful, professional, and concise in your responses.`;
+
+    return basePrompt;
   };
 
   const handleSuggestedReply = (reply: string) => {
@@ -329,6 +394,7 @@ Be helpful, professional, and concise in your responses.`;
 
       const aiResponse = data?.response || 'Sorry, I encountered an error. Please try again.';
       const modelUsed = data?.modelUsed || selectedModel;
+      const actionExecuted = data?.actionExecuted;
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -342,6 +408,15 @@ Be helpful, professional, and concise in your responses.`;
       
       await saveMessage(currentConversation.id, aiResponse, 'ai', modelUsed);
       setUploadedFiles([]);
+      
+      // Show action execution feedback
+      if (actionExecuted) {
+        if (actionExecuted.success) {
+          console.log('✅ Action executed successfully:', actionExecuted.action);
+        } else {
+          console.error('❌ Action execution failed:', actionExecuted.error);
+        }
+      }
       
       if (conversationHistory.length === 0) {
         const title = textToSend.length > 50 
