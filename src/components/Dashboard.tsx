@@ -7,7 +7,7 @@ import { Clock } from 'lucide-react';
 import GanttOverviewTile from './dashboard/GanttOverviewTile';
 import KnowledgeGalleryTile from './dashboard/KnowledgeGalleryTile';
 import ImageGalleryTile from './dashboard/ImageGalleryTile';
-import TeamActivityTile from './dashboard/TeamActivityTile';
+import CompletedTasksTile from './dashboard/CompletedTasksTile';
 import QuickActionsTile from './dashboard/QuickActionsTile';
 
 interface DashboardProps {
@@ -106,7 +106,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
               <GanttOverviewTile onNavigate={onNavigate} />
               
-              <TeamActivityTile onNavigate={onNavigate} />
+              <CompletedTasksTile onNavigate={onNavigate} />
 
               <ImageGalleryTile onNavigate={onNavigate} />
             </div>

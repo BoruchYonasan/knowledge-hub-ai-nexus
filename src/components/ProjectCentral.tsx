@@ -1,11 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, HardHat, Users, Clock, ChevronRight } from 'lucide-react';
+import { Calendar, HardHat, Users, Clock, ChevronRight, ArrowLeft, Plus, Edit, Trash2, CheckCircle } from 'lucide-react';
 import WorksInProgress from './WorksInProgress';
 import GanttChart from './GanttChart';
+import { useRoadmapItems } from '@/hooks/useRoadmapItems';
+import { useMilestones } from '@/hooks/useMilestones';
+import { useTaskAssignments } from '@/hooks/useTaskAssignments';
+import { useProjects } from '@/hooks/useProjects';
 
 interface ProjectCentralProps {
   onNavigate?: (page: string, tab?: string) => void;
@@ -15,88 +20,14 @@ interface ProjectCentralProps {
 
 const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging = false, initialTab = 'overview' }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
+  const { items: roadmapItems, loading: roadmapLoading } = useRoadmapItems();
+  const { milestones, loading: milestonesLoading } = useMilestones();
+  const { tasks, completedTasks, loading: tasksLoading } = useTaskAssignments();
+  const { projects } = useProjects();
 
   useEffect(() => {
     setActiveTab(initialTab);
   }, [initialTab]);
-
-  const roadmapItems = [
-    {
-      id: 1,
-      title: 'Product Launch Phase 1',
-      quarter: 'Q2 2024',
-      status: 'in-progress',
-      completion: 75,
-      description: 'Initial product release with core features',
-    },
-    {
-      id: 2,
-      title: 'Market Expansion',
-      quarter: 'Q3 2024',
-      status: 'planning',
-      completion: 25,
-      description: 'Expand to European markets',
-    },
-    {
-      id: 3,
-      title: 'Platform Integration',
-      quarter: 'Q4 2024',
-      status: 'planned',
-      completion: 0,
-      description: 'Third-party platform integrations',
-    },
-  ];
-
-  const milestones = [
-    {
-      id: 1,
-      title: 'MVP Release',
-      dueDate: '2024-07-15',
-      status: 'completed',
-      assignee: 'Development Team',
-    },
-    {
-      id: 2,
-      title: 'Beta Testing Complete',
-      dueDate: '2024-08-01',
-      status: 'in-progress',
-      assignee: 'QA Team',
-    },
-    {
-      id: 3,
-      title: 'Production Deployment',
-      dueDate: '2024-08-15',
-      status: 'pending',
-      assignee: 'DevOps Team',
-    },
-  ];
-
-  const taskAssignments = [
-    {
-      id: 1,
-      task: 'UI/UX Design Review',
-      assignee: 'Sarah Johnson',
-      priority: 'high',
-      dueDate: '2024-06-20',
-      project: 'Product Launch',
-    },
-    {
-      id: 2,
-      task: 'Database Migration',
-      assignee: 'Mike Chen',
-      priority: 'medium',
-      dueDate: '2024-06-25',
-      project: 'Platform Integration',
-    },
-    {
-      id: 3,
-      task: 'Performance Testing',
-      assignee: 'Alex Rodriguez',
-      priority: 'high',
-      dueDate: '2024-06-22',
-      project: 'Product Launch',
-    },
-  ];
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -107,8 +38,8 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
             <HardHat className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
-            <p className="text-xs text-muted-foreground">+2 from last month</p>
+            <div className="text-2xl font-bold">{projects.length}</div>
+            <p className="text-xs text-muted-foreground">Total projects</p>
           </CardContent>
         </Card>
         <Card>
@@ -117,37 +48,128 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">67</div>
-            <p className="text-xs text-muted-foreground">-8 from last week</p>
+            <div className="text-2xl font-bold">{tasks.filter(t => !t.completed).length}</div>
+            <p className="text-xs text-muted-foreground">Active assignments</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Team Capacity</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Completed Tasks</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">85%</div>
-            <p className="text-xs text-muted-foreground">Optimal utilization</p>
+            <div className="text-2xl font-bold">{completedTasks.length}</div>
+            <p className="text-xs text-muted-foreground">Successfully finished</p>
           </CardContent>
         </Card>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Recent Projects</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {projects.slice(0, 3).map((project) => (
+                <div key={project.id} className="flex items-center justify-between p-2 border rounded">
+                  <div>
+                    <p className="font-medium">{project.title}</p>
+                    <p className="text-sm text-gray-500">{project.lead}</p>
+                  </div>
+                  <Badge variant={project.status === 'Completed' ? 'default' : 'secondary'}>
+                    {project.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Upcoming Milestones</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {milestones.slice(0, 3).map((milestone) => (
+                <div key={milestone.id} className="flex items-center justify-between p-2 border rounded">
+                  <div>
+                    <p className="font-medium">{milestone.title}</p>
+                    <p className="text-sm text-gray-500">{milestone.assignee}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm">{new Date(milestone.due_date).toLocaleDateString()}</p>
+                    <Badge variant={milestone.status === 'completed' ? 'default' : 'outline'}>
+                      {milestone.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Roadmap Progress</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {roadmapItems.slice(0, 3).map((item) => (
+              <div key={item.id} className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium">{item.title}</span>
+                  <span className="text-sm text-gray-500">{item.completion}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full" 
+                    style={{ width: `${item.completion}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 
   const renderRoadmap = () => (
     <div className="space-y-4">
+      {isManaging && (
+        <div className="flex justify-end">
+          <Button className="flex items-center">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Roadmap Item
+          </Button>
+        </div>
+      )}
       {roadmapItems.map((item) => (
-        <Card key={item.id}>
+        <Card key={item.id} className="cursor-pointer hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <div>
+              <div className="flex-1">
                 <h3 className="font-semibold text-lg">{item.title}</h3>
                 <p className="text-gray-600 text-sm">{item.description}</p>
               </div>
-              <Badge variant={item.status === 'in-progress' ? 'default' : 'secondary'}>
-                {item.quarter}
-              </Badge>
+              <div className="flex items-center space-x-2">
+                <Badge variant={item.status === 'in-progress' ? 'default' : 'secondary'}>
+                  {item.quarter}
+                </Badge>
+                {isManaging && (
+                  <div className="flex space-x-1">
+                    <Button variant="outline" size="sm">
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex-1 mr-4">
@@ -177,28 +199,51 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
 
   const renderMilestones = () => (
     <div className="space-y-4">
+      {isManaging && (
+        <div className="flex justify-end">
+          <Button className="flex items-center">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Milestone
+          </Button>
+        </div>
+      )}
       {milestones.map((milestone) => (
-        <Card key={milestone.id}>
+        <Card key={milestone.id} className="cursor-pointer hover:shadow-md transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 flex-1">
                 <div className={`w-3 h-3 rounded-full ${
                   milestone.status === 'completed' ? 'bg-green-500' :
                   milestone.status === 'in-progress' ? 'bg-blue-500' : 'bg-gray-300'
                 }`}></div>
-                <div>
+                <div className="flex-1">
                   <h3 className="font-medium">{milestone.title}</h3>
                   <p className="text-sm text-gray-600">Assigned to {milestone.assignee}</p>
+                  {milestone.description && (
+                    <p className="text-sm text-gray-500 mt-1">{milestone.description}</p>
+                  )}
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-sm font-medium">{new Date(milestone.dueDate).toLocaleDateString()}</div>
-                <Badge variant={
-                  milestone.status === 'completed' ? 'default' :
-                  milestone.status === 'in-progress' ? 'secondary' : 'outline'
-                }>
-                  {milestone.status}
-                </Badge>
+              <div className="flex items-center space-x-2">
+                <div className="text-right">
+                  <div className="text-sm font-medium">{new Date(milestone.due_date).toLocaleDateString()}</div>
+                  <Badge variant={
+                    milestone.status === 'completed' ? 'default' :
+                    milestone.status === 'in-progress' ? 'secondary' : 'outline'
+                  }>
+                    {milestone.status}
+                  </Badge>
+                </div>
+                {isManaging && (
+                  <div className="flex space-x-1">
+                    <Button variant="outline" size="sm">
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -209,19 +254,94 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
 
   const renderTaskAssignments = () => (
     <div className="space-y-4">
-      {taskAssignments.map((task) => (
-        <Card key={task.id}>
+      {isManaging && (
+        <div className="flex justify-end">
+          <Button className="flex items-center">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Task Assignment
+          </Button>
+        </div>
+      )}
+      {tasks.filter(task => !task.completed).map((task) => (
+        <Card key={task.id} className="cursor-pointer hover:shadow-md transition-shadow">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <h3 className="font-medium">{task.task}</h3>
                 <p className="text-sm text-gray-600">{task.project} • Assigned to {task.assignee}</p>
+                {task.description && (
+                  <p className="text-sm text-gray-500 mt-1">{task.description}</p>
+                )}
               </div>
-              <div className="text-right space-y-1">
-                <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'}>
-                  {task.priority}
-                </Badge>
-                <div className="text-sm text-gray-600">{new Date(task.dueDate).toLocaleDateString()}</div>
+              <div className="flex items-center space-x-2">
+                <div className="text-right space-y-1">
+                  <Badge variant={task.priority === 'high' ? 'destructive' : 'secondary'}>
+                    {task.priority}
+                  </Badge>
+                  <div className="text-sm text-gray-600">{new Date(task.due_date).toLocaleDateString()}</div>
+                </div>
+                {isManaging && (
+                  <div className="flex space-x-1">
+                    <Button variant="outline" size="sm">
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+
+  const renderCompletedTasks = () => (
+    <div className="space-y-4">
+      {isManaging && (
+        <div className="flex justify-end">
+          <Button className="flex items-center">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Completed Task
+          </Button>
+        </div>
+      )}
+      {completedTasks.map((task) => (
+        <Card key={task.id} className="cursor-pointer hover:shadow-md transition-shadow">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3 flex-1">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <div className="flex-1">
+                  <h3 className="font-medium">{task.task}</h3>
+                  <p className="text-sm text-gray-600">{task.project} • Completed by {task.assignee}</p>
+                  {task.description && (
+                    <p className="text-sm text-gray-500 mt-1">{task.description}</p>
+                  )}
+                  {task.completed_at && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Completed on {new Date(task.completed_at).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="text-right space-y-1">
+                  <Badge variant="default">Completed</Badge>
+                  <div className="text-sm text-gray-600">{new Date(task.due_date).toLocaleDateString()}</div>
+                </div>
+                {isManaging && (
+                  <div className="flex space-x-1">
+                    <Button variant="outline" size="sm">
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -233,20 +353,32 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Project Central</h1>
-          <p className="text-gray-600">Manage projects, timelines, and deliverables</p>
+        <div className="flex items-center space-x-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => onNavigate?.('dashboard')}
+            className="flex items-center"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Project Central</h1>
+            <p className="text-gray-600">Manage projects, timelines, and deliverables</p>
+          </div>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="progress">Works in Progress</TabsTrigger>
           <TabsTrigger value="gantt">Gantt Chart</TabsTrigger>
           <TabsTrigger value="roadmap">Roadmap</TabsTrigger>
           <TabsTrigger value="milestones">Milestones</TabsTrigger>
           <TabsTrigger value="tasks">Task Assignments</TabsTrigger>
+          <TabsTrigger value="completed">Completed Tasks</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -290,6 +422,17 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
             </CardHeader>
             <CardContent>
               {renderTaskAssignments()}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="completed" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Completed Tasks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {renderCompletedTasks()}
             </CardContent>
           </Card>
         </TabsContent>

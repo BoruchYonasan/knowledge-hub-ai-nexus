@@ -1,323 +1,215 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Clock, User, Filter, Search, Plus, Edit, Trash2, ArrowLeft } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { useLatestUpdates } from '@/hooks/useLatestUpdates';
-import AddUpdateDialog from '@/components/AddUpdateDialog';
+import { formatDistanceToNow } from 'date-fns';
+import { ArrowLeft, Plus, Search, Filter, Clock, User, Building } from 'lucide-react';
+import AddUpdateDialog from './AddUpdateDialog';
 
 interface LatestUpdatesProps {
+  onNavigate?: (page: string, tab?: string) => void;
   isManaging?: boolean;
-  onManagingChange?: (isManaging: boolean) => void;
-  onNavigate?: (page: string) => void;
 }
 
-const LatestUpdates: React.FC<LatestUpdatesProps> = ({ isManaging = false, onManagingChange, onNavigate }) => {
-  const { updates, loading, createUpdate, updateUpdate, deleteUpdate } = useLatestUpdates();
+const LatestUpdates: React.FC<LatestUpdatesProps> = ({ onNavigate, isManaging = false }) => {
+  const { updates, loading, createUpdate } = useLatestUpdates();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterPriority, setFilterPriority] = useState('all');
-  const [filterDepartment, setFilterDepartment] = useState('all');
-  const { toast } = useToast();
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  const filteredUpdates = useMemo(() => {
-    return updates.filter(update => {
-      const matchesSearch = update.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          update.content.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesPriority = filterPriority === 'all' || update.priority === filterPriority;
-      const matchesDepartment = filterDepartment === 'all' || update.department === filterDepartment;
-      
-      return matchesSearch && matchesPriority && matchesDepartment;
-    });
-  }, [updates, searchTerm, filterPriority, filterDepartment]);
+  const departments = ['All', 'Engineering', 'Sales', 'Marketing', 'HR', 'Finance', 'Operations'];
+  
+  const filteredUpdates = updates.filter(update => {
+    const matchesSearch = update.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         update.content.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesDepartment = selectedDepartment === '' || selectedDepartment === 'All' || 
+                             update.department === selectedDepartment;
+    return matchesSearch && matchesDepartment;
+  });
 
-  const departments = useMemo(() => {
-    return Array.from(new Set(updates.map(update => update.department).filter(Boolean)));
-  }, [updates]);
-
-  const handleEdit = async (id: string, updatedData: any) => {
-    await updateUpdate(id, updatedData);
-  };
-
-  const handleDelete = async (id: string) => {
-    await deleteUpdate(id);
+  const handleAddUpdate = async (updateData: {
+    title: string;
+    content: string;
+    priority: 'high' | 'medium' | 'low';
+    department: string;
+    author: string;
+  }) => {
+    try {
+      await createUpdate({
+        ...updateData,
+        preview: updateData.content.substring(0, 100) + '...',
+        attachments: [],
+      });
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      // Error is handled by the hook
+    }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'high':
+        return 'destructive';
+      case 'medium':
+        return 'default';
+      case 'low':
+        return 'secondary';
+      default:
+        return 'secondary';
     }
   };
 
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return {
-      date: date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      }),
-      time: date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      })
-    };
-  };
-
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-          <div className="h-96 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex items-start space-x-4">
-        {onNavigate && (
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-4">
           <Button 
-            variant="ghost" 
-            onClick={() => onNavigate('dashboard')}
-            className="flex items-center space-x-2 mt-1"
+            variant="outline" 
+            size="sm" 
+            onClick={() => onNavigate?.('dashboard')}
+            className="flex items-center"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back</span>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
           </Button>
-        )}
-        <div className="flex-1">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Latest Updates</h1>
-              <p className="text-gray-600">Stay informed with the latest company news and announcements</p>
-            </div>
-            <div className="flex space-x-2">
-              <AddUpdateDialog />
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Latest Updates</h1>
+            <p className="text-gray-600">Stay informed with the latest company announcements</p>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search updates..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+      {/* Search and Filter Controls */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="flex flex-1 max-w-md">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search updates..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
-        <Select value={filterPriority} onValueChange={setFilterPriority}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Priority" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Priorities</SelectItem>
-            <SelectItem value="high">High</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="low">Low</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-          <SelectTrigger className="w-[140px]">
-            <SelectValue placeholder="Department" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Departments</SelectItem>
-            {departments.map(dept => (
-              <SelectItem key={dept} value={dept!}>{dept}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        
+        <div className="flex items-center gap-4">
+          <div className="flex items-center space-x-2">
+            <Filter className="h-4 w-4 text-gray-500" />
+            <select
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
+              className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {departments.map((dept) => (
+                <option key={dept} value={dept === 'All' ? '' : dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          {isManaging && (
+            <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Update
+            </Button>
+          )}
+        </div>
       </div>
 
-      <Tabs defaultValue="all" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="all">All Updates ({filteredUpdates.length})</TabsTrigger>
-          <TabsTrigger value="high">High Priority ({filteredUpdates.filter(u => u.priority === 'high').length})</TabsTrigger>
-          <TabsTrigger value="recent">Recent (24h) ({filteredUpdates.filter(u => new Date(u.created_at) > new Date(Date.now() - 24*60*60*1000)).length})</TabsTrigger>
-        </TabsList>
-
-        <ScrollArea className="h-[calc(100vh-400px)]">
-          <TabsContent value="all" className="space-y-4">
-            {filteredUpdates.map((update) => {
-              const { date, time } = formatDateTime(update.created_at);
-              return (
-                <Card key={update.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CardTitle className="text-lg">{update.title}</CardTitle>
-                          <Badge className={getPriorityColor(update.priority)}>
-                            {update.priority}
-                          </Badge>
-                          {update.department && (
-                            <Badge variant="outline">{update.department}</Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-500 space-x-4">
-                          <div className="flex items-center">
-                            <User className="w-4 h-4 mr-1" />
-                            {update.author}
-                          </div>
-                          <div className="flex items-center">
-                            <Clock className="w-4 h-4 mr-1" />
-                            {date} at {time}
-                          </div>
-                        </div>
+      {/* Updates List */}
+      <div className="space-y-6">
+        {loading ? (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="h-6 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : filteredUpdates.length > 0 ? (
+          filteredUpdates.map((update) => (
+            <Card key={update.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <CardTitle className="text-xl">{update.title}</CardTitle>
+                    <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                      <div className="flex items-center">
+                        <User className="w-4 h-4 mr-1" />
+                        {update.author}
                       </div>
-                      {isManaging && (
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleDelete(update.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                      {update.department && (
+                        <div className="flex items-center">
+                          <Building className="w-4 h-4 mr-1" />
+                          {update.department}
                         </div>
                       )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700 mb-3">{update.preview}</p>
-                    <Button variant="outline" size="sm">
-                      Read More
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </TabsContent>
-
-          <TabsContent value="high" className="space-y-4">
-            {filteredUpdates.filter(u => u.priority === 'high').map((update) => {
-              const { date, time } = formatDateTime(update.created_at);
-              return (
-                <Card key={update.id} className="hover:shadow-md transition-shadow border-red-200">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CardTitle className="text-lg">{update.title}</CardTitle>
-                          <Badge className="bg-red-100 text-red-800">HIGH</Badge>
-                          {update.department && (
-                            <Badge variant="outline">{update.department}</Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-500 space-x-4">
-                          <div className="flex items-center">
-                            <User className="w-4 h-4 mr-1" />
-                            {update.author}
-                          </div>
-                          <div className="flex items-center">
-                            <Clock className="w-4 h-4 mr-1" />
-                            {date} at {time}
-                          </div>
-                        </div>
+                      <div className="flex items-center">
+                        <Clock className="w-4 h-4 mr-1" />
+                        {formatDistanceToNow(new Date(update.created_at), { addSuffix: true })}
                       </div>
-                      {isManaging && (
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleDelete(update.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )}
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700 mb-3">{update.preview}</p>
-                    <Button variant="outline" size="sm">
-                      Read More
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </TabsContent>
+                  </div>
+                  <Badge variant={getPriorityColor(update.priority || 'medium')}>
+                    {update.priority}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700 leading-relaxed">{update.content}</p>
+                {update.attachments && update.attachments.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-gray-900 mb-2">Attachments:</p>
+                    <div className="space-y-1">
+                      {update.attachments.map((attachment, index) => (
+                        <a
+                          key={index}
+                          href={attachment}
+                          className="text-blue-600 hover:text-blue-800 text-sm block"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          📎 {attachment}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <div className="text-gray-400 mb-4">
+                <Clock className="w-12 h-12 mx-auto" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Updates Found</h3>
+              <p className="text-gray-600">
+                {searchTerm || selectedDepartment 
+                  ? "Try adjusting your search or filter criteria."
+                  : "No updates have been published yet."
+                }
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
-          <TabsContent value="recent" className="space-y-4">
-            {filteredUpdates.filter(u => new Date(u.created_at) > new Date(Date.now() - 24*60*60*1000)).map((update) => {
-              const { date, time } = formatDateTime(update.created_at);
-              return (
-                <Card key={update.id} className="hover:shadow-md transition-shadow border-blue-200">
-                  <CardHeader className="pb-3">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CardTitle className="text-lg">{update.title}</CardTitle>
-                          <Badge className={getPriorityColor(update.priority)}>
-                            {update.priority}
-                          </Badge>
-                          <Badge className="bg-blue-100 text-blue-800">NEW</Badge>
-                          {update.department && (
-                            <Badge variant="outline">{update.department}</Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-500 space-x-4">
-                          <div className="flex items-center">
-                            <User className="w-4 h-4 mr-1" />
-                            {update.author}
-                          </div>
-                          <div className="flex items-center">
-                            <Clock className="w-4 h-4 mr-1" />
-                            {date} at {time}
-                          </div>
-                        </div>
-                      </div>
-                      {isManaging && (
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleDelete(update.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700 mb-3">{update.preview}</p>
-                    <Button variant="outline" size="sm">
-                      Read More
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </TabsContent>
-        </ScrollArea>
-      </Tabs>
+      <AddUpdateDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onAddUpdate={handleAddUpdate}
+      />
     </div>
   );
 };

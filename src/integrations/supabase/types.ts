@@ -197,6 +197,39 @@ export type Database = {
           },
         ]
       }
+      company_reports: {
+        Row: {
+          author: string
+          content: string | null
+          created_at: string
+          description: string | null
+          id: string
+          report_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author: string
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          report_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          content?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          report_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_attendees: {
         Row: {
           created_at: string | null
@@ -467,6 +500,39 @@ export type Database = {
         }
         Relationships: []
       }
+      milestones: {
+        Row: {
+          assignee: string
+          created_at: string
+          description: string | null
+          due_date: string
+          id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assignee: string
+          created_at?: string
+          description?: string | null
+          due_date: string
+          id?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assignee?: string
+          created_at?: string
+          description?: string | null
+          due_date?: string
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       poll_attendees: {
         Row: {
           created_at: string | null
@@ -692,6 +758,84 @@ export type Database = {
           team?: string | null
           title?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      roadmap_items: {
+        Row: {
+          completion: number
+          created_at: string
+          description: string | null
+          id: string
+          quarter: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completion?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          quarter: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completion?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          quarter?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      task_assignments: {
+        Row: {
+          assignee: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string
+          id: string
+          priority: string
+          project: string
+          status: string
+          task: string
+          updated_at: string
+        }
+        Insert: {
+          assignee: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date: string
+          id?: string
+          priority?: string
+          project: string
+          status?: string
+          task: string
+          updated_at?: string
+        }
+        Update: {
+          assignee?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string
+          id?: string
+          priority?: string
+          project?: string
+          status?: string
+          task?: string
+          updated_at?: string
         }
         Relationships: []
       }
