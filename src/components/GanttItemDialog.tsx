@@ -138,6 +138,29 @@ const GanttItemDialog: React.FC<GanttItemDialogProps> = ({
     });
   };
 
+  // Helper function to format date for local timezone
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return format(date, 'yyyy-MM-dd');
+  };
+
+  // Helper function to handle date selection and prevent timezone issues
+  const handleDateSelect = (date: Date | undefined, field: 'startDate' | 'endDate') => {
+    if (date) {
+      // Format the date as YYYY-MM-DD in local timezone
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      
+      setFormData(prev => ({ 
+        ...prev, 
+        [field]: formattedDate 
+      }));
+    }
+  };
+
   const availableDependencies = allItems.filter(i => i.id !== item?.id);
 
   return (
@@ -197,14 +220,14 @@ const GanttItemDialog: React.FC<GanttItemDialogProps> = ({
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.startDate ? format(new Date(formData.startDate), 'MMM dd, yyyy') : 'Pick date'}
+                    {formData.startDate ? format(new Date(formData.startDate + 'T00:00:00'), 'MMM dd, yyyy') : 'Pick date'}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={formData.startDate ? new Date(formData.startDate) : undefined}
-                    onSelect={(date) => setFormData(prev => ({ ...prev, startDate: date?.toISOString().split('T')[0] || '' }))}
+                    selected={formData.startDate ? new Date(formData.startDate + 'T00:00:00') : undefined}
+                    onSelect={(date) => handleDateSelect(date, 'startDate')}
                     initialFocus
                   />
                 </PopoverContent>
@@ -217,14 +240,14 @@ const GanttItemDialog: React.FC<GanttItemDialogProps> = ({
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.endDate ? format(new Date(formData.endDate), 'MMM dd, yyyy') : 'Pick date'}
+                    {formData.endDate ? format(new Date(formData.endDate + 'T00:00:00'), 'MMM dd, yyyy') : 'Pick date'}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={formData.endDate ? new Date(formData.endDate) : undefined}
-                    onSelect={(date) => setFormData(prev => ({ ...prev, endDate: date?.toISOString().split('T')[0] || '' }))}
+                    selected={formData.endDate ? new Date(formData.endDate + 'T00:00:00') : undefined}
+                    onSelect={(date) => handleDateSelect(date, 'endDate')}
                     initialFocus
                   />
                 </PopoverContent>

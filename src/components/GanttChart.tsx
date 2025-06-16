@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -275,6 +276,47 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
     }
   };
 
+  const renderItemsByType = (type: 'milestone' | 'task' | 'subtask') => {
+    const typeItems = getItemsByType(type);
+    return (
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {isManaging && <TableHead className="w-8"></TableHead>}
+              <TableHead>Title</TableHead>
+              <TableHead>Start Date</TableHead>
+              <TableHead>End Date</TableHead>
+              <TableHead>Progress</TableHead>
+              <TableHead>Assignee</TableHead>
+              <TableHead>Priority</TableHead>
+              <TableHead>Status</TableHead>
+              {isManaging && <TableHead>Actions</TableHead>}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {typeItems.map(item => (
+              <GanttTableRow
+                key={item.id}
+                item={item}
+                isSelected={selectedItems.includes(item.id)}
+                onSelect={handleSelectItem}
+                onEdit={handleEditItem}
+                onDelete={handleDeleteItem}
+                isManaging={isManaging}
+                assignees={assignees}
+                hasSubItems={false}
+                isExpanded={false}
+                onToggleExpand={() => {}}
+                level={0}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto p-6">
@@ -375,6 +417,39 @@ const GanttChart: React.FC<GanttChartProps> = ({ isManaging = false, onManagingC
                     </TableBody>
                   </Table>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="milestones">
+            <Card>
+              <CardHeader>
+                <CardTitle>Milestones</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {renderItemsByType('milestone')}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tasks">
+            <Card>
+              <CardHeader>
+                <CardTitle>Tasks</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {renderItemsByType('task')}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="subtasks">
+            <Card>
+              <CardHeader>
+                <CardTitle>Subtasks</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {renderItemsByType('subtask')}
               </CardContent>
             </Card>
           </TabsContent>
