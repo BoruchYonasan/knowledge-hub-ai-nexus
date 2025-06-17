@@ -141,16 +141,20 @@ const CompanyHub: React.FC<CompanyHubProps> = ({ onNavigate, isManaging = false 
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
+      {/* Fixed Header Layout */}
+      <div className="space-y-4">
+        <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">Company Hub</h1>
           <p className="text-gray-600">Team directory, communications, calendar, and vendor contacts</p>
         </div>
+        
         {isManaging && (
-          <Button className="flex items-center">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Contact
-          </Button>
+          <div className="flex justify-center">
+            <Button className="flex items-center">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Contact
+            </Button>
+          </div>
         )}
       </div>
 

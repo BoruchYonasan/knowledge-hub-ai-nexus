@@ -197,16 +197,20 @@ const BusinessOperations: React.FC<BusinessOperationsProps> = ({ onNavigate, isM
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
+      {/* Fixed Header Layout */}
+      <div className="space-y-4">
+        <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">Business Operations</h1>
           <p className="text-gray-600">Financial overview, market research, customer pipeline, and carbon credits</p>
         </div>
+        
         {isManaging && (
-          <Button className="flex items-center">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Data
-          </Button>
+          <div className="flex justify-center">
+            <Button className="flex items-center">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Data
+            </Button>
+          </div>
         )}
       </div>
 
