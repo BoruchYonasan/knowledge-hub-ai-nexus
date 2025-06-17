@@ -62,27 +62,31 @@ const CompanyReports: React.FC<CompanyReportsProps> = ({ onNavigate, isManaging 
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => onNavigate?.('dashboard')}
-            className="flex items-center"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Company Reports</h1>
-            <p className="text-gray-600">View comprehensive company reports and analytics</p>
-          </div>
+      {/* Back Button */}
+      <Button 
+        variant="outline" 
+        size="sm" 
+        onClick={() => onNavigate?.('dashboard')}
+        className="flex items-center"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        Back to Dashboard
+      </Button>
+
+      {/* Fixed Header Layout */}
+      <div className="space-y-4">
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-gray-900">Company Reports</h1>
+          <p className="text-gray-600">View comprehensive company reports and analytics</p>
         </div>
+        
         {isManaging && (
-          <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center">
-            <Plus className="w-4 h-4 mr-2" />
-            Add Report
-          </Button>
+          <div className="flex justify-center">
+            <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Report
+            </Button>
+          </div>
         )}
       </div>
       
