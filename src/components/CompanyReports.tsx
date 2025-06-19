@@ -61,140 +61,142 @@ const CompanyReports: React.FC<CompanyReportsProps> = ({ onNavigate, isManaging 
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      {/* Back Button */}
-      <Button 
-        variant="outline" 
-        size="sm" 
-        onClick={() => onNavigate?.('dashboard')}
-        className="flex items-center"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Back to Dashboard
-      </Button>
+    <div className="lg:ml-64 pt-16 min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* Back Button */}
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => onNavigate?.('dashboard')}
+          className="flex items-center bg-white shadow-sm border-gray-300 hover:bg-gray-50 z-10 relative"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Dashboard
+        </Button>
 
-      {/* Fixed Header Layout */}
-      <div className="space-y-4">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">Company Reports</h1>
-          <p className="text-gray-600">View comprehensive company reports and analytics</p>
+        {/* Fixed Header Layout */}
+        <div className="space-y-4">
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold text-gray-900">Company Reports</h1>
+            <p className="text-gray-600">View comprehensive company reports and analytics</p>
+          </div>
+          
+          {isManaging && (
+            <div className="flex justify-center">
+              <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Report
+              </Button>
+            </div>
+          )}
         </div>
         
-        {isManaging && (
-          <div className="flex justify-center">
-            <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Report
-            </Button>
-          </div>
-        )}
-      </div>
-      
-      <div className="space-y-4">
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-6">
-                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded mb-4"></div>
-                  <div className="h-2 bg-gray-200 rounded"></div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : reports.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {reports.map((report) => (
-              <Card key={report.id} className="cursor-pointer hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1" onClick={() => handleReportClick(report)}>
-                      <h3 className="font-semibold text-lg mb-2 hover:text-blue-600 transition-colors">{report.title}</h3>
-                      {report.description && (
-                        <p className="text-gray-600 text-sm mb-3">{report.description}</p>
+        <div className="space-y-4">
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="animate-pulse">
+                  <CardContent className="p-6">
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-4"></div>
+                    <div className="h-2 bg-gray-200 rounded"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : reports.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {reports.map((report) => (
+                <Card key={report.id} className="cursor-pointer hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1" onClick={() => handleReportClick(report)}>
+                        <h3 className="font-semibold text-lg mb-2 hover:text-blue-600 transition-colors">{report.title}</h3>
+                        {report.description && (
+                          <p className="text-gray-600 text-sm mb-3">{report.description}</p>
+                        )}
+                      </div>
+                      {isManaging && (
+                        <div className="flex space-x-1 ml-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditReport(report.id);
+                            }}
+                          >
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteReport(report.id);
+                            }}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
                       )}
                     </div>
-                    {isManaging && (
-                      <div className="flex space-x-1 ml-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditReport(report.id);
-                          }}
-                        >
-                          <Edit className="w-3 h-3" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteReport(report.id);
-                          }}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
+                    
+                    <div 
+                      className="space-y-2 cursor-pointer"
+                      onClick={() => handleReportClick(report)}
+                    >
+                      <div className="flex items-center text-sm text-gray-600">
+                        <User className="w-4 h-4 mr-2" />
+                        {report.author}
                       </div>
-                    )}
-                  </div>
-                  
-                  <div 
-                    className="space-y-2 cursor-pointer"
-                    onClick={() => handleReportClick(report)}
-                  >
-                    <div className="flex items-center text-sm text-gray-600">
-                      <User className="w-4 h-4 mr-2" />
-                      {report.author}
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        {new Date(report.created_at).toLocaleDateString()}
+                      </div>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      {new Date(report.created_at).toLocaleDateString()}
+                    
+                    <div className="flex items-center justify-between mt-4">
+                      <Badge className={getReportTypeColor(report.report_type)}>
+                        {report.report_type}
+                      </Badge>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <FileText className="w-4 h-4 mr-1" />
+                        Report
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mt-4">
-                    <Badge className={getReportTypeColor(report.report_type)}>
-                      {report.report_type}
-                    </Badge>
-                    <div className="flex items-center text-sm text-gray-500">
-                      <FileText className="w-4 h-4 mr-1" />
-                      Report
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No Reports Available</h3>
-              <p className="text-gray-600 mb-4">
-                {isManaging 
-                  ? "Get started by creating your first company report." 
-                  : "No reports have been published yet."
-                }
-              </p>
-              {isManaging && (
-                <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center mx-auto">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Report
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        )}
-      </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Reports Available</h3>
+                <p className="text-gray-600 mb-4">
+                  {isManaging 
+                    ? "Get started by creating your first company report." 
+                    : "No reports have been published yet."
+                  }
+                </p>
+                {isManaging && (
+                  <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center mx-auto">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Report
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
-      <AddReportDialog
-        open={isAddDialogOpen}
-        onOpenChange={setIsAddDialogOpen}
-        onAddReport={handleAddReport}
-      />
+        <AddReportDialog
+          open={isAddDialogOpen}
+          onOpenChange={setIsAddDialogOpen}
+          onAddReport={handleAddReport}
+        />
+      </div>
     </div>
   );
 };
