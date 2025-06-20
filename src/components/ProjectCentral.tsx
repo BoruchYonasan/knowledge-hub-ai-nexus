@@ -194,11 +194,7 @@ const ProjectCentral: React.FC<ProjectCentralProps> = ({ onNavigate, isManaging 
         </TabsContent>
 
         <TabsContent value="progress" className="mt-6">
-          <WorksInProgress 
-            onNavigate={onNavigate} 
-            isManaging={isManaging} 
-            isEmbedded={true}
-          />
+          <WorksInProgress onNavigate={onNavigate} isManaging={isManaging} />
         </TabsContent>
 
         <TabsContent value="gantt" className="mt-6">
