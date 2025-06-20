@@ -200,8 +200,8 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onNavigate, isManagin
                 </Button>
               )}
             </CardContent>
-          )}
-        </div>
+          </Card>
+        )}
 
         <AddProjectDialog
           open={isAddDialogOpen}
