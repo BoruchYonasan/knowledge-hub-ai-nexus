@@ -199,7 +199,7 @@ const WorksInProgress: React.FC<WorksInProgressProps> = ({ onNavigate, isManagin
                   Add Project
                 </Button>
               )}
-            </CardContent>
+            </Card>
           )}
         </div>
 
