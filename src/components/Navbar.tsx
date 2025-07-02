@@ -1,177 +1,140 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Settings, Menu, X, HelpCircle, User, BookOpen, Calendar, ExternalLink, Bot, FileText } from 'lucide-react';
+import { Search, Settings, LogOut, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavbarProps {
   currentPage: string;
   onNavigate: (page: string) => void;
-  isGlobalManaging?: boolean;
-  onGlobalManagingChange?: (isManaging: boolean) => void;
+  isGlobalManaging: boolean;
+  onGlobalManagingChange: (isManaging: boolean) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ 
-  currentPage, 
-  onNavigate, 
-  isGlobalManaging = false, 
-  onGlobalManagingChange 
+const Navbar: React.FC<NavbarProps> = ({
+  currentPage,
+  onNavigate,
+  isGlobalManaging,
+  onGlobalManagingChange,
 }) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   const navItems = [
-    { id: 'dashboard', name: 'Dashboard', icon: '📊' },
-    { id: 'project-central', name: 'Project Central', icon: '📋' },
-    { id: 'knowledge', name: 'Knowledge Base', icon: '📚' },
-    { id: 'company-hub', name: 'Company Hub', icon: '👥' },
-    { id: 'product-development', name: 'Product Development', icon: '🚀' },
-    { id: 'business-operations', name: 'Business Operations', icon: '💼' },
+    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+    { id: 'project-central', label: 'Project Central', icon: '🎯' },
+    { id: 'knowledge', label: 'Knowledge Base', icon: '📚' },
+    { id: 'company-hub', label: 'Company Hub', icon: '🏢' },
+    { id: 'product-development', label: 'Product Dev', icon: '🛠️' },
+    { id: 'business-operations', label: 'Business Ops', icon: '⚙️' },
+    { id: 'latest-updates', label: 'Latest Updates', icon: '📢' },
+    { id: 'works-in-progress', label: 'Works in Progress', icon: '🚧' },
+    { id: 'gantt-chart', label: 'Gantt Chart', icon: '📈' },
+    { id: 'company-reports', label: 'Company Reports', icon: '📄' },
   ];
-
-  const navigationItems = [
-    { id: 'knowledge', name: 'Knowledge Base', icon: BookOpen, type: 'internal' },
-    { id: 'company-hub', name: 'Calendar', icon: Calendar, type: 'internal' },
-    { id: 'aeromail-website', name: 'AeroMail Website', icon: ExternalLink, type: 'external', url: 'https://am.dev.narrative.studio/' },
-    { id: 'aeromail-ai', name: 'AeroMail Ai', icon: Bot, type: 'internal' },
-    { id: 'ai-chatbot-guide', name: 'AI Chatbot Guide', icon: Bot, type: 'internal' },
-    { id: 'company-reports', name: 'Company Reports', icon: FileText, type: 'internal' },
-  ];
-
-  const handleLogout = () => {
-    localStorage.removeItem('kb_authenticated');
-    window.location.reload();
-  };
-
-  const handleNavigationClick = (item: typeof navigationItems[0]) => {
-    if (item.type === 'external') {
-      window.open(item.url, '_blank');
-    } else if (item.type === 'internal') {
-      onNavigate(item.id);
-    }
-    // For placeholder items, do nothing
-    setIsMobileMenuOpen(false);
-  };
 
   return (
-    <>
-      {/* Top Header Bar */}
-      <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 h-16 z-50 flex items-center justify-between px-6">
-        {/* Left side - empty to match reference */}
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
-          >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-        
-        {/* Center - Search Bar */}
-        <div className="flex-1 max-w-2xl mx-8">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full h-10 pl-10 pr-4 bg-gray-100 border-0 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-              onClick={() => onNavigate('search')}
-            />
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+    <nav className="bg-white shadow-sm border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <h1 className="text-xl font-bold text-gray-900">Company KB</h1>
             </div>
           </div>
-        </div>
 
-        {/* Right side - Settings, Help and User */}
-        <div className="flex items-center space-x-4">
-          <button 
-            onClick={() => onGlobalManagingChange?.(!isGlobalManaging)}
-            className={`p-2 rounded-lg ${
-              isGlobalManaging 
-                ? 'text-blue-600 bg-blue-100 hover:bg-blue-200' 
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-          <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-            <HelpCircle className="w-5 h-5" />
-          </button>
-          <button onClick={handleLogout} className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-            <User className="w-5 h-5" />
-          </button>
+          {/* Navigation Items */}
+          <div className="hidden md:block">
+            <div className="ml-10 flex items-baseline space-x-4">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => onNavigate(item.id)}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                    currentPage === item.id
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="mr-2">{item.icon}</span>
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Right side actions */}
+          <div className="flex items-center space-x-4">
+            {/* Global Manage Toggle */}
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">
+                Manage Mode
+              </label>
+              <button
+                onClick={() => onGlobalManagingChange(!isGlobalManaging)}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  isGlobalManaging ? 'bg-blue-600' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    isGlobalManaging ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Search Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onNavigate('search')}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+
+            {/* User Menu */}
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 text-sm text-gray-700">
+                <User className="h-4 w-4" />
+                <span>{user?.email}</span>
+              </div>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={signOut}
+                className="text-gray-600 hover:text-gray-900"
+                title="Sign Out"
+              >
+                <LogOut className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Left Sidebar */}
-      <div className={`fixed left-0 top-16 bottom-0 w-64 bg-blue-600 text-white z-40 transform transition-transform duration-300 ${
-        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-      }`}>
-        {/* Logo */}
-        <div className="p-6 border-b border-blue-500">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-white bg-opacity-20 rounded flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-              </svg>
-            </div>
-            <span className="text-xl font-semibold">AeroMail</span>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="p-4 space-y-1">
+      {/* Mobile Navigation */}
+      <div className="md:hidden">
+        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50">
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => {
-                onNavigate(item.id);
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full flex items-center space-x-3 px-4 py-3 text-left rounded-lg transition-colors ${
+              onClick={() => onNavigate(item.id)}
+              className={`block px-3 py-2 rounded-md text-base font-medium w-full text-left transition-colors duration-200 ${
                 currentPage === item.id
-                  ? 'bg-blue-700 text-white'
-                  : 'text-blue-100 hover:bg-blue-500 hover:text-white'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
               }`}
             >
-              <span className="text-lg">{item.icon}</span>
-              <span className="font-medium">{item.name}</span>
+              <span className="mr-2">{item.icon}</span>
+              {item.label}
             </button>
           ))}
-
-          {/* Navigate Section */}
-          <div className="mt-6">
-            <div className="px-4 py-2 text-xs font-semibold text-blue-200 uppercase tracking-wider">
-              NAVIGATE
-            </div>
-            {navigationItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavigationClick(item)}
-                className={`w-full flex items-center space-x-3 px-4 py-2 text-left rounded-lg transition-colors ${
-                  item.type === 'placeholder' 
-                    ? 'text-blue-300 cursor-not-allowed opacity-75' 
-                    : 'text-blue-100 hover:bg-blue-500 hover:text-white'
-                }`}
-                disabled={item.type === 'placeholder'}
-              >
-                <item.icon className="w-4 h-4" />
-                <span className="text-sm">{item.name}</span>
-                {item.type === 'external' && <ExternalLink className="w-3 h-3 ml-auto" />}
-              </button>
-            ))}
-          </div>
-        </nav>
+        </div>
       </div>
-
-      {/* Mobile overlay */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-    </>
+    </nav>
   );
 };
 
