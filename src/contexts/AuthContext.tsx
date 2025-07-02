@@ -40,16 +40,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Set user context for RLS policies
-        if (session?.user?.id) {
-          try {
-            await supabase.rpc('set_user_context', { user_id: session.user.id });
-          } catch (error) {
-            console.log('Note: set_user_context function not available, using alternative approach');
-          }
-        }
-        
         setLoading(false);
       }
     );
