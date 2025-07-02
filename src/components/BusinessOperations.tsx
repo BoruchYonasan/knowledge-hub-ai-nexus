@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { DollarSign, TrendingUp, Users, Leaf, Plus } from 'lucide-react';
+import { DollarSign, TrendingUp, Users, Leaf, Plus, Construction } from 'lucide-react';
 
 interface BusinessOperationsProps {
   onNavigate?: (page: string, tab?: string) => void;
@@ -196,8 +196,26 @@ const BusinessOperations: React.FC<BusinessOperationsProps> = ({ onNavigate, isM
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      {/* Fixed Header Layout */}
+    <div className="max-w-7xl mx-auto p-6 space-y-6 relative">
+      {/* Coming Soon Overlay - Only covers this page content */}
+      <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="text-center space-y-4 max-w-md mx-auto p-8">
+          <div className="flex justify-center">
+            <Construction className="w-16 h-16 text-orange-500 animate-pulse" />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900">Coming Soon</h2>
+          <p className="text-lg text-gray-600">
+            This page is currently under construction. We're working hard to bring you an amazing business operations experience.
+          </p>
+          <div className="flex justify-center">
+            <Badge variant="outline" className="px-4 py-2">
+              Page Under Construction
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Original Content (blurred in background) */}
       <div className="space-y-4">
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">Business Operations</h1>
