@@ -43,7 +43,7 @@ const Auth = () => {
             title: "Welcome back!",
             description: "You have been logged in successfully.",
           });
-          // The AuthContext will handle the redirect
+          navigate('/');
         }
       } else {
         const { error } = await signUp(email, password, firstName, lastName);

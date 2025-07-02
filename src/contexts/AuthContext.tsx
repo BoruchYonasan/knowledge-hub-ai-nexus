@@ -32,13 +32,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Auth state change:', event, session);
       setUser(session?.user ?? null);
       setLoading(false);
-      
-      if (event === 'SIGNED_IN' && session?.user) {
-        // Force a page refresh to ensure clean state
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1000);
-      }
     });
 
     return () => subscription.unsubscribe();
@@ -69,7 +62,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    window.location.href = '/auth';
   };
 
   const value = {
