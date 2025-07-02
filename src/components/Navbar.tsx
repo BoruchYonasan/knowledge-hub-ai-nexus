@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Settings, Menu, X, HelpCircle, User, BookOpen, Calendar, ExternalLink, Bot, FileText } from 'lucide-react';
+import { Settings, Menu, X, HelpCircle, User, BookOpen, Calendar, ExternalLink, Bot, FileText, LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NavbarProps {
   currentPage: string;
@@ -17,6 +18,7 @@ const Navbar: React.FC<NavbarProps> = ({
   onGlobalManagingChange 
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { signOut, user } = useAuth();
 
   const navItems = [
     { id: 'dashboard', name: 'Dashboard', icon: '📊' },
@@ -36,9 +38,8 @@ const Navbar: React.FC<NavbarProps> = ({
     { id: 'company-reports', name: 'Company Reports', icon: FileText, type: 'internal' },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem('kb_authenticated');
-    window.location.reload();
+  const handleLogout = async () => {
+    await signOut();
   };
 
   const handleNavigationClick = (item: typeof navigationItems[0]) => {
@@ -97,9 +98,25 @@ const Navbar: React.FC<NavbarProps> = ({
           <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
             <HelpCircle className="w-5 h-5" />
           </button>
-          <button onClick={handleLogout} className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-            <User className="w-5 h-5" />
-          </button>
+          {user && (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-600 hidden md:block">
+                {user.user_metadata?.first_name || user.email}
+              </span>
+              <button 
+                onClick={handleLogout} 
+                className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                title="Sign Out"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+          {!user && (
+            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+              <User className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
 

@@ -1,41 +1,19 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthGuardProps {
   children: React.ReactNode;
 }
 
 const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    // Check if user is already authenticated
-    const authStatus = localStorage.getItem('kb_authenticated');
-    if (authStatus === 'true') {
-      setIsAuthenticated(true);
-    }
-    setIsLoading(false);
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Simple password check (in production, this would be server-side)
-    if (password === 'company123') {
-      localStorage.setItem('kb_authenticated', 'true');
-      setIsAuthenticated(true);
-      setError('');
-    } else {
-      setError('Invalid password. Please try again.');
-    }
-  };
-
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -43,7 +21,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <Card className="w-full max-w-md">
@@ -54,29 +32,15 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
               </svg>
             </div>
             <CardTitle className="text-2xl font-bold text-gray-900">Company Knowledge Base</CardTitle>
-            <p className="text-gray-600">Enter your password to access the knowledge base</p>
+            <p className="text-gray-600">Please sign in to access the knowledge base</p>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <Input
-                  type="password"
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              {error && (
-                <p className="text-red-600 text-sm">{error}</p>
-              )}
-              <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
-                Access Knowledge Base
-              </Button>
-            </form>
-            <p className="text-xs text-gray-500 mt-4 text-center">
-              Demo password: company123
-            </p>
+            <Button 
+              onClick={() => navigate('/auth')} 
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              Sign In
+            </Button>
           </CardContent>
         </Card>
       </div>

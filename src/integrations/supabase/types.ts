@@ -230,6 +230,63 @@ export type Database = {
         }
         Relationships: []
       }
+      documents: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          last_edited_by: string | null
+          parent_id: string | null
+          position: number | null
+          title: string
+          type: string | null
+          updated_at: string | null
+          workspace_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          last_edited_by?: string | null
+          parent_id?: string | null
+          position?: number | null
+          title: string
+          type?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          last_edited_by?: string | null
+          parent_id?: string | null
+          position?: number | null
+          title?: string
+          type?: string | null
+          updated_at?: string | null
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_attendees: {
         Row: {
           created_at: string | null
@@ -902,12 +959,43 @@ export type Database = {
         }
         Relationships: []
       }
+      workspaces: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_documents: {
+        Args: { search_query: string }
+        Returns: {
+          id: string
+          title: string
+          content: string
+          type: string
+          parent_id: string
+          rank: number
+        }[]
+      }
     }
     Enums: {
       event_type: "meeting" | "deadline" | "reminder" | "other"
