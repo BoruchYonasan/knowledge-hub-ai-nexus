@@ -15,6 +15,7 @@ import GanttChart from '@/components/GanttChart';
 import CompanyReports from '@/components/CompanyReports';
 import Search from '@/components/Search';
 import ContentManager from '@/components/ContentManager';
+import ImageGallery from '@/components/ImageGallery';
 import ArticleView from '@/components/ArticleView';
 import AIChatbotGuide from '@/components/AIChatbotGuide';
 import AeroMailAi from '@/components/AeroMailAi';
@@ -160,6 +161,8 @@ const Index = () => {
         return <Search onNavigate={handleNavigate} />;
       case 'content-manager':
         return <ContentManager onNavigate={handleNavigate} />;
+      case 'image-gallery':
+        return <ImageGallery onNavigate={handleNavigate} />;
       case 'article-view':
         return (
           <ArticleView
