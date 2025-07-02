@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -197,8 +198,8 @@ const BusinessOperations: React.FC<BusinessOperationsProps> = ({ onNavigate, isM
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6 relative">
-      {/* Construction Overlay */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      {/* Construction Overlay - only covers this page content */}
+      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 rounded-lg">
         <Card className="max-w-md mx-4">
           <CardHeader className="text-center">
             <div className="mx-auto w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-4">
