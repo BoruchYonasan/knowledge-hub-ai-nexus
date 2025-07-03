@@ -574,46 +574,46 @@ Be helpful, professional, and concise in your responses.`;
 
         {/* Minimized State */}
         {isHistoryCollapsed && (
-          <div className="flex-1 flex flex-col items-center py-4 space-y-3">
+          <div className="flex-1 flex flex-col items-center py-2 space-y-2 px-2">
             {/* Expand Button */}
             <Button
               onClick={() => setIsHistoryCollapsed(false)}
               variant="ghost"
-              size="icon"
-              className="w-12 h-8 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 bg-white shadow-sm transition-all rounded-lg mb-2"
+              size="sm"
+              className="w-10 h-8 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 bg-white shadow-sm transition-all rounded-lg"
               title="Expand conversations"
             >
-              <ChevronRight className="h-4 w-4 text-gray-600" />
+              <ChevronRight className="h-3 w-3 text-gray-600" />
             </Button>
 
             {/* New Chat Button - Minimized */}
             <Button
               onClick={createNewConversation}
               variant="outline"
-              size="icon"
-              className="w-12 h-12 border-2 border-blue-500 hover:bg-blue-50 hover:border-blue-600 bg-white shadow-md transition-all rounded-lg"
+              size="sm"
+              className="w-10 h-10 border-2 border-blue-500 hover:bg-blue-50 hover:border-blue-600 bg-white shadow-md transition-all rounded-lg p-0"
               title="New Chat"
             >
-              <Plus className="h-5 w-5 text-blue-600" />
+              <Plus className="h-4 w-4 text-blue-600" />
             </Button>
 
             {/* Conversation Buttons - Minimized */}
-            <div className="flex flex-col space-y-2 max-h-96 overflow-y-auto">
+            <div className="flex flex-col space-y-2 max-h-96 overflow-y-auto w-full">
               {conversations.map((conv) => (
                 <Button
                   key={conv.id}
                   onClick={() => loadConversation(conv.id)}
                   variant="outline"
-                  size="icon"
+                  size="sm"
                   disabled={switchingConversation}
-                  className={`w-12 h-12 border-2 shadow-md transition-all rounded-lg ${
+                  className={`w-10 h-10 border-2 shadow-md transition-all rounded-lg p-0 mx-auto ${
                     currentConversation?.id === conv.id 
                       ? 'bg-blue-100 border-blue-600 hover:bg-blue-50' 
                       : 'bg-white border-gray-300 hover:border-blue-400 hover:bg-blue-50'
                   } ${switchingConversation ? 'opacity-50 cursor-not-allowed' : ''}`}
                   title={conv.title || 'Conversation'}
                 >
-                  <MessageSquare className={`h-5 w-5 ${
+                  <MessageSquare className={`h-4 w-4 ${
                     currentConversation?.id === conv.id ? 'text-blue-700' : 'text-gray-600'
                   }`} />
                 </Button>
