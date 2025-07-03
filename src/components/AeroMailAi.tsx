@@ -517,7 +517,7 @@ Be helpful, professional, and concise in your responses.`;
                 variant="ghost"
                 size="sm"
                 className="flex-shrink-0 h-6 w-6 p-0 hover:bg-gray-100 rounded transition-colors"
-                title="Collapse chat history"
+                title="Minimize conversations"
               >
                 <ChevronLeft className="h-4 w-4 text-gray-500" />
               </Button>
@@ -572,42 +572,53 @@ Be helpful, professional, and concise in your responses.`;
           </div>
         )}
 
+        {/* Minimized State */}
         {isHistoryCollapsed && (
-          <div className="flex-1 flex flex-col items-center py-4 space-y-4">
+          <div className="flex-1 flex flex-col items-center py-4 space-y-3">
+            {/* Expand Button */}
+            <Button
+              onClick={() => setIsHistoryCollapsed(false)}
+              variant="ghost"
+              size="icon"
+              className="w-10 h-10 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 bg-white shadow-sm transition-all rounded-lg mb-2"
+              title="Expand conversations"
+            >
+              <ChevronRight className="h-4 w-4 text-gray-600" />
+            </Button>
+
+            {/* New Chat Button - Minimized */}
             <Button
               onClick={createNewConversation}
               variant="outline"
               size="icon"
-              className="w-10 h-10 border-2 border-blue-500 hover:bg-blue-50 hover:border-blue-600 bg-white shadow-md transition-all"
+              className="w-10 h-10 border-2 border-blue-500 hover:bg-blue-50 hover:border-blue-600 bg-white shadow-md transition-all rounded-lg"
               title="New Chat"
             >
-              <Plus className="h-5 w-5 text-blue-600" />
+              <Plus className="h-4 w-4 text-blue-600" />
             </Button>
-            <Button
-              onClick={() => setIsHistoryCollapsed(false)}
-              variant="outline"
-              size="icon"
-              className="w-10 h-10 border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 bg-white shadow-md transition-all"
-              title="Expand chat history"
-            >
-              <ChevronRight className="h-5 w-5 text-gray-600" />
-            </Button>
-            {conversations.slice(0, 3).map((conv) => (
-              <Button
-                key={conv.id}
-                onClick={() => loadConversation(conv.id)}
-                variant="outline"
-                size="icon"
-                className={`w-10 h-10 border-2 hover:bg-blue-50 shadow-md transition-all ${
-                  currentConversation?.id === conv.id 
-                    ? 'bg-blue-100 border-blue-600' 
-                    : 'bg-white border-gray-300 hover:border-blue-400'
-                }`}
-                title={conv.title || 'Conversation'}
-              >
-                <MessageSquare className="h-4 w-4 text-gray-600" />
-              </Button>
-            ))}
+
+            {/* Conversation Buttons - Minimized */}
+            <div className="flex flex-col space-y-2 max-h-96 overflow-y-auto">
+              {conversations.map((conv) => (
+                <Button
+                  key={conv.id}
+                  onClick={() => loadConversation(conv.id)}
+                  variant="outline"
+                  size="icon"
+                  disabled={switchingConversation}
+                  className={`w-10 h-10 border-2 shadow-md transition-all rounded-lg ${
+                    currentConversation?.id === conv.id 
+                      ? 'bg-blue-100 border-blue-600 hover:bg-blue-50' 
+                      : 'bg-white border-gray-300 hover:border-blue-400 hover:bg-blue-50'
+                  } ${switchingConversation ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title={conv.title || 'Conversation'}
+                >
+                  <MessageSquare className={`h-4 w-4 ${
+                    currentConversation?.id === conv.id ? 'text-blue-700' : 'text-gray-600'
+                  }`} />
+                </Button>
+              ))}
+            </div>
           </div>
         )}
       </div>
