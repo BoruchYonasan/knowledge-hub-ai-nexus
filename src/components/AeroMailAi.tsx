@@ -69,6 +69,7 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
     conversationHistory,
     userPreferences,
     loading: conversationLoading,
+    user,
     createOrGetActiveConversation,
     loadConversationHistory,
     saveMessage,
@@ -86,6 +87,11 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
 
   useEffect(() => {
     const initializeConversation = async () => {
+      if (!user) {
+        console.log('No authenticated user found');
+        return;
+      }
+
       const contextType = isManagingUpdates || isManagingProjects || isManagingGantt || isManagingKnowledge 
         ? 'content_management' 
         : 'general';
@@ -119,13 +125,16 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
     };
 
     initializeConversation();
-  }, [isManagingUpdates, isManagingProjects, isManagingGantt, isManagingKnowledge]);
+  }, [isManagingUpdates, isManagingProjects, isManagingGantt, isManagingKnowledge, user]);
 
   const loadConversations = async () => {
+    if (!user) return;
+
     try {
       const { data, error } = await supabase
         .from('ai_conversations')
         .select('*')
+        .eq('user_id', user.id)
         .order('updated_at', { ascending: false })
         .limit(20);
 
@@ -343,7 +352,7 @@ Be helpful, professional, and concise in your responses.`;
 
   const sendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputMessage;
-    if (!textToSend.trim() || isLoading || !currentConversation) return;
+    if (!textToSend.trim() || isLoading || !currentConversation || !user) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -470,6 +479,21 @@ Be helpful, professional, and concise in your responses.`;
     return (
       <div className="h-screen flex items-center justify-center ml-64">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="h-screen flex items-center justify-center ml-64">
+        <div className="text-center">
+          <Bot className="h-16 w-16 text-blue-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
+          <p className="text-gray-600 mb-4">Please log in to access AeroMail AI</p>
+          <Button onClick={() => onNavigate('auth')} className="bg-blue-600 hover:bg-blue-700">
+            Go to Login
+          </Button>
+        </div>
       </div>
     );
   }

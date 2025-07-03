@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -50,27 +51,41 @@ export const useAIConversations = () => {
   const [conversationHistory, setConversationHistory] = useState<AIMessage[]>([]);
   const [userPreferences, setUserPreferences] = useState<UserAIPreferences | null>(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
   const { toast } = useToast();
 
-  // Generate a simple user ID for demo purposes (in real app, this would come from auth)
-  const getCurrentUserId = (): string => {
-    let userId = localStorage.getItem('demo_user_id');
-    if (!userId) {
-      userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem('demo_user_id', userId);
-    }
-    return userId;
-  };
+  // Get current authenticated user
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const setActiveConversation = async (conversation: AIConversation) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to use AI conversations",
+        variant: "destructive"
+      });
+      return false;
+    }
+
     try {
-      const userId = getCurrentUserId();
-      
       // First, deactivate all other conversations for this user and context type
       await supabase
         .from('ai_conversations')
         .update({ is_active: false })
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .eq('context_type', conversation.context_type);
 
       // Then, activate the selected conversation
@@ -97,14 +112,21 @@ export const useAIConversations = () => {
   };
 
   const createOrGetActiveConversation = async (contextType: string = 'general') => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to use AI conversations",
+        variant: "destructive"
+      });
+      return null;
+    }
+
     try {
-      const userId = getCurrentUserId();
-      
       // Try to get active conversation
       let { data: activeConversation, error } = await supabase
         .from('ai_conversations')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .eq('is_active', true)
         .eq('context_type', contextType)
         .maybeSingle();
@@ -117,13 +139,13 @@ export const useAIConversations = () => {
         await supabase
           .from('ai_conversations')
           .update({ is_active: false })
-          .eq('user_id', userId)
+          .eq('user_id', user.id)
           .eq('context_type', contextType);
 
         const { data: newConversation, error: createError } = await supabase
           .from('ai_conversations')
           .insert([{
-            user_id: userId,
+            user_id: user.id,
             context_type: contextType,
             title: `${contextType} conversation`,
             is_active: true
@@ -210,13 +232,13 @@ export const useAIConversations = () => {
   };
 
   const getUserPreferences = async () => {
+    if (!user) return null;
+
     try {
-      const userId = getCurrentUserId();
-      
       let { data: preferences, error } = await supabase
         .from('user_ai_preferences')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', user.id)
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
@@ -226,7 +248,7 @@ export const useAIConversations = () => {
         const { data: newPreferences, error: createError } = await supabase
           .from('user_ai_preferences')
           .insert([{
-            user_id: userId,
+            user_id: user.id,
             preferred_model: 'gemini-2.0-flash-exp',
             max_context_messages: 15,
             enable_conversation_summary: true
@@ -305,19 +327,24 @@ export const useAIConversations = () => {
 
   useEffect(() => {
     const initialize = async () => {
-      setLoading(true);
-      await getUserPreferences();
-      setLoading(false);
+      if (user) {
+        setLoading(true);
+        await getUserPreferences();
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
     };
     
     initialize();
-  }, []);
+  }, [user]);
 
   return {
     currentConversation,
     conversationHistory,
     userPreferences,
     loading,
+    user,
     createOrGetActiveConversation,
     loadConversationHistory,
     saveMessage,
