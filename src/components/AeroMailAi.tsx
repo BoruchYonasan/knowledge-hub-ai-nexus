@@ -505,18 +505,6 @@ Be helpful, professional, and concise in your responses.`;
         isHistoryCollapsed ? 'w-16' : 'w-80'
       }`}>
         <div className="p-4 border-b border-gray-200 flex flex-col gap-3">
-          {/* Enhanced New Chat Button */}
-          {!isHistoryCollapsed && (
-            <Button
-              onClick={createNewConversation}
-              className="w-full bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl py-3 px-4 font-medium"
-              variant="outline"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Chat
-            </Button>
-          )}
-          
           {/* Recent Conversations Heading with Collapse Button */}
           {!isHistoryCollapsed && (
             <div className="flex items-center justify-between">
@@ -545,6 +533,17 @@ Be helpful, professional, and concise in your responses.`;
               </div>
             )}
             <div className="space-y-2">
+              {/* New Chat Button */}
+              <Button
+                onClick={createNewConversation}
+                className="w-full bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 hover:text-gray-900 shadow-sm hover:shadow-md transition-all duration-200 rounded-xl py-3 px-4 font-medium mb-4"
+                variant="outline"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Chat
+              </Button>
+              
+              {/* Conversation List */}
               {conversations.map((conv) => (
                 <button
                   key={conv.id}
