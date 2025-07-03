@@ -121,7 +121,8 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
         setShowSuggestedReplies(convertedMessages.length === 0);
       }
 
-      loadConversations();
+      // Load conversations after initializing current conversation
+      await loadConversations();
     };
 
     initializeConversation();
@@ -139,11 +140,24 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
         .limit(20);
 
       if (error) throw error;
-      setConversations(data || []);
+      
+      // Filter out the current active conversation from the history list
+      const filteredConversations = (data || []).filter(conv => 
+        currentConversation ? conv.id !== currentConversation.id : true
+      );
+      
+      setConversations(filteredConversations);
     } catch (error) {
       console.error('Error loading conversations:', error);
     }
   };
+
+  // Reload conversations when currentConversation changes
+  useEffect(() => {
+    if (currentConversation) {
+      loadConversations();
+    }
+  }, [currentConversation?.id, user]);
 
   const loadConversation = async (conversationId: string) => {
     if (currentConversation?.id === conversationId || switchingConversation) return;
@@ -151,7 +165,9 @@ const AeroMailAi: React.FC<AeroMailAiProps> = ({
     setSwitchingConversation(true);
     try {
       // Find the conversation to switch to
-      const selectedConv = conversations.find(conv => conv.id === conversationId);
+      const selectedConv = conversations.find(conv => conv.id === conversationId) || 
+                          (currentConversation?.id === conversationId ? currentConversation : null);
+      
       if (!selectedConv) {
         console.error('Conversation not found');
         return;
@@ -545,22 +561,40 @@ Be helpful, professional, and concise in your responses.`;
               </div>
             )}
             <div className="space-y-2">
+              {/* Show current conversation if it has a custom title */}
+              {currentConversation && currentConversation.title && currentConversation.title !== 'general conversation' && currentConversation.title !== 'content_management conversation' && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center space-x-2">
+                    <MessageSquare className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-blue-900 truncate">
+                        {currentConversation.title} (Current)
+                      </p>
+                      <p className="text-xs text-blue-600">
+                        {new Date(currentConversation.updated_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Show previous conversations */}
               {conversations.map((conv) => (
                 <button
                   key={conv.id}
                   onClick={() => loadConversation(conv.id)}
                   disabled={switchingConversation}
-                  className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
-                    currentConversation?.id === conv.id 
-                      ? 'bg-blue-50 border border-blue-200 shadow-sm' 
-                      : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'
-                  } ${switchingConversation ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                  className={`w-full text-left p-3 rounded-lg transition-all duration-200 hover:bg-gray-50 border border-transparent hover:border-gray-200 ${
+                    switchingConversation ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  }`}
                 >
                   <div className="flex items-center space-x-2">
                     <MessageSquare className="h-4 w-4 text-gray-400 flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {conv.title || 'New Conversation'}
+                        {conv.title && conv.title !== 'general conversation' && conv.title !== 'content_management conversation' 
+                          ? conv.title 
+                          : 'Previous Conversation'}
                       </p>
                       <p className="text-xs text-gray-500">
                         {new Date(conv.updated_at).toLocaleDateString()}
@@ -599,11 +633,7 @@ Be helpful, professional, and concise in your responses.`;
                 onClick={() => loadConversation(conv.id)}
                 variant="outline"
                 size="icon"
-                className={`w-10 h-10 border-2 hover:bg-blue-50 shadow-md transition-all ${
-                  currentConversation?.id === conv.id 
-                    ? 'bg-blue-100 border-blue-600' 
-                    : 'bg-white border-gray-300 hover:border-blue-400'
-                }`}
+                className="w-10 h-10 border-2 hover:bg-blue-50 shadow-md transition-all bg-white border-gray-300 hover:border-blue-400"
                 title={conv.title || 'Conversation'}
               >
                 <MessageSquare className="h-4 w-4 text-gray-600" />
