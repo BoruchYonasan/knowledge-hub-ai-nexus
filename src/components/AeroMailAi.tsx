@@ -580,7 +580,7 @@ Be helpful, professional, and concise in your responses.`;
               onClick={() => setIsHistoryCollapsed(false)}
               variant="ghost"
               size="icon"
-              className="w-10 h-10 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 bg-white shadow-sm transition-all rounded-lg mb-2"
+              className="w-12 h-8 border border-gray-300 hover:bg-gray-50 hover:border-gray-400 bg-white shadow-sm transition-all rounded-lg mb-2"
               title="Expand conversations"
             >
               <ChevronRight className="h-4 w-4 text-gray-600" />
@@ -591,10 +591,10 @@ Be helpful, professional, and concise in your responses.`;
               onClick={createNewConversation}
               variant="outline"
               size="icon"
-              className="w-10 h-10 border-2 border-blue-500 hover:bg-blue-50 hover:border-blue-600 bg-white shadow-md transition-all rounded-lg"
+              className="w-12 h-12 border-2 border-blue-500 hover:bg-blue-50 hover:border-blue-600 bg-white shadow-md transition-all rounded-lg"
               title="New Chat"
             >
-              <Plus className="h-4 w-4 text-blue-600" />
+              <Plus className="h-5 w-5 text-blue-600" />
             </Button>
 
             {/* Conversation Buttons - Minimized */}
@@ -606,14 +606,14 @@ Be helpful, professional, and concise in your responses.`;
                   variant="outline"
                   size="icon"
                   disabled={switchingConversation}
-                  className={`w-10 h-10 border-2 shadow-md transition-all rounded-lg ${
+                  className={`w-12 h-12 border-2 shadow-md transition-all rounded-lg ${
                     currentConversation?.id === conv.id 
                       ? 'bg-blue-100 border-blue-600 hover:bg-blue-50' 
                       : 'bg-white border-gray-300 hover:border-blue-400 hover:bg-blue-50'
                   } ${switchingConversation ? 'opacity-50 cursor-not-allowed' : ''}`}
                   title={conv.title || 'Conversation'}
                 >
-                  <MessageSquare className={`h-4 w-4 ${
+                  <MessageSquare className={`h-5 w-5 ${
                     currentConversation?.id === conv.id ? 'text-blue-700' : 'text-gray-600'
                   }`} />
                 </Button>
